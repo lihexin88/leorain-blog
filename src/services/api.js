@@ -1,0 +1,52 @@
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: '/api/frontend',
+  timeout: 10000
+})
+
+// 请求拦截器
+api.interceptors.request.use(
+  config => {
+    // 在发送请求之前做些什么
+    return config
+  },
+  error => {
+    // 对请求错误做些什么
+    return Promise.reject(error)
+  }
+)
+
+// 响应拦截器
+api.interceptors.response.use(
+  response => {
+    // 对响应数据做点什么
+    return response.data
+  },
+  error => {
+    // 对响应错误做点什么
+    return Promise.reject(error)
+  }
+)
+
+export default {
+  // 获取文章列表
+  getArticles (params) {
+    return api.get('/articles', { params })
+  },
+
+  // 获取文章详情
+  getArticleDetail (slug) {
+    return api.get(`/articles/${slug}`)
+  },
+
+  // 获取标签列表
+  getTags () {
+    return api.get('/tags')
+  },
+
+  // 获取分类列表
+  getCategories () {
+    return api.get('/categories')
+  }
+}
