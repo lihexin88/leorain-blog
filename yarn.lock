@@ -1140,6 +1140,14 @@ dunder-proto@^1.0.0, dunder-proto@^1.0.1:
     es-errors "^1.3.0"
     gopd "^1.2.0"
 
+echarts@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmmirror.com/echarts/-/echarts-6.0.0.tgz"
+  integrity sha512-Tte/grDQRiETQP4xz3iZWSvoHrkCQtwqd6hs+mifXcjrCuo2iKWbajFObuLJVBlDIJlOzgQPd1hsaKt/3+OMkQ==
+  dependencies:
+    tslib "2.3.0"
+    zrender "6.0.0"
+
 element-plus@^2.4.4:
   version "2.13.0"
   resolved "https://registry.npmmirror.com/element-plus/-/element-plus-2.13.0.tgz"
@@ -3224,6 +3232,11 @@ svg-tags@^1.0.0:
   resolved "https://registry.npmmirror.com/svg-tags/-/svg-tags-1.0.0.tgz"
   integrity sha512-ovssysQTa+luh7A5Weu3Rta6FJlFBBbInjOh722LIt6klpU2/HtdUbszju/G4devcvk8PGt7FCLv5wftu3THUA==
 
+sweetalert2@^11.26.17:
+  version "11.26.17"
+  resolved "https://registry.npmmirror.com/sweetalert2/-/sweetalert2-11.26.17.tgz"
+  integrity sha512-kkaySn1IRfwNlf9AkZVqDmBINDWw9NRR6Ij0O5dBRBOD1+mbtZJWxxR9/pA90nce9E5tIIkJ7SWij4rMWXtA1g==
+
 table@^6.9.0:
   version "6.9.0"
   resolved "https://registry.npmmirror.com/table/-/table-6.9.0.tgz"
@@ -3266,6 +3279,11 @@ tsconfig-paths@^3.15.0:
     json5 "^1.0.2"
     minimist "^1.2.6"
     strip-bom "^3.0.0"
+
+tslib@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.npmmirror.com/tslib/-/tslib-2.3.0.tgz"
+  integrity sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==
 
 type-check@^0.4.0, type-check@~0.4.0:
   version "0.4.0"
@@ -3548,3 +3566,10 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmmirror.com/yocto-queue/-/yocto-queue-0.1.0.tgz"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zrender@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmmirror.com/zrender/-/zrender-6.0.0.tgz"
+  integrity sha512-41dFXEEXuJpNecuUQq6JlbybmnHaqqpGlbH1yxnA5V9MMP4SbohSVZsJIwz+zdjQXSSlR1Vc34EgH1zxyTDvhg==
+  dependencies:
+    tslib "2.3.0"

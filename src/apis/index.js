@@ -7,6 +7,7 @@ import systemInfoApi from './systemInfo'
 import visitorMapApi from './visitorMap'
 import customEmojiApi from './customEmoji'
 import commentApi from './comment'
+import linkApi from './link'
 
 export default {
   articleApi,
@@ -17,8 +18,20 @@ export default {
   systemInfoApi,
   visitorMapApi,
   customEmojiApi,
-  commentApi
+  commentApi,
+  linkApi
 }
 
 // 也可以单独导出各个模块
-export { articleApi, tagApi, categoryApi, gitLogApi, configApi, systemInfoApi, visitorMapApi, customEmojiApi, commentApi }
+export {
+  articleApi,
+  tagApi,
+  categoryApi,
+  gitLogApi,
+  configApi,
+  systemInfoApi,
+  visitorMapApi,
+  customEmojiApi,
+  commentApi,
+  linkApi
+}

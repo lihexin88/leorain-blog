@@ -15,8 +15,8 @@
 "></parse>
       </el-card>
     </div>
-    <div style="display: flex;justify-content: center">
-      <div class="links-container" style="">
+    <div style="display: flex;justify-content: center;padding-top: 10px">
+      <div class="links-container">
         <div class="links-item-div" v-for="(link,index) in links" :key="index">
           <div style="position: relative" @click="open_link(link.link,link.id)">
             <el-card body-style="padding-left: 5px;" class="links-item">
@@ -80,34 +80,37 @@
         </div>
       </div>
     </div>
-    <modal :show="show_preview" large @cancel="show_preview = false">
-      <div slot="header" style="position: relative;display: flex;justify-content: center;width: 100%">
-        <div slot="title" title="新窗口打开" style="position: absolute;left: 10px;cursor: pointer"
-             @click="open_link(preview_link.link,preview_link.id)">
-          <el-link>新窗口打开<i class="fa fa-external-link-alt"></i></el-link>
+    <el-dialog :show="show_preview" large @cancel="show_preview = false">
+      <template v-slot:header>
+        <div style="position: relative;display: flex;justify-content: center;width: 100%">
+          <div slot="title" title="新窗口打开" style="position: absolute;left: 10px;cursor: pointer"
+               @click="open_link(preview_link.link,preview_link.id)">
+            <el-link>新窗口打开<i class="fa fa-external-link-alt"></i></el-link>
+          </div>
+          <div style="position: absolute;top: 0">
+            友链-
+            <el-link :href="preview_link.link"><b>{{ preview_link.name }}</b></el-link>
+            -预览
+          </div>
+          <div style="position: absolute;top: 0;right: 10px;cursor: pointer" @click="show_preview=false">
+            <i class="fas fa-times-circle"></i>
+          </div>
         </div>
-        <div style="position: absolute;top: 0">
-          友链-
-          <el-link :href="preview_link.link"><b>{{ preview_link.name }}</b></el-link>
-          -预览
-        </div>
-        <div style="position: absolute;top: 0;right: 10px;cursor: pointer" @click="show_preview=false">
-          <i class="fas fa-times-circle"></i>
-        </div>
-      </div>
+      </template>
       <div style="width: 100%;height: 100%">
         <iframe style="width: 100%;height: 100%;border: none;border-radius: 5px" :src="preview_link.link"></iframe>
       </div>
-    </modal>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import moment from 'moment'
-import Modal from '../particals/Modal.vue'
+import parse from '@/components/MarkdownParse.vue'
+import { linkApi } from '@/apis'
 
 export default {
-  components: { Modal },
+  components: { parse },
   computed: {
     moment () {
       return moment
@@ -134,16 +137,16 @@ export default {
       this.show_preview = true
       this.preview_link = link
     },
-    max_string (string, max_length) {
-      let result = string.slice(0, max_length)
-      if (string.length > max_length) {
+    max_string (string, maxLength) {
+      let result = string.slice(0, maxLength)
+      if (string.length > maxLength) {
         result += '...'
       }
       return result
     },
     load () {
-      this.$http.get('frontend/link', {}).then((response) => {
-        this.links = response.data
+      linkApi.getLinks().then((response) => {
+        this.links = response
       })
     },
     open_link (url, id) {
@@ -159,22 +162,20 @@ export default {
   background-position: center;
   background-size: cover;
   padding-bottom: 10px;
-  min-height: 100vh;
   background-attachment: fixed;
 }
 
 .links-container {
-  width: 80%;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
   padding-bottom: 10px;
 }
 
 .links-item-div {
   position: relative;
-  width: 19%;
-  padding: 1% 1%;
   font-size: .85em;
   background-image: url("https://images.leorain.cn/icons/assets/links-item-background-image.png");
   background-size: 100% 100%;
@@ -209,7 +210,7 @@ export default {
 }
 
 .links-item {
-  background: rgb(255, 255, 255, .1);
+  background: transparent;
   cursor: pointer;
   box-shadow: none !important;
   border: none !important;

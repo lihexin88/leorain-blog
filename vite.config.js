@@ -41,7 +41,7 @@ export default defineConfig({
   },
   base: process.env.NODE_ENV === 'production' ? '/static/' : '/',
   build: {
-    outDir: '../public/frontend',
+    outDir: 'dist',
     assetsDir: 'static',
     sourcemap: false
   },

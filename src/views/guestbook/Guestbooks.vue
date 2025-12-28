@@ -5,7 +5,9 @@
         <!--        留言板介绍，包括友链申请规则-->
         <div class="guestbook-description-content">
           <el-card class="guestbook-description-card">
-            <div slot="header" style="display: flex;justify-content: center">留言板说明</div>
+            <template v-slot:header>
+              <div style="display: flex;justify-content: center">留言板说明</div>
+            </template>
             <div>
               欢迎来到leorain的站点！🎉无论你是想为本站献上宝贵的建议，还是想申请友链，统统都可以在这里留言！我们特别期待你的声音。😊
               大胆地说出你的想法，让我们一起打造一个更棒的站点吧！如果你是来申请友链的朋友，请按照格式哦，保证我们能第一时间看到并回复你~💌
@@ -30,21 +32,24 @@
           </el-card>
         </div>
       </div>
-      <modal :large="true" :show="isReplayActive" @cancel="activeId = null">
-        <div slot="title">留言板</div>
+      <el-dialog :large="true" :show="isReplayActive" @cancel="activeId = null">
+        <template v-slot:title>
+          <div>留言板</div>
+        </template>
         <guestbook-form @replay="setActiveId" :guestbook="null"></guestbook-form>
-      </modal>
+      </el-dialog>
     </div>
     <div style="margin: 10px;display: flex;justify-content: center">
       <!--    详细对话模块-->
       <div class="guestbook-area">
-        <guestbook-tree ref="GuestbookTree" v-for="guestbook in guestbooks" @replay="handleReplay" :activeId="activeId" :key="guestbook.id"
+        <guestbook-tree ref="GuestbookTree" v-for="guestbook in guestbooks" @replay="handleReplay" :activeId="activeId"
+                        :key="guestbook.id"
                         :guestbook="guestbook"/>
         <div style="display: flex;justify-content: center">
           <el-pagination
-              :page-size.sync="per_page"
+              v-model:page-size="per_page"
               :page-sizes="[10, 20, 30, 50]"
-              :current-page.sync="page"
+              v-model:current-page="page"
               @current-change="load"
               background
               :small="smallWindowSize"
@@ -58,12 +63,11 @@
 </template>
 <script>
 import GuestbookForm from './GuestbookForm.vue'
+import Parse from '@/components/MarkdownParse.vue'
 import GuestbookTree from './GuestbookTree.vue'
-import { sync_url_params } from '../../../configApi/helper'
-import Modal from '../particals/Modal.vue'
 
 export default {
-  components: { Modal, GuestbookTree, GuestbookForm },
+  components: { GuestbookTree, GuestbookForm, Parse },
   data () {
     return {
       activeId: null,
@@ -107,10 +111,6 @@ export default {
       }).then((response) => {
         this.guestbooks = response.data.data
         this.total = response.data.total
-        sync_url_params({
-          page: this.page,
-          per_page: this.per_page
-        })
       })
     }
   },
@@ -133,7 +133,7 @@ export default {
       // 尝试获取用户信息，并存储在localstorage中
       this.$http.get('/frontend/user/info').then((response) => {
         localStorage.setItem('user', JSON.stringify(response.data))
-      }).catch((error) => {
+      }).catch(() => {
         localStorage.removeItem('user')
       })
     }
@@ -202,9 +202,10 @@ export default {
   z-index: -1;
 }
 
-::v-deep .modal-header{
-  padding: 5px!important;
+::v-deep .modal-header {
+  padding: 5px !important;
 }
+
 @media screen and (max-aspect-ratio: 1/1) {
   ::v-deep .modal-body {
     padding: 5px;

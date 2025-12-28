@@ -160,3 +160,40 @@ export function getHumanReadableDate (inputDuration) {
   dateDisplay += ` ${hours} 小时 ${minutes} 分 ${seconds} 秒`
   return dateDisplay
 }
+/**
+ * Converts a data URL (base64 string) to a Blob object.
+ *
+ * @param {string} dataURL - The data URL to be converted, including the base64-encoded data and MIME type.
+ * @return {Blob} A Blob object created from the data URL.
+ */
+export function dataURLToBlob (dataURL) {
+  const byteString = atob(dataURL.split(',')[1])
+  const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0]
+  const ab = new ArrayBuffer(byteString.length)
+  const ia = new Uint8Array(ab)
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i)
+  }
+  return new Blob([ab], { type: mimeString })
+}
+
+/**
+ * 更新url中的参数
+ * @param paramName
+ * @param paramValue
+ */
+export function updateURLParameter (paramName, paramValue) {
+  const url = new URL(window.location.href)
+  const params = new URLSearchParams(url.search)
+
+  // 如果参数已存在，则更新其值；否则，添加新参数
+  if (params.has(paramName)) {
+    params.set(paramName, paramValue)
+  } else {
+    params.append(paramName, paramValue)
+  }
+
+  // 使用 pushState() 更新 URL，避免页面刷新
+  const newUrl = `${url.origin}${url.pathname}?${params.toString()}${url.hash}`
+  window.history.pushState({ path: newUrl }, '', newUrl)
+}

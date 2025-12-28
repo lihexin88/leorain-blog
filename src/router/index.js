@@ -134,7 +134,7 @@ const routes = [
       {
         path: 'links',
         name: 'Links',
-        component: () => import('../views/links/Links.vue')
+        component: () => import('../views/links/LinksPage.vue')
       }
     ]
   }

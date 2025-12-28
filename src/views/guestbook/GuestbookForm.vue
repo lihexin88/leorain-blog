@@ -15,7 +15,9 @@
               <el-button size="mini" type="text" @click="show_replace_tip = false">取消</el-button>
               <el-button type="primary" size="mini" @click="generate_link_text">确定</el-button>
             </div>
-            <el-button slot="reference" @click="check_input_value">友链</el-button>
+            <template v-slot:reference>
+              <el-button @click="check_input_value">友链</el-button>
+            </template>
           </el-popover>
         </div>
         <div style="padding:0 10px">
@@ -32,13 +34,13 @@
 </template>
 
 <script>
-import { default as SimpleMDE } from 'simplemde/dist/simplemde.min'
+import SimpleMDE from 'simplemde/dist/simplemde.min'
 import { marked } from 'marked'
 import emojione from 'emojione'
 import 'simplemde/dist/simplemde.min.css'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/mdn-like.css'
-import UserForm from '../particals/UserForm.vue'
+import UserForm from '@/components/UserForm.vue'
 
 export default {
   name: 'GuestbookForm',

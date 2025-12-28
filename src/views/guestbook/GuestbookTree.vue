@@ -49,7 +49,7 @@
 <script>
 import GuestbookForm from './GuestbookForm.vue'
 import moment from 'moment'
-import { getFriendlyDate } from '../../../configApi/helper'
+import { getFriendlyDate } from '@/utils/helpers'
 
 export default {
   name: 'GuestbookTree',
