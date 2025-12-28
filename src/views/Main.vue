@@ -24,6 +24,7 @@
 
     <header class="header">
       <!-- Header内容 -->
+      <ScrollProgress style="z-index: 1"/>
       <NavBar/>
     </header>
 
@@ -34,19 +35,23 @@
 
     <footer class="footer">
       <!-- Footer内容 -->
-      <p>&copy; 2023 个人博客. All rights reserved.</p>
+      <footerBar />
     </footer>
   </div>
 </template>
 
 <script>
 import NavBar from '@/components/NavBar.vue'
+import ScrollProgress from '@/components/ScrollProgress.vue'
 import { useConfigStore } from '@/store/config'
+import FooterBar from '@/components/FooterBar.vue'
 
 export default {
   name: 'MainPage',
   components: {
-    NavBar
+    FooterBar,
+    NavBar,
+    ScrollProgress
   },
   setup () {
     const configStore = useConfigStore()
@@ -117,10 +122,12 @@ export default {
 .body {
   flex: 1;
   margin-top: 60px; /* 为固定头部留出空间 */
+  height: 100%;
 }
 
 .footer {
-  background-color: rgba(248, 249, 250, 0.43);
+  background-color: rgba(248, 249, 250, 0.7);
+  backdrop-filter: blur(8px) saturate(180%);
   padding: 1rem;
   text-align: center;
 }

@@ -404,7 +404,6 @@ export default {
 
 <style scoped lang="scss">
 .timestamp-container {
-  margin: 20px auto;
   padding: 20px;
   background-color: #f4f7f6;
 }

@@ -173,7 +173,7 @@ export default {
         // 如果不是 HSL 格式，直接使用原始值
         color = new THREE.Color(bubbleData.color1)
       }
-      
+
       const material = markRaw(new THREE.MeshBasicMaterial({
         color: color,
         transparent: true,

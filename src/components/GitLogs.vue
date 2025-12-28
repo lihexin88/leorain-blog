@@ -2,14 +2,13 @@
   <div>
     <div>
       <el-card class="info-div-card">
-        <div style="border-radius: 5px">
-          <el-table :data="git_logs_first_page" row-class-name="git-logs-table" header-row-class-name="git-logs-table">
-            <el-table-column prop="comment" label="提交记录"></el-table-column>
-            <el-table-column prop="hots" label="热度" :width="100"></el-table-column>
-          </el-table>
-          <div v-if="total > 20" style="display: flex;justify-content: flex-end;padding-top: 10px;align-items: center">
-            <a @click="show_history_list" class="fas info-category pointer-style">查看更多</a>
+        <div class="git-logs-box">
+          <div class="git-logs-item" v-for="item in git_logs_first_page" :key="item.id">
+            {{ item.comment }}
           </div>
+        </div>
+        <div v-if="total > 20" style="display: flex;justify-content: flex-end;padding-top: 10px;align-items: center">
+          <a @click="show_history_list" class="fas info-category pointer-style">查看更多</a>
         </div>
       </el-card>
     </div>
@@ -97,22 +96,13 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.info-div-card {
-  background: transparent;
 
-  :deep(.git-logs-table) {
-    width: 100%;
-    border-radius: 5px;
-    background: linear-gradient(135deg, rgba(217, 214, 217, 0.35) 0%, rgba(173, 216, 230, 0.35) 50%, rgba(255, 182, 193, 0.35) 100%);
-  }
-
-  :deep(.el-table th.el-table__cell) {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  :deep(.el-table td.el-table__cell) {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+.git-logs-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
 }
 
 // 对话框中的表格样式

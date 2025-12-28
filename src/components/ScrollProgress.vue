@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       percentage: 0,
       customColors: [
@@ -39,11 +39,11 @@ export default {
       ]
     }
   },
-  mounted() {
+  mounted () {
     window.addEventListener('scroll', this.handleScroll)
   },
   methods: {
-    handleScroll() {
+    handleScroll () {
       let scrollTop = window.scrollY || document.documentElement.scrollTop
       let scrollHeight = document.documentElement.scrollHeight - window.innerHeight
       this.percentage = (scrollTop / scrollHeight) * 100

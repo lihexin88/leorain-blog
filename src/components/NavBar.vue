@@ -103,7 +103,8 @@ export default {
 
 <style scoped lang="scss">
 .nav-el-menu {
-  background-color: rgba(255, 255, 255, 0.43);
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px) saturate(180%);
 }
 
 .menu-icon {

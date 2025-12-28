@@ -5,3 +5,8 @@
 body{
   margin: 0;
 }
+.info-div-card {
+  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(217, 214, 217, 0.75) 0%, rgba(173, 216, 230, 0.75) 50%, rgba(255, 182, 193, 0.75) 100%);
+  backdrop-filter: blur(8px) saturate(180%);
+}

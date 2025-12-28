@@ -353,9 +353,6 @@ export default {
     display: flex;
     justify-content: center
   }
-  .info-div-card {
-    background: linear-gradient(135deg, rgba(217, 214, 217, 0.55) 0%, rgba(173, 216, 230, 0.55) 50%, rgba(255, 182, 193, 0.55) 100%);
-  }
 
   @keyframes infoAvatarRotate {
     0% {

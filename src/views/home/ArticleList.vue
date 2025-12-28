@@ -299,9 +299,9 @@ export default {
   align-items: flex-end;
   backdrop-filter: blur(10px);
   background: linear-gradient(135deg,
-    rgba(217, 214, 217, 0.35) 0%,
-    rgba(173, 216, 230, 0.35) 50%,
-    rgba(242, 214, 218, 0.35) 100%,
+    rgba(217, 214, 217, 0.55) 0%,
+    rgba(173, 216, 230, 0.55) 50%,
+    rgba(242, 214, 218, 0.55) 100%,
   );
   position: relative;
   overflow: hidden;
