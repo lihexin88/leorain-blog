@@ -1,0 +1,59 @@
+import customEmojiApi from '@/apis/customEmoji'
+
+let customEmojiMap = {}
+export let customEmoji = []
+
+export async function getEmojiData () {
+  const response = await customEmojiApi.getEmojiData()
+  const result = response.data.map(item => {
+    if (item.image_url.match(/\.(png|jpg|jpeg|gif|PNG|JPG|JPEG|GIF)$/)) {
+      let url = new URL(item.image_url)
+      url.searchParams.set('x-oss-process', 'style/emoji')
+      item.image_url = url.href
+    }
+
+    // 转换为short name 和 imageUrl 的映射，方便进行表情和地址的替换
+    customEmojiMap[item.short_names[0]] = item.image_url
+    return {
+      name: item.name,
+      short_names: item.short_names, // 假设接口返回字段为 short_code
+      text: item.text,
+      emoticons: item.emoticons,
+      keywords: item.keywords,
+      imageUrl: item.image_url
+    }
+  })
+  customEmoji = result
+  return result
+}
+
+export const emojiI18n = {
+  search: '搜索...',
+  notfound: '无结果，换个词试试',
+  categories: {
+    search: '搜索结果',
+    recent: '常用',
+    people: 'Smileys & People',
+    nature: '动物和自然',
+    foods: '食物',
+    activity: '活动',
+    places: '旅行和地区',
+    objects: '物体',
+    symbols: '符号',
+    flags: '旗帜',
+    custom: '自定义'
+  }
+}
+
+export async function emojiToImage (text) {
+  if (customEmojiMap.length === 0) {
+    await getEmojiData()
+  }
+  return text.replace(/:([a-z0-9_+-]+):/g, (match, emoji) => {
+    if (!customEmojiMap[emoji]) {
+      return match
+    } else {
+      return '<img class="emoji-image" width="64" alt="emoji:' + emoji + '" src="' + customEmojiMap[emoji] + '" />'
+    }
+  })
+}

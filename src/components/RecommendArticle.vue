@@ -2,19 +2,21 @@
   <div style="display: flex;justify-content: center">
     <div style="width: 95%">
       <el-card>
-        <div slot="header" class="clearfix">
-          <span style="font-size: 1.05em"><b>推荐文章</b></span>
-          <span style="position: absolute;right: 30px"><i>使用余弦向量算法进行推荐(分数)</i></span>
-        </div>
-        <div class="recommend-article-box" v-for="article in articles">
+        <template v-slot:header>
+          <div class="clearfix">
+            <span style="font-size: 1.05em"><b>推荐文章</b></span>
+            <span style="position: absolute;right: 30px"><i>使用余弦向量算法进行推荐(分数)</i></span>
+          </div>
+        </template>
+        <div class="recommend-article-box" v-for="(article,index) in articles" :key="index">
           <div class="recommend-article-item">
             <div class="recommend-article-container" @click="open_article(article.slug)">
               <div class="recommend-article-title">
-                {{ max_string(article.title, 48) }}
+                {{ maxString(article.title, 48) }}
               </div>
               <div>
                 <div class="recommend-article-description">
-                  {{ max_string(article.meta_description ?? article.title, 150) }}
+                  {{ maxString(article.meta_description ?? article.title, 150) }}
                 </div>
               </div>
               <div style="display: flex;justify-content: flex-start">
@@ -43,7 +45,8 @@
 </template>
 
 <script>
-import {max_string} from "../../../configApi/helper";
+import { maxString } from '@/utils/helpers'
+import { articleApi } from '@/apis'
 
 export default {
   props: {
@@ -53,33 +56,33 @@ export default {
     },
     article_id: {
       type: String,
-      default: 0
+      default: '0'
     }
   },
-  data() {
+  data () {
     return {
       articles: []
     }
   },
   methods: {
-    max_string,
-    getRecommendArticles() {
-      this.$http.get('frontend/articles/recommend', {
+    maxString,
+    getRecommendArticles () {
+      articleApi.getRecommendArticles({
         params: {
           query: this.query,
-          article_id: this.article_id,
+          article_id: this.article_id
         }
       }).then(res => {
         this.articles = res.data
       })
     },
-    open_article(slug) {
+    open_article (slug) {
       window.location.href = slug
     }
   },
-  mounted() {
+  mounted () {
     this.getRecommendArticles()
-  },
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -108,9 +111,11 @@ export default {
   width: 82%;
   display: flex;
 }
+
 .recommend-article-box {
   padding: 10px;
 }
+
 .recommend-article-box:hover {
   background-color: rgba(231, 239, 241, 0.34);
 }
@@ -118,7 +123,8 @@ export default {
 .recommend-article-container:hover {
   transform: scale(1.03);
 }
+
 ::v-deep .el-card__body {
-  padding: 0!important;
+  padding: 0 !important;
 }
 </style>

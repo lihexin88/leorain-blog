@@ -190,6 +190,7 @@
 <script>
 import moment from 'moment'
 import GitLogs from '@/components/GitLogs.vue'
+import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
 import Quotes from '@/components/Quotes.vue'
 import anime from 'animejs'
@@ -201,7 +202,8 @@ export default {
   components: {
     VisitorMap,
     GitLogs,
-    Quotes
+    Quotes,
+    Parse: MarkdownParse
   },
   setup () {
     const configStore = useConfigStore()

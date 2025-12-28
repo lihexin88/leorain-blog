@@ -10,10 +10,9 @@
   </div>
 </template>
 <script>
-import Modal from "../../../dashboard/components/Modal.vue";
 
 export default {
-  components: {Modal},
+  components: {},
   props: {
     image_src: {
       type: String,
@@ -21,11 +20,11 @@ export default {
     },
     title: {
       type: String,
-      default: "图片"
+      default: '图片'
     },
     alt: {
       type: String,
-      default: "图片"
+      default: '图片'
     },
     is_zoom: {
       type: Boolean,
@@ -33,14 +32,14 @@ export default {
     },
     maxWidth: {
       type: String,
-      default: "220px"
+      default: '220px'
     },
     maxHeight: {
       type: String,
-      default: "220px"
+      default: '220px'
     }
   },
-  data() {
+  data () {
     return {
       show: false,
       preview_images: [this.image_src],
@@ -48,9 +47,9 @@ export default {
     }
   },
   computed: {
-    imageType() {
-      const imageRegex = /\.(jpg|jpeg|png|gif|bmp|webp)$/i;
-      const videoRegex = /\.(mp4|avi|rmvb|ogg)$/i;
+    imageType () {
+      const imageRegex = /\.(jpg|jpeg|png|gif|bmp|webp)$/i
+      const videoRegex = /\.(mp4|avi|rmvb|ogg)$/i
       if (imageRegex.test(this.image_src)) {
         return 'image'
       } else if (videoRegex.test(this.image_src)) {
@@ -58,11 +57,10 @@ export default {
       } else {
         return false
       }
-    },
-  },
+    }
+  }
 }
 </script>
-
 
 <style scoped lang="scss">
 

@@ -14,7 +14,14 @@ const routes = [
       {
         path: 'articles',
         name: 'ArticleList',
-        component: () => import('../views/articles/ArticleList.vue')
+        component: () => import('../views/articles/ArticleList.vue'),
+        children: [
+          {
+            path: 'articles/{slug}',
+            name: 'ArticleDetail',
+            component: () => import('../views/home/ArticleDetail.vue')
+          }
+        ]
       },
       {
         path: 'tags',
@@ -24,7 +31,7 @@ const routes = [
       {
         path: 'article/:slug',
         name: 'ArticleDetail',
-        component: () => import('../views/articles/ArticleDetail.vue')
+        component: () => import('../views/home/ArticleDetail.vue')
       },
       {
         path: 'tag/:tag',

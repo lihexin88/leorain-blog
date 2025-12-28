@@ -193,7 +193,10 @@ export default {
       window.location.href = '/user/' + name
     },
     openArticle (slug) {
-      window.location.href = '/' + slug
+      this.$router.push({
+        name: 'ArticleDetail',
+        params: { slug }
+      })
     },
     open_tag (tag) {
       window.location.href = '/tag/' + tag

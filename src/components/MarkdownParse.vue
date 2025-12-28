@@ -2,12 +2,14 @@
   <div>
     <div class="markdown" @click="handleEvent" ref="markdownContent" v-html="rawHtml"></div>
     <el-dialog show-footer :show="executor.show_exec_result" @cancel="executor.show_exec_result = false">
-      <div slot="title" style="display: flex">
-        <div>运行结果</div>
-        <div style="display: flex;justify-content: end;align-items: center;font-size: .7em;padding-left: 20px">
-          <i v-if="executor.cost_time">耗时:{{ executor.cost_time }}ms</i>
+      <template v-slot:title>
+        <div style="display: flex">
+          <div>运行结果</div>
+          <div style="display: flex;justify-content: end;align-items: center;font-size: .7em;padding-left: 20px">
+            <i v-if="executor.cost_time">耗时:{{ executor.cost_time }}ms</i>
+          </div>
         </div>
-      </div>
+      </template>
       <div>
         <pre>
         <code style="color: #e83e8c">
@@ -15,22 +17,26 @@
         </code>
         </pre>
       </div>
-      <div slot="footer" style="display: flex;justify-content: end">
-        <div style="padding-right: 10px">
-          <el-button type="success" @click="go_tool_exec">
-            打开在线编辑器
-          </el-button>
+      <template v-slot:footer>
+        <div style="display: flex;justify-content: end">
+          <div style="padding-right: 10px">
+            <el-button type="success" @click="go_tool_exec">
+              打开在线编辑器
+            </el-button>
+          </div>
+          <div style="padding-right: 10px">
+            <el-button @click="executor.show_exec_result = false">
+              关闭
+            </el-button>
+          </div>
         </div>
-        <div style="padding-right: 10px">
-          <el-button @click="executor.show_exec_result = false">
-            关闭
-          </el-button>
-        </div>
-      </div>
+      </template>
     </el-dialog>
     <!-- 图片预览模态框 -->
     <el-dialog :show="showPreview" @cancel="closePreview">
-      <div slot="header">预览图片·点击放大</div>
+      <template v-slot:header>
+        <div>预览图片·点击放大</div>
+      </template>
       <div class="modal-content" title="点击放大">
         <image-viewer :show="showPreview" title="点击放大" :image_src="currentImage" alt="Preview"></image-viewer>
       </div>
@@ -40,22 +46,24 @@
 
 <script>
 import emojione from 'emojione'
-import {marked} from "marked";
-import DOMPurify from 'dompurify';
-import Swal from "sweetalert2";
-import {emojiToImage} from "../../emoji/custom/custom_emoji";
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import ImageViewer from '@/components/ImageViewer.vue'
+import { emojiToImage } from '@/services/customEmoji'
 
 export default {
-  components: {},
+  components: {
+    ImageViewer
+  },
   props: {
     content: {
       type: String,
-      default() {
+      default () {
         return null
       }
     }
   },
-  data() {
+  data () {
     return {
       rawHtml: '',
       executor: {
@@ -67,67 +75,74 @@ export default {
         cost_time: 0
       },
       showPreview: false,
-      currentImage: null,
+      currentImage: null
     }
   },
-  created() {
-    let html = this.parse(this.content)
+  async created () {
+    let html = await this.parse(this.content)
     html = DOMPurify.sanitize(html)
     this.rawHtml = html
-    this.$nextTick(this.addCopyButtonEvent)  // 等待 DOM 渲染完成后添加复制按钮事件
+    this.$nextTick(this.addCopyButtonEvent) // 等待 DOM 渲染完成后添加复制按钮事件
   },
-  beforeDestroy() {
+  beforeUnmount () {
     // 组件销毁时移除事件监听器
     if (this.$refs.markdownContainer) {
-      this.$refs.markdownContainer.removeEventListener('click', this.handleEvent);
+      this.$refs.markdownContainer.removeEventListener('click', this.handleEvent)
     }
   },
   methods: {
-    handleEvent(event){
-      if (event.target.tagName === 'IMG'){
+    handleEvent (event) {
+      if (event.target.tagName === 'IMG') {
         this.showPreview = true
         this.currentImage = event.target.src
       }
     },
-    closePreview() {
+    closePreview () {
       this.showPreview = false
       this.currentImage = ''
     },
-    go_tool_exec() {
+    go_tool_exec () {
       if (this.executor.executor_url === null) {
-        toastr.error("打开失败")
+        toastr.error('打开失败')
         return false
       }
-      const code_encode = encodeURIComponent(this.executor.code)
-      window.open(this.executor.executor_url + "?code=" + code_encode)
+      const codeEncode = encodeURIComponent(this.executor.code)
+      window.open(this.executor.executor_url + '?code=' + codeEncode)
     },
     // 添加唯一编码
-     fn_Guid() {
-        function s4() {
-          return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-        }
-        return (s4() +s4() +"-" +s4() +"-" +s4() +"-" + s4() +"-" +s4() +s4() +s4()
-        );
+    fn_Guid () {
+      function s4 () {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+      }
+
+      return (s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
+      )
     },
-    parse(content) {
+    async parse (content) {
+      if (!content) return ''
+      
       marked.setOptions({
         highlight: (code, lang) => {
-          const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-          return hljs.highlight(code, {language}).value;
+          const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+          return hljs.highlight(code, { language }).value
         },
         langPrefix: 'hljs language-',
-        sanitize: false,
+        sanitize: false
       })
-      const renderer = new marked.Renderer();
+      const renderer = new marked.Renderer()
 
       // 自定义标题渲染，生成 ID 并存入 toc
       renderer.heading = (text, level) => {
-        const id = this.fn_Guid(text);
-        return `<h${level} id="${id}">${text}</h${level}>`;
-      };
+        const id = this.fn_Guid(text)
+        return `<h${level} id="${id}">${text}</h${level}>`
+      }
 
-      let htmlContent = emojione.toImage(marked(content, {breaks: true,renderer: renderer}))
-      htmlContent = emojiToImage(htmlContent)
+      let htmlContent = emojione.toImage(marked(content, { breaks: true, renderer }))
+      try {
+        htmlContent = await emojiToImage(htmlContent)
+      } catch (error) {
+        console.error('Error processing emoji:', error)
+      }
 
       // 在每个代码块后添加复制按钮
       htmlContent = htmlContent.replace(/(<pre>.*?)/g, match => {
@@ -139,13 +154,13 @@ export default {
       })
       return htmlContent
     },
-    addCopyButtonEvent() {
+    addCopyButtonEvent () {
       // 用于记录上一次点击的按钮
-      let lastClickedButton = null;
+      let lastClickedButton = null
       // 查找所有复制按钮并添加点击事件
       const buttons = document.querySelectorAll('.copy-button')
       buttons.forEach(button => {
-        button.addEventListener('click', (event) => {
+        button.addEventListener('click', () => {
           // 获取按钮前面的 <code> 元素
           const codeElement = button.closest('pre').querySelector('code')
           if (codeElement) {
@@ -153,17 +168,17 @@ export default {
             navigator.clipboard.writeText(codeText).then(() => {
               // 重置上一个按钮状态
               if (lastClickedButton && lastClickedButton !== button) {
-                lastClickedButton.innerText = '复制';
+                lastClickedButton.innerText = '复制'
               }
 
               // 设置当前按钮状态为“已复制”
-              button.innerText = '已复制';
-              lastClickedButton = button; // 更新最近点击的按钮
+              button.innerText = '已复制'
+              lastClickedButton = button // 更新最近点击的按钮
               toastr.success('已复制', '', {
                 positionClass: 'toast-bottom-right', // 设置单个通知的位置
                 timeOut: 1000
-              });
-            }).catch(err => {
+              })
+            }).catch(() => {
               toastr.warning('复制失败:', '')
             })
           } else {
@@ -173,7 +188,7 @@ export default {
       })
       const executors = document.querySelectorAll('.executor-button')
       executors.forEach(item => {
-        item.addEventListener('click', (event) => {
+        item.addEventListener('click', () => {
           // 获取 code 里面的值
           const codeTag = item.nextElementSibling
           if (codeTag.tagName !== 'CODE') {
@@ -188,78 +203,78 @@ export default {
             switch (item) {
               case 'language-c':
                 this.exec('c', code)
-                break;
+                break
               case 'language-php':
                 this.exec('php', code)
-                break;
+                break
               case 'language-java':
                 this.exec('java', code)
-                break;
+                break
               case 'language-cpp':
               case 'language-c++':
                 this.exec('cpp', code)
-                break;
+                break
               case 'language-go':
                 this.exec('go', code)
-                break;
+                break
               case 'language-python':
                 this.exec('python', code)
-                break;
+                break
             }
           })
           console.log(tagClass)
         })
       })
     },
-    exec(language, code) {
+    exec (language, code) {
       this.executor.code = code
       this.executor.cost_time = null
       let api = ''
       let version = ''
-      let executor_url = ''
+      let executorUrl = ''
       switch (language) {
         case 'php':
           api = 'exec/php'
-          executor_url = 'tools/php'
+          executorUrl = 'tools/php'
           version = 74
-          break;
+          break
         case 'c':
           api = 'exec/clang'
-          executor_url = 'tools/clang'
+          executorUrl = 'tools/clang'
           version = 11
-          break;
+          break
         case 'java':
           api = 'exec/java'
-          executor_url = 'tools/java'
+          executorUrl = 'tools/java'
           version = 17
-          break;
+          break
         case 'cpp':
           api = 'exec/cpp'
-          executor_url = 'tools/cpp'
+          executorUrl = 'tools/cpp'
           version = 11
-          break;
+          break
         case 'python':
           api = 'exec/python'
-          executor_url = 'tools/python'
+          executorUrl = 'tools/python'
           version = 38
-          break;
+          break
         case 'go':
           api = 'exec/golang'
-          executor_url = 'tools/golang'
+          executorUrl = 'tools/golang'
           version = 120
-          break;
+          break
       }
       if (api === '') {
         toastr.error('语言不支持')
         return false
       }
-      this.executor.executor_url = executor_url
+      this.executor.executor_url = executorUrl
       this.$http.post(api, {
-        code: code,
-        version: version
+        code,
+        version
       }).then((response) => {
         if (response.status === 200) {
-          this.executor.result = "运行中..."
+          this.executor.result = '运行中...'
           this.executor.recordId = response.data.record_id
           let time = 1
           const intervalId = setInterval(async () => {
@@ -268,7 +283,7 @@ export default {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success("执行成功")
+                toastr.success('执行成功')
                 this.executor.result = intervalResponse.data.data.output
                 if (intervalResponse.data.data.endTime !== 0) {
                   this.executor.cost_time = intervalResponse.data.data.endTime - intervalResponse.data.data.startTime
@@ -276,46 +291,32 @@ export default {
                 // this.executor.cost_time =
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error("运行失败")
+                toastr.error('运行失败')
                 this.executor.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error("运行超时")
+                toastr.error('运行超时')
                 this.executor.result = ''
                 clearInterval(intervalId)
               }
             })
           }, 1000)
-
         } else {
           this.executor.result = ''
-          toastr.error("运行失败")
+          toastr.error('运行失败')
         }
         this.executor.show_exec_result = true
-
       }).catch((e) => {
         if (e.status === 401) {
-          Swal.fire({
-            title: "auth.unauthorized",
-            text: "auth.unauthorized",
-            icon: 'error',
-            confirmButtonText: '确定',
-            cancelButtonText: "取消",
-            animation: true
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location.href = '/login'
-            }
-          });
         }
         this.result = ''
-        toastr.error("运行失败")
+        toastr.error('运行失败')
       })
     }
-  },
+  }
 }
 </script>
 

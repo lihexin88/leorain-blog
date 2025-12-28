@@ -6,8 +6,10 @@
       </div>
     </div>
     <div :show="!sampleAvatar">
-      <modal :show="!sampleAvatar" @cancel="sampleAvatar = !sampleAvatar">
-        <div slot="title" style="font-size: .9em;"><i>访客信息</i></div>
+      <el-dialog :show="!sampleAvatar" @cancel="sampleAvatar = !sampleAvatar">
+        <template v-slot:title>
+          <div style="font-size: .9em;"><i>访客信息</i></div>
+        </template>
         <div
             style="display: flex;justify-content:center;cursor: pointer;padding-bottom: 5px;padding-top: 5px;align-items: center">
           <el-avatar shape="circle" :size="60" :src="avatar"></el-avatar>
@@ -36,34 +38,35 @@
                       placeholder="网址(选填)"></el-input>
           </div>
         </div>
-        <div slot="footer">
+        <template v-slot:footer>
+<div >
           <el-button @click="saveGuestInfo">确认</el-button>
         </div>
-      </modal>
+</template>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
-import MD5 from "crypto-js/md5";
-import Modal from "./Modal.vue";
+import MD5 from 'crypto-js/md5'
 
 export default {
-  components: {Modal},
+  components: { },
   props: {},
-  data() {
+  data () {
     return {
       guest: {
         avatar: this.guestAvatarPrefix,
         name: null,
         email: null,
-        website: null,
+        website: null
       },
-      guestAvatarPrefix: "https://api.dicebear.com/9.x/adventurer/svg?seed=",
+      guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
       sampleAvatar: true
     }
   },
-  mounted() {
+  mounted () {
     if (!this.user?.uid) {
       let guestCache = this.getGuestInfo()
       if (guestCache === undefined) {
@@ -79,7 +82,7 @@ export default {
     }
   },
   methods: {
-    saveGuestInfo() {
+    saveGuestInfo () {
       localStorage.setItem('guest_info', JSON.stringify({
         nickname: this.guest.name,
         email: this.guest.email,
@@ -87,27 +90,27 @@ export default {
       }))
       this.sampleAvatar = true
     },
-    validateData() {
+    validateData () {
       if (!this.guest?.name) {
-        toastr.error("用户名不能为空")
+        toastr.error('用户名不能为空')
         this.sampleAvatar = false
         return false
       }
       if (!this.guest?.email) {
-        toastr.error("邮箱不能为空")
+        toastr.error('邮箱不能为空')
         this.sampleAvatar = false
         return false
       } else {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(this.guest.email)) {
           this.sampleAvatar = false
-          toastr.error("邮箱格式不正确")
+          toastr.error('邮箱格式不正确')
           return false
         }
       }
       return true
     },
-    getGuestInfo() {
+    getGuestInfo () {
       const guestInfo = localStorage.getItem('guest_info')
       if (guestInfo === null) {
         return
@@ -123,10 +126,10 @@ export default {
       this.guest.email = guestObject.email
       this.guest.website = guestObject.website
       return this.guest
-    },
+    }
   },
   computed: {
-    avatar() {
+    avatar () {
       return this.guestAvatarPrefix + MD5(this.guest?.email).toString()
     }
   },
@@ -148,7 +151,6 @@ export default {
   align-items: center;
   flex-wrap: wrap
 }
-
 
 .guest-input {
   display: flex;

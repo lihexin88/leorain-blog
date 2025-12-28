@@ -9,5 +9,8 @@ export default {
   // 获取文章详情
   getArticleDetail (slug) {
     return api.get(`/articles/${slug}`)
+  },
+  getRecommendArticles (params) {
+    return api.get('/articles/recommend', { params })
   }
 }
