@@ -1,0 +1,20 @@
+module.exports = {
+  root: true,
+  env: {
+    node: true
+  },
+  extends: ['plugin:vue/vue3-essential', '@vue/standard', '@vue/typescript/recommended'],
+  globals: {
+    $: true,
+    _: true
+  },
+  rules: {
+    // 'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-console': 'off',
+    'prefer-const': 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    '@typescript-eslint/camelcase': 'off',
+    '@typescript-eslint/no-this-alias': 'off',
+    'vue/no-mutating-props': 'warn'
+  }
+}

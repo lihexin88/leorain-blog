@@ -1,10 +1,10 @@
 <template>
   <el-menu
-    :default-active="activeIndex"
-    class="el-menu-demo"
-    mode="horizontal"
-    :router="true"
-    @select="handleSelect"
+      :default-active="activeIndex"
+      class="nav-el-menu"
+      mode="horizontal"
+      :router="true"
+      @select="handleSelect"
   >
     <el-menu-item index="/">首页</el-menu-item>
     <el-menu-item index="/tools">工具箱</el-menu-item>
@@ -21,26 +21,26 @@
 <script>
 export default {
   name: 'NavBar',
-  data() {
+  data () {
     return {
       activeIndex: this.$route.path
     }
   },
   methods: {
-    handleSelect(key) {
+    handleSelect (key) {
       this.activeIndex = key
     }
   },
   watch: {
-    '$route'(to) {
+    '$route' (to) {
       this.activeIndex = to.path
     }
   }
 }
 </script>
 
-<style scoped>
-.el-menu-demo {
-  margin-bottom: 20px;
+<style scoped lang="scss">
+.nav-el-menu {
+  background-color: rgba(255, 255, 255, 0.43);
 }
 </style>

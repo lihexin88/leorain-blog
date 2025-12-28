@@ -16,7 +16,7 @@ import ArticleList from './ArticleList.vue'
 import HomeInfo from './HomeInfo.vue'
 
 export default {
-  name: 'Home',
+  name: 'HomePage',
   components: {
     ArticleList,
     HomeInfo

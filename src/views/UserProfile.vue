@@ -94,9 +94,9 @@
 
           <div class="pagination-container">
             <el-pagination
-              :page-size.sync="per_page"
+              v-model:page-size="per_page"
               :page-sizes="[22, 40, 50]"
-              :current-page.sync="page"
+              v-model:current-page="page"
               @current-change="loadArticles"
               background
               :small="smallWindowSize"
@@ -126,9 +126,9 @@
 
           <div class="pagination-container">
             <el-pagination
-              :page-size.sync="per_page"
+              v-model:page-size="per_page"
               :page-sizes="[22, 40, 50]"
-              :current-page.sync="commentPage"
+              v-model:current-page="commentPage"
               @current-change="loadComments"
               background
               :small="smallWindowSize"
@@ -152,7 +152,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../apis/api'
-import { getFriendlyDate, mediaType, paginateLayouts, sync_url_paginate } from '../utils/helpers'
+import { getFriendlyDate, mediaType, paginateLayouts, syncUrlPaginate } from '../utils/helpers'
 import moment from 'moment'
 
 const route = useRoute()
@@ -210,7 +210,7 @@ const loadArticles = () => {
 
     window.scrollTo({ top: 0 })
 
-    sync_url_paginate(page.value, per_page.value)
+    syncUrlPaginate(page.value, per_page.value)
   }).catch(() => {
     // 如果API不支持按用户筛选，使用空数组
     articles.value = []
@@ -280,4 +280,3 @@ onMounted(() => {
   loadComments()
 })
 </script>
-

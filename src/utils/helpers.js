@@ -1,26 +1,5 @@
 import moment from 'moment/moment'
 
-export function stack_error (response) {
-  if (typeof response.data === 'string') {
-    toastr.error(response.status + ' ' + response.statusText)
-  } else {
-    let data = response.data.errors
-    let content = ''
-
-    Object.keys(data).map(function (key, index) {
-      let value = data[key]
-
-      content += '<span style="color: #e74c3c">' + value[0] + '</span><br>'
-    })
-
-    swal({
-      title: 'Error Text!',
-      type: 'error',
-      html: content
-    })
-  }
-}
-
 export function mediaType (fileName) {
   if (fileName.match(/\.(jpg|jpeg|png|gif)$/)) {
     return 'image'
@@ -36,44 +15,24 @@ export function mediaType (fileName) {
 /**
  * 修改url中的分页参数
  * @param page
- * @param per_page
+ * @param perPage
  */
-export function sync_url_paginate (page, per_page) {
+export function syncUrlPaginate (page, perPage) {
   const params = new URLSearchParams(window.location.search)
   if (page) {
     params.set('page', page) // 修改参数
   }
-  if (per_page) {
-    params.set('per_page', per_page) // 修改参数
+  if (perPage) {
+    params.set('per_page', perPage) // 修改参数
   }
   window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
-}
-
-/**
- * 修改url中的参数
- * @param object
- */
-export function sync_url_params (object) {
-  const params = new URLSearchParams(window.location.search)
-  Object.keys(object).map(key => {
-    if (object[key] === null || object[key] === '') {
-      params.delete(key)
-    } else {
-      params.set(key, object[key])
-    }
-  })
-  if (params.size > 0) {
-    window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
-  } else {
-    window.history.replaceState({}, '', `${window.location.pathname}`)
-  }
 }
 
 /**
  * 获取url中的参数
  * @param object
  */
-export function get_url_params () {
+export function getUrlParams () {
   const urlParams = new URLSearchParams(window.location.search)
   let urlParamsObject = {}
   urlParams.forEach((value, key) => {
@@ -100,12 +59,12 @@ export function paginateLayouts () {
   }
 }
 
-export function max_string (string, max_length = 20) {
-  if (max_length <= 0) {
-    max_length = 20
+export function maxString (string, maxLength = 20) {
+  if (maxLength <= 0) {
+    maxLength = 20
   }
-  let result = string.slice(0, max_length)
-  if (string.length > max_length) {
+  let result = string.slice(0, maxLength)
+  if (string.length > maxLength) {
     result += '...'
   }
   return result

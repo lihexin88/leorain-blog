@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve, dirname } from 'path'
 import { CodeInspectorPlugin } from 'code-inspector-plugin'
@@ -17,7 +17,7 @@ export default defineConfig({
     CodeInspectorPlugin({
       bundler: 'vite', // 默认 vite
       editor: 'webstorm' // 使用 VS Code 作为编辑器
-    }),
+    })
   ],
   define: {
     'process.env': process.env,
@@ -32,7 +32,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://blog.leorain.cn',
+        target: process.env.API_HOST,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       }

@@ -23,8 +23,8 @@
               </el-tooltip>
             </div>
           </div>
-          <div v-if="config?.about_me">
-            <parse :content="config.about_me"></parse>
+          <div v-if="configStore.config?.about_me">
+            <parse :content="configStore.config.about_me"></parse>
           </div>
         </div>
       </el-card>
@@ -35,13 +35,13 @@
         <div>
           <!--          info-->
           <h3 class="info-title">
-            <span class="info-title-span" v-for="(char,index) in config.title" :key="index">{{ char }}</span>
+            <span class="info-title-span" v-for="(char,index) in configStore.title" :key="index">{{ char }}</span>
           </h3>
-          <h5 style="display: flex;justify-content: center">{{ config.description }}</h5>
+          <h5 style="display: flex;justify-content: center">{{ configStore.description }}</h5>
         </div>
-        <div v-if="config.quota_info" style="padding-bottom: 20px">
+        <div v-if="configStore.quotaInfo" style="padding-bottom: 20px">
           <!--        quota-->
-          <quotes :quotes_base_url="config.quota_info"></quotes>
+          <quotes :quotes_base_url="configStore.quotaInfo"></quotes>
         </div>
         <div>
           <!--        info-->
@@ -194,13 +194,20 @@ import VisitorMap from '@/components/VisitorMap.vue'
 import Quotes from '@/components/Quotes.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
-import {categoryApi, configApi, systemInfoApi, tagApi} from "@/apis";
+import { categoryApi, systemInfoApi, tagApi } from '@/apis'
+import { useConfigStore } from '@/store/config'
 
 export default {
   components: {
     VisitorMap,
     GitLogs,
     Quotes
+  },
+  setup () {
+    const configStore = useConfigStore()
+    return {
+      configStore
+    }
   },
   data () {
     return {
@@ -215,7 +222,6 @@ export default {
         features: []
       },
       tags: [],
-      config: {},
       categories: [],
       wechat: {
         logo: 'https://images.leorain.cn/files/wechat.png',
@@ -250,9 +256,8 @@ export default {
     go_category (category) {
       window.location.href = '/category/' + category
     },
-    get_config () {
-      configApi.getConfigs().then((response) => {
-        this.configApi = response.data
+    async get_config () {
+      try {
         this.$nextTick(() => {
           const titleAnime = anime.timeline({
             easing: 'easeOutExpo',
@@ -272,7 +277,9 @@ export default {
             delay: anime.stagger(100)
           })
         })
-      })
+      } catch (error) {
+        console.error('获取配置信息失败:', error)
+      }
     },
     get_tag_cloud () {
       tagApi.getTags().then((response) => {
