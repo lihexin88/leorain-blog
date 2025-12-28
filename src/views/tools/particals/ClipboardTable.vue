@@ -1,7 +1,7 @@
 <script>
 import Modal from "../../particals/Modal.vue";
 import moment from "moment";
-import {max_string, paginate_layouts} from "../../../../config/helper";
+import {max_string, paginate_layouts} from "../../../../configApi/helper";
 
 export default {
   components: {Modal},

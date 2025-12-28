@@ -65,10 +65,10 @@
                       <el-tag v-for="(tag, index) in article.tags"
                         class="article-tag"
                         :key="index"
-                        @click="openTag(tag.tag)"
-                        :title="tag.tag"
+                        @click="openTag(tag.tagApi)"
+                        :title="tag.tagApi"
                         type="info">
-                        {{ tag.tag }}
+                        {{ tag.tagApi }}
                       </el-tag>
                     </div>
 
@@ -115,7 +115,7 @@
               <div class="comment-content">
                 <div class="comment-header">
                   <span class="comment-article">评论于:
-                    <a @click="openArticle(comment.article.slug)">{{ comment.article.title }}</a>
+                    <a @click="openArticle(comment.articleApi.slug)">{{ comment.articleApi.title }}</a>
                   </span>
                   <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                 </div>
@@ -151,7 +151,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api from '../services/api'
+import api from '../apis/api'
 import { getFriendlyDate, mediaType, paginateLayouts, sync_url_paginate } from '../utils/helpers'
 import moment from 'moment'
 
@@ -225,8 +225,8 @@ const loadComments = () => {
       id: 1,
       content: '这是一条评论内容',
       created_at: '2023-01-01T12:00:00Z',
-      article: {
-        slug: 'test-article',
+      articleApi: {
+        slug: 'test-articleApi',
         title: '测试文章'
       }
     }

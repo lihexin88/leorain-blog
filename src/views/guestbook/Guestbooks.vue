@@ -59,7 +59,7 @@
 <script>
 import GuestbookForm from './GuestbookForm.vue'
 import GuestbookTree from './GuestbookTree.vue'
-import { sync_url_params } from '../../../config/helper'
+import { sync_url_params } from '../../../configApi/helper'
 import Modal from '../particals/Modal.vue'
 
 export default {

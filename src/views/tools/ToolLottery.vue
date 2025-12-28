@@ -195,7 +195,7 @@ Vue.use(VueParticles)
 export default {
   data () {
     return {
-      categories: [],
+      categoryApi: [],
       selectedCategory: null,
       modalTicket: null,
       lotteryModalVisible: false,

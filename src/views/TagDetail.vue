@@ -44,10 +44,10 @@
                   <el-tag v-for="(tag, index) in article.tags"
                     class="article-tag"
                     :key="index"
-                    @click="openTag(tag.tag)"
-                    :title="tag.tag"
-                    :type="tag.tag === tagName ? 'primary' : 'info'">
-                    {{ tag.tag }}
+                    @click="openTag(tag.tagApi)"
+                    :title="tag.tagApi"
+                    :type="tag.tagApi === tagName ? 'primary' : 'info'">
+                    {{ tag.tagApi }}
                   </el-tag>
                 </div>
 
@@ -93,7 +93,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api from '../services/api'
+import api from '../apis/api'
 import { getFriendlyDate, mediaType, paginateLayouts, sync_url_paginate } from '../utils/helpers'
 import moment from 'moment'
 
@@ -110,7 +110,7 @@ const layout = ref('prev, pager, next')
 
 const loadArticles = () => {
   api.getArticles({
-    tag: tagName.value,
+    tagApi: tagName.value,
     page: page.value,
     per_page: per_page.value
   }).then(response => {

@@ -38,7 +38,7 @@
                 <el-tag v-for="(tag, index) in article.tags"
                   class="article-tag"
                   :key="index"
-                  @click="openTag(tag.tag)"
+                  @click="openTag(tag.id)"
                   :title="tag.tag"
                   type="info">
                   {{ tag.tag }}
@@ -87,7 +87,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useArticleStore } from '@/store'
-import api from '../../services/api'
+import {articleApi} from '@/apis'
 import { getFriendlyDate, mediaType, paginateLayouts, sync_url_paginate, sync_url_params } from '@/utils/helpers'
 import moment from 'moment'
 
@@ -98,7 +98,7 @@ const smallWindowSize = ref(false)
 const layout = ref('prev, pager, next')
 
 const loadArticles = () => {
-  api.getArticles({
+  articleApi.getArticles({
     page: articleStore.page,
     per_page: articleStore.per_page
   }).then(response => {

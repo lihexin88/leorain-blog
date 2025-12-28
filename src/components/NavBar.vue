@@ -7,7 +7,7 @@
     @select="handleSelect"
   >
     <el-menu-item index="/">首页</el-menu-item>
-    <el-menu-item index="/toolbox">工具箱</el-menu-item>
+    <el-menu-item index="/tools">工具箱</el-menu-item>
     <el-menu-item index="/vector-search">向量检索</el-menu-item>
     <el-menu-item index="/quiz">测验</el-menu-item>
     <el-menu-item index="/guestbook">留言板</el-menu-item>

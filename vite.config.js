@@ -1,7 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
 import { CodeInspectorPlugin } from 'code-inspector-plugin'
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+
+// 加载 .js.env 文件
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+dotenv.config({ path: resolve(__dirname, '.js.env') })
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,7 +20,8 @@ export default defineConfig({
     }),
   ],
   define: {
-    'process.env': {}
+    'process.env': process.env,
+    global: 'window'
   },
   resolve: {
     alias: {
@@ -28,7 +36,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       }
-    }
+    },
+    open: true
   },
   base: process.env.NODE_ENV === 'production' ? '/static/' : '/',
   build: {

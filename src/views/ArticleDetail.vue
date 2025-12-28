@@ -24,9 +24,9 @@
           v-for="(tag, index) in article.tags" 
           :key="index"
           class="article-tag"
-          @click="openTag(tag.tag)"
+          @click="openTag(tag.tagApi)"
         >
-          {{ tag.tag }}
+          {{ tag.tagApi }}
         </el-tag>
       </div>
 
@@ -44,7 +44,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api from '../services/api'
+import api from '../apis/api'
 import moment from 'moment'
 
 const route = useRoute()
