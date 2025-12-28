@@ -101,6 +101,11 @@ export default {
 }
 
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 .header h1 {
@@ -111,6 +116,7 @@ export default {
 
 .body {
   flex: 1;
+  margin-top: 60px; /* 为固定头部留出空间 */
 }
 
 .footer {

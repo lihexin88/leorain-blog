@@ -26,7 +26,8 @@
           <el-col :xs="24" :sm="24" :md="12">
             <el-card shadow="hover" class="lottery-card">
               <!-- Card Header -->
-              <div slot="header" class="card-header">
+              <template v-slot:header>
+<div  class="card-header">
                 <el-button
                   type="primary"
                   class="start-button"
@@ -38,6 +39,7 @@
                   {{ loading ? '加载中...' : '开始新游戏' }}
                 </el-button>
               </div>
+</template>
 
               <!-- Card Body -->
               <div>
@@ -114,19 +116,21 @@
           <!-- Right Column: Lottery Records -->
           <el-col :xs="24" :sm="24" :md="12">
             <el-card shadow="hover" class="records-card">
-              <div slot="header" class="card-header">
+              <template v-slot:header>
+<div  class="card-header">
                 <span>我的获取记录</span>
               </div>
+</template>
               <el-table :data="userLotteries" style="width: 100%" v-loading="lotteryRecordsLoading">
                 <el-table-column prop="id" label="ID" width="80"></el-table-column>
                 <el-table-column prop="created_at" label="获取时间"></el-table-column>
                 <el-table-column label="名称">
-                  <template slot-scope="scope">
+                  <template v-slot="scope">
                     {{ scope.row.origin.data.name }}
                   </template>
                 </el-table-column>
                 <el-table-column label="状态" width="80">
-                  <template slot-scope="scope">
+                  <template v-slot="scope">
                     <el-button v-if="scope.row.status === 1" type="primary" size="mini" @click="openExistingLottery(scope.row)">刮开</el-button>
                     <span v-else>{{ scope.row.status_display }}</span>
                   </template>
@@ -138,7 +142,7 @@
                 layout="prev, pager, next"
                 :total="userLotteriesMeta.total"
                 :page-size="userLotteriesMeta.per_page"
-                :current-page.sync="lotteryCurrentPage"
+                v-model:current-page="lotteryCurrentPage"
                 @current-change="handleLotteryPageChange"
                 class="mt-4 text-center">
               </el-pagination>
@@ -149,20 +153,20 @@
     </el-row>
 
     <!-- Lottery Scratch Modal -->
-    <el-dialog :visible.sync="lotteryModalVisible" width="80%" max-width="600px" :before-close="handleCloseModal" title="刮刮乐" custom-class="lottery-dialog">
+    <el-dialog v-model:visible="lotteryModalVisible" width="80%" max-width="600px" :before-close="handleCloseModal" title="刮刮乐" custom-class="lottery-dialog">
       <div v-if="modalTicket" class="lottery-ticket-wrapper" :style="{ backgroundImage: `url(${categoryBackgroundImage})` }">
         <div class="overlay"></div>
         <transition-group
           name="lottery-spot"
           tag="div"
           class="lottery-ticket"
-          @mousedown.native="handleScratchStart"
-          @mousemove.native="handleScratchMove"
-          @mouseup.native="handleScratchEnd"
-          @mouseleave.native="handleScratchEnd"
-          @touchstart.native.prevent="handleScratchStart"
-          @touchmove.native.prevent="handleScratchMove"
-          @touchend.native="handleScratchEnd"
+          @mousedown="handleScratchStart"
+          @mousemove="handleScratchMove"
+          @mouseup="handleScratchEnd"
+          @mouseleave="handleScratchEnd"
+          @touchstart.prevent="handleScratchStart"
+          @touchmove.prevent="handleScratchMove"
+          @touchend="handleScratchEnd"
         >
           <div v-for="(spot, index) in modalTicket.spots" :key="modalTicket.id + '-' + index" class="scratch-spot-container">
             <div class="prize-area">
@@ -187,12 +191,9 @@
 
 <script>
 import confetti from 'canvas-confetti'
-import Vue from 'vue'
-import VueParticles from 'vue-particles'
-
-Vue.use(VueParticles)
 
 export default {
+  name: 'ToolLottery',
   data () {
     return {
       categoryApi: [],

@@ -1,26 +1,6 @@
 <template>
-  <div id="container-left" class="list asset-item-container" style="padding-top: 15px">
-    <div class="tool-container" style="margin-left: 0">
-      <div class="tools-items-box">
-        <div v-for="(item,index) in items" :key="index" class="tools-items">
-          <el-card>
-            <div class="item-box" @click="open_page(item.href)">
-              <div class="title bold item-title">
-                <span :title="item.text">{{ item.text }}</span>
-              </div>
-              <div style="display: flex;justify-content: center;align-items: center">
-                <img
-                  class="tool-item-image"
-                  :src="item.image"
-                  :title="item.description"
-                  :alt="item.description"
-                />
-              </div>
-            </div>
-          </el-card>
-        </div>
-      </div>
-    </div>
+  <div id="container-left" class="list asset-item-container">
+    <router-view />
   </div>
 </template>
 
@@ -126,7 +106,7 @@ export default {
   },
   methods: {
     open_page (location) {
-      window.location.href = location
+      this.$router.push(location)
     }
   },
   mounted () {
@@ -154,13 +134,16 @@ export default {
 .tools-items-box {
   width: 100%;
   display: grid;
+  margin: 0 20px;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
   justify-content: center;
   @media screen and (max-aspect-ratio: 1/1) {
     padding: 0;
   }
-  margin: 5px;
+  :deep(.el-card__body){
+    padding: 5px;
+  }
 }
 
 .tools-items {
@@ -170,6 +153,7 @@ export default {
   border-radius: 3px;
 
   :deep(.el-card) {
+    width: 100%;
     background-color: rgba(255, 255, 255, 0.5);
   }
 }
@@ -185,7 +169,7 @@ export default {
 }
 
 .tool-item-image {
-  width: 100%;
+  width: 50px;
 }
 
 .info {
@@ -193,6 +177,7 @@ export default {
 }
 
 .item-box {
+  display: flex;
   border-radius: 3px;
 }
 </style>

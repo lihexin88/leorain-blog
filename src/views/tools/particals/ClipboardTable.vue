@@ -1,14 +1,12 @@
 <script>
-import Modal from "../../particals/Modal.vue";
-import moment from "moment";
-import {max_string, paginate_layouts} from "../../../../configApi/helper";
+import moment from 'moment'
+import { maxString, paginateLayouts } from '@/utils/helpers'
 
 export default {
-  components: {Modal},
-  data() {
+  data () {
     return {
       clipboardData: [],
-      search_text: "",
+      search_text: '',
       page: 1,
       page_size: 10,
       total: 0,
@@ -19,45 +17,45 @@ export default {
         id: null,
         content: null,
         star: null,
-        type: 1,
+        type: 1
       },
-      loading: false,
+      loading: false
     }
   },
   props: {
     data_source_type: {
       type: String,
-      default: "public"
-    },
+      default: 'public'
+    }
   },
   methods: {
-    max_string,
+    maxString,
     moment,
-    removeClipboard() {
+    removeClipboard () {
       this.currentClipboard.content = null
       this.currentClipboard.type = 1
       this.currentClipboard.star = null
       this.currentClipboard.id = null
     },
-    async handleCopy(row) {
+    async handleCopy (row) {
       const content = row.content
       if (row.type === 2) {
         await this.copyImageToClipboard(content)
       } else {
         navigator.clipboard.writeText(content).then(() => {
           this.$message({
-            message: "已复制",
-            type: "success"
-          });
-        }).catch(err => {
+            message: '已复制',
+            type: 'success'
+          })
+        }).catch(() => {
           this.$message({
-            message: "复制失败",
-            type: "error"
-          });
+            message: '复制失败',
+            type: 'error'
+          })
         })
       }
     },
-    getList() {
+    getList () {
       this.loading = true
       let listUrl = ''
       switch (this.data_source_type) {
@@ -86,30 +84,30 @@ export default {
       }).catch(err => {
         this.$message({
           type: 'error',
-          message: err.response.message,
+          message: err.response.message
         })
       }).finally(() => {
         this.loading = false
       })
     },
-    async copyImageToClipboard(base64Data) {
+    async copyImageToClipboard (base64Data) {
       try {
         // 将 Base64 转为 Blob
-        const blob = await fetch(base64Data).then(res => res.blob());
+        const blob = await fetch(base64Data).then(res => res.blob())
 
         // 创建 ClipboardItem 对象
         const clipboardItem = new ClipboardItem({
           [blob.type]: blob
-        });
+        })
 
         // 写入剪切板
-        await navigator.clipboard.write([clipboardItem]);
-        console.log('图片已复制到剪切板！');
+        await navigator.clipboard.write([clipboardItem])
+        console.log('图片已复制到剪切板！')
       } catch (err) {
-        console.error('复制失败:', err);
+        console.error('复制失败:', err)
       }
     },
-    submit() {
+    submit () {
       let url = ''
       switch (this.data_source_type) {
         case 'public':
@@ -132,8 +130,8 @@ export default {
       if (this.currentClipboard.content !== null) {
         if (this.currentClipboard.content.length > 10485760) {
           this.$message({
-            message: "图片太大",
-            type: "error"
+            message: '图片太大',
+            type: 'error'
           })
           return
         }
@@ -142,24 +140,24 @@ export default {
       if (this.currentClipboard.star !== null) {
         postData.star = this.currentClipboard.star
       }
-      this.$http[method](url, postData).then((response) => {
+      this.$http[method](url, postData).then(() => {
         this.$message({
           type: 'success',
-          message: 'success',
+          message: 'success'
         })
         this.show_popup = false
         this.getList()
       }).catch(err => {
         this.$message({
           type: 'error',
-          message: err.message,
+          message: err.message
         })
       })
     },
-    async handlePaste(event) {
+    async handlePaste (event) {
       event.preventDefault()
-      const clipboardData = event.clipboardData || window.clipboardData;
-      if (!clipboardData) return;
+      const clipboardData = event.clipboardData || window.clipboardData
+      if (!clipboardData) return
       const firstItem = clipboardData.items[0]
       if (firstItem.type.startsWith('image/')) {
         this.currentClipboard.type = 2
@@ -167,33 +165,33 @@ export default {
         this.fileToBase64(imageContent)
       } else if (firstItem.type.startsWith('text/')) {
         this.currentClipboard.type = 1
-        this.currentClipboard.content = clipboardData.getData("text/plain")
+        this.currentClipboard.content = clipboardData.getData('text/plain')
       }
     },
     // 将File对象转为Base64
-    fileToBase64(file) {
-      const reader = new FileReader();
+    fileToBase64 (file) {
+      const reader = new FileReader()
       reader.onload = (e) => {
-        this.currentClipboard.content = e.target.result; // 结果类似 "data:image/png;base64,iVBORw0KGgo..."
-      };
-      reader.readAsDataURL(file); // 关键方法
+        this.currentClipboard.content = e.target.result // 结果类似 "data:image/png;base64,iVBORw0KGgo..."
+      }
+      reader.readAsDataURL(file) // 关键方法
     },
-    getDateSourceInfo() {
+    getDateSourceInfo () {
       switch (this.data_source_type) {
         case 'public':
           return {
             id: 1,
-            name: "公共"
+            name: '公共'
           }
         case 'private':
           return {
             id: 2,
-            name: "个人"
+            name: '个人'
           }
       }
     },
-    deleteClipboard(row) {
-      this.$confirm("确认删除吗？").then((a) => {
+    deleteClipboard (row) {
+      this.$confirm('确认删除吗？').then(() => {
         let url = ''
         switch (this.data_source_type) {
           case 'public':
@@ -203,7 +201,7 @@ export default {
             url = '/frontend/clipboard-authorized/' + row.id
             break
         }
-        this.$http.delete(url).then(res => {
+        this.$http.delete(url).then(() => {
           this.$message({
             type: 'success',
             message: '删除成功'
@@ -215,55 +213,55 @@ export default {
 
       })
     },
-    showUpdate(row) {
+    showUpdate (row) {
       this.show_popup = true
       this.currentClipboard.id = row.id
       this.currentClipboard.content = row.content
     },
-    star(row) {
+    star (row) {
       this.currentClipboard.id = row.id
       this.currentClipboard.star = !row.star
       console.log(this.currentClipboard)
       this.submit()
     },
-    showCreate() {
+    showCreate () {
       this.show_popup = true
       this.currentClipboard.id = null
       this.currentClipboard.content = null
     },
-    truncateLines(str, linesCount) {
-      const regex = /\r\n|\n|\r/g;
-      let count = 0;
-      let lastIndex = 0;
-      let match;
+    truncateLines (str, linesCount) {
+      const regex = /\r\n|\n|\r/g
+      let count = 0
+      let lastIndex = 0
+      let match
 
       while ((match = regex.exec(str)) !== null) {
-        count++;
+        count++
         if (count === linesCount) {
-          lastIndex = match.index + match[0].length; // 截断到第五个换行符末尾
-          break;
+          lastIndex = match.index + match[0].length // 截断到第五个换行符末尾
+          break
         }
       }
 
-      if (count < linesCount) return str; // 行数不足直接返回
+      if (count < linesCount) return str // 行数不足直接返回
 
-      const truncated = str.substring(0, lastIndex);
-      const remaining = str.substring(lastIndex);
-      return truncated + (remaining ? '...' : ''); // 仅当有剩余内容时加 ...
+      const truncated = str.substring(0, lastIndex)
+      const remaining = str.substring(lastIndex)
+      return truncated + (remaining ? '...' : '') // 仅当有剩余内容时加 ...
     },
-    countLineBreaks(str) {
-      const matches = str.match(/\r\n|\n|\r/g);
-      return matches ? matches.length : 0;
+    countLineBreaks (str) {
+      const matches = str.match(/\r\n|\n|\r/g)
+      return matches ? matches.length : 0
     }
   },
-  mounted() {
-    const paginateStyle = paginate_layouts()
+  mounted () {
+    const paginateStyle = paginateLayouts()
     this.smallWindowSize = paginateStyle.smallWindowSize
     this.layout = paginateStyle.layout
     this.getList()
   },
   watch: {
-    page_size() {
+    page_size () {
       this.getList()
     },
     'currentClipboard.content': function (newValue) {
@@ -284,7 +282,7 @@ export default {
       <el-button @click="getList">搜索</el-button>
       <el-button @click="showCreate">新增</el-button>
     </div>
-    <modal :show="show_popup"
+    <el-dialog :show="show_popup"
            show-footer
            large
            force
@@ -299,7 +297,7 @@ export default {
               :autosize="{ minRows: 2}"
               placeholder="请输入内容，或者直接粘贴。支持文字图片"
               clearable
-              @paste.native="handlePaste"
+              @paste="handlePaste"
               v-model="currentClipboard.content"></el-input>
         </div>
         <div v-if="currentClipboard.type === 2" style="display: flex;justify-content: start;flex-wrap: nowrap">
@@ -311,7 +309,7 @@ export default {
           </div>
         </div>
       </div>
-    </modal>
+    </el-dialog>
     <!--      表格-->
     <div>
       <el-table
@@ -322,7 +320,7 @@ export default {
         <el-table-column
             width="24px"
         >
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <div @click="star(scope.row)" class="clipboard-table-column-star">
               <i v-if="scope.row.star" class="el-icon-star-on"></i>
               <i v-else class="el-icon-star-off"></i>
@@ -338,7 +336,7 @@ export default {
         <el-table-column
             label="内容"
         >
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
               <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px"
                         :src="scope.row?.content"></el-image>
@@ -346,13 +344,15 @@ export default {
             <div v-else-if="scope.row?.type === 1">
               <el-popover trigger="click" :content="scope.row?.content" >
                 <pre>{{ scope.row?.content }}</pre>
-                <div slot="reference" style="cursor: pointer;display: inline-block">
+                <template v-slot:reference>
+<div  style="cursor: pointer;display: inline-block">
                   <pre class="clipboard-table-column-content"
                        v-if="countLineBreaks(scope.row?.content) > 5">{{ truncateLines(scope.row?.content, 5) }}</pre>
                   <pre class="clipboard-table-column-content"
                        v-else-if="scope.row?.content.length > 300">{{ max_string(scope.row?.content, 300) }}</pre>
                   <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
                 </div>
+</template>
               </el-popover>
             </div>
           </template>
@@ -367,7 +367,7 @@ export default {
             label="action"
             width="100px"
         >
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <div class="clipboard-table-options">
               <div class="clipboard-table-options-button">
                 <el-button @click="handleCopy(scope.row)" size="mini">复制</el-button>
@@ -387,9 +387,9 @@ export default {
     <div>
       <div style="display: flex;justify-content: center;padding-top: 5px">
         <el-pagination
-            :page-size.sync="page_size"
+            v-model:page-size="page_size"
             :page-sizes="[10, 20, 30, 40, 50]"
-            :current-page.sync="page"
+            v-model:current-page="page"
             @current-change="getList"
             background
             :small="smallWindowSize"

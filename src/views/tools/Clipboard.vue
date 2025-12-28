@@ -53,13 +53,13 @@
 </template>
 <script>
 
-import ClipboardTable from "./particals/ClipboardTable.vue";
+import ClipboardTable from './particals/ClipboardTable.vue'
 
 export default {
-  components: {ClipboardTable},
-  data() {
+  components: { ClipboardTable },
+  data () {
     return {
-      data_source_type: "public",
+      data_source_type: 'public'
     }
   }
 }

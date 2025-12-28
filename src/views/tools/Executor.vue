@@ -15,62 +15,62 @@
 </template>
 
 <script>
-import ExecutorHeaders from "./ExecutorHeaders.vue";
-import CodeArea from "./CodeArea.vue";
+import ExecutorHeaders from './ExecutorHeaders.vue'
+import CodeArea from './CodeArea.vue'
 
 export default {
-  components: {ExecutorHeaders,CodeArea},
+  components: { ExecutorHeaders, CodeArea },
   props: {
     versions: {
       type: Array,
-      default() {
+      default () {
         return []
       }
     },
     show_version: {
       type: Object,
-      default() {
+      default () {
         return null
       }
     },
     code: {
       type: String,
-      default() {
-        return ""
+      default () {
+        return ''
       }
     },
     result: {
       type: String,
-      default() {
-        return ""
+      default () {
+        return ''
       }
     },
     language: {
       type: String,
-      default() {
-        return "text"
+      default () {
+        return 'text'
       }
     }
   },
-  data() {
+  data () {
     return {
-      version: "",
+      version: '',
       isVim: false
     }
   },
   methods: {
-    executor_submit(event) {
+    executor_submit (event) {
       this.version = event
       this.$emit('exec', this.version)
     },
-    executor_changes(code){
-      this.$emit('changes',code)
+    executor_changes (code) {
+      this.$emit('changes', code)
     },
-    updateKeyMap(value){
+    updateKeyMap (value) {
       this.isVim = value
     }
   },
-  mounted() {
+  mounted () {
     this.version = this.show_version
   }
 }

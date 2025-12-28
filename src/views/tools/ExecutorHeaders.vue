@@ -1,7 +1,7 @@
 <template>
   <div class="executor-header">
     <div class="executor-header-box">
-      <div v-for="executor in executors" class="executor-header-item">
+      <div v-for="(executor,index) in executors" class="executor-header-item" :key="index">
         <el-button plain :type="is_current(executor.language)" @click="open_page(executor.url)">{{ executor.name }}
         </el-button>
       </div>
@@ -13,7 +13,7 @@
       version:
       </span>
         <div class="executor-header-version">
-          <multiselect
+          <el-select
               v-model="version"
               :options="versions"
               :multiple="false"
@@ -21,7 +21,7 @@
               placeholder="选择版本"
               label="name"
               track-by="name"
-          ></multiselect>
+          ></el-select>
         </div>
       </div>
       <div class="executor-header-item">
@@ -38,41 +38,27 @@
         </el-switch>
       </div>
     </div>
-    <div>
-      <modal :show="show_tips" title="tips" @cancel="show_tips=false" large>
-        <div>
-
-        </div>
-      </modal>
-    </div>
   </div>
 </template>
 <script>
-import Multiselect from "vue-multiselect";
-import "vue-multiselect/dist/vue-multiselect.min.css";
-import Swal from "sweetalert2";
-import Modal from "../../../dashboard/components/Modal.vue";
 
 export default {
-  components: {
-    Modal,
-    Multiselect
-  },
+  components: {},
   props: {
     versions: {
       type: Array,
-      default() {
-        return [];
+      default () {
+        return []
       }
     },
     show_version: {
       type: Object,
-      default() {
+      default () {
         return {}
       }
-    },
+    }
   },
-  data() {
+  data () {
     return {
       version: {},
       language: '',
@@ -113,38 +99,32 @@ export default {
           language: 'python',
           url: '/tools/python',
           name: 'python'
-        },
+        }
       ]
     }
   },
   methods: {
-    header_submit() {
+    header_submit () {
       if (this.version === null || Object.keys(this.version).length === 0) {
-        Swal.fire({
-          text: "未选择版本",
-          icon: 'error',
-          confirmButtonText: '确定',
-          animation: true
-        }).then((result) => {
-        });
+        this.$message.error('未选择版本')
         return
       }
       this.$emit('executor-submit', this.version)
     },
-    is_current(language) {
+    is_current (language) {
       if (language === this.language) {
         return 'info'
       } else {
         return 'primary'
       }
     },
-    open_page(location) {
+    open_page (location) {
       window.location.href = location
     }
   },
-  mounted() {
+  mounted () {
     this.version = this.show_version
-    const url = window.location.href.split("/")
+    const url = window.location.href.split('/')
     const urlSize = url.length
     this.language = url[urlSize - 1].split('?')[0]
   }

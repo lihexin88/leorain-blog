@@ -46,7 +46,85 @@ const routes = [
       {
         path: 'tools',
         name: 'Tools',
-        component: () => import('../views/tools/Tools.vue')
+        redirect: 'tools/timestamp',
+        component: () => import('../views/tools/ToolsBox.vue'),
+        children: [
+          {
+            path: 'timestamp',
+            name: 'Timestamp',
+            component: () => import('../views/tools/Timestamp.vue')
+          },
+          {
+            path: 'radix',
+            name: 'Radix',
+            component: () => import('../views/tools/Radix.vue')
+          },
+          {
+            path: 'json',
+            name: 'Json',
+            component: () => import('../views/tools/JSONExecutor.vue')
+          },
+          {
+            path: 'php',
+            name: 'Php',
+            component: () => import('../views/tools/PHPExecutor.vue')
+          },
+          {
+            path: 'java',
+            name: 'Java',
+            component: () => import('../views/tools/JAVAExecutor.vue')
+          },
+          {
+            path: 'python',
+            name: 'Python',
+            component: () => import('../views/tools/PYTHONExecutor.vue')
+          },
+          {
+            path: 'golang',
+            name: 'Golang',
+            component: () => import('../views/tools/GOLANGExecutor.vue')
+          },
+          {
+            path: 'clang',
+            name: 'Clang',
+            component: () => import('../views/tools/CLANGExecutor.vue')
+          },
+          {
+            path: 'cpp',
+            name: 'Cpp',
+            component: () => import('../views/tools/CPPExecutor.vue')
+          },
+          {
+            path: 'draw',
+            name: 'Draw',
+            component: () => import('../views/tools/Draw.vue')
+          },
+          {
+            path: 'clipboard',
+            name: 'Clipboard',
+            component: () => import('../views/tools/Clipboard.vue')
+          },
+          {
+            path: 'schulte',
+            name: 'Schulte',
+            component: () => import('../views/tools/ToolSchulte.vue')
+          },
+          {
+            path: 'cpu',
+            name: 'Cpu',
+            component: () => import('../views/tools/ToolCpu.vue')
+          },
+          {
+            path: 'lottery',
+            name: 'Lottery',
+            component: () => import('../views/tools/ToolLottery.vue')
+          },
+          {
+            path: 'fish',
+            name: 'Fish',
+            component: () => import('../views/tools/ToolFish.vue')
+          }
+        ]
       },
       {
         path: 'guestbook',

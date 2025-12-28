@@ -16,6 +16,7 @@
     "@stomp/stompjs": "^7.2.1",
     "animejs": "^3.2.1",
     "axios": "^1.6.2",
+    "canvas-confetti": "^1.9.4",
     "codemirror": "^5.65.15",
     "core-js": "^3.34.0",
     "crypto-js": "^4.2.0",
@@ -25,11 +26,14 @@
     "leaflet": "^1.9.4",
     "marked": "^9.1.6",
     "moment": "^2.29.4",
+    "moment-timezone": "^0.6.0",
     "pinia": "^2.1.7",
     "simplemde": "^1.11.2",
     "sockjs-client": "^1.6.1",
+    "three": "^0.182.0",
     "vue": "^3.3.11",
     "vue-emoji-mart-sort": "^1.0.6",
+    "vue-particles": "^1.0.9",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

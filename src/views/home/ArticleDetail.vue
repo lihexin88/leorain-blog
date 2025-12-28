@@ -236,10 +236,6 @@ export default {
   margin-bottom: 1rem;
 }
 
-.header {
-  margin-bottom: 1rem;
-}
-
 .author-link, .tag-link, .comment-link {
   color: rgb(17, 59, 85);
   text-decoration: none;

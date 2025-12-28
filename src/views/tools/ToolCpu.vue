@@ -1,61 +1,63 @@
 <template>
   <div class="cpu-simulator-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>CPU 十位全加器物理电路模拟器</span>
-        <el-button
-          type="text"
-          icon="el-icon-info"
-          @click="showIntroDialog = true"
-          class="intro-btn"
-        >
-          全加器简介
-        </el-button>
-      </div>
+      <template v-slot:header>
+        <div class="card-header">
+          <span>CPU 十位全加器物理电路模拟器</span>
+          <el-button
+              type="text"
+              icon="el-icon-info"
+              @click="showIntroDialog = true"
+              class="intro-btn"
+          >
+            全加器简介
+          </el-button>
+        </div>
+      </template>
 
       <!-- 输入区域 -->
       <div class="input-section">
         <el-input
-          v-model.number="input1"
-          type="number"
-          placeholder="输入1"
-          class="input-field"
-          :min="-1023"
-          :max="1023"
-          @keyup.enter.native="startCalculation"
-          clearable
+            v-model.number="input1"
+            type="number"
+            placeholder="输入1"
+            class="input-field"
+            :min="-1023"
+            :max="1023"
+            @keyup.enter="startCalculation"
+            clearable
         />
         <el-select
-          v-model="operator"
-          class="operator-select"
-          @keyup.enter.native="startCalculation"
+            v-model="operator"
+            class="operator-select"
+            @keyup.enter="startCalculation"
         >
           <el-option label="+" value="+"></el-option>
           <el-option label="-" value="-"></el-option>
         </el-select>
         <el-input
-          v-model.number="input2"
-          type="number"
-          placeholder="输入2"
-          class="input-field"
-          :min="-1023"
-          :max="1023"
-          @keyup.enter.native="startCalculation"
-          clearable
+            v-model.number="input2"
+            type="number"
+            placeholder="输入2"
+            class="input-field"
+            :min="-1023"
+            :max="1023"
+            @keyup.enter="startCalculation"
+            clearable
         />
         <span class="equals-sign">=</span>
         <el-input
-          :value="result"
-          placeholder="结果"
-          class="input-field result-field"
-          disabled
+            :value="result"
+            placeholder="结果"
+            class="input-field result-field"
+            disabled
         />
         <el-button
-          type="primary"
-          @click="startCalculation"
-          :loading="calculating"
-          :disabled="calculating"
-          class="calculate-btn"
+            type="primary"
+            @click="startCalculation"
+            :loading="calculating"
+            :disabled="calculating"
+            class="calculate-btn"
         >
           {{ calculating ? '计算中...' : '开始计算' }}
         </el-button>
@@ -63,15 +65,16 @@
 
       <!-- 全加器简介对话框 -->
       <el-dialog
-        title="全加器简介"
-        :visible.sync="showIntroDialog"
-        width="70%"
-        :close-on-click-modal="false"
-        class="intro-dialog"
+          title="全加器简介"
+          v-model:visible="showIntroDialog"
+          width="70%"
+          :close-on-click-modal="false"
+          class="intro-dialog"
       >
         <div class="intro-content">
           <h3>什么是全加器？</h3>
-          <p>全加器（Full Adder）是数字电路中的基本运算单元，用于执行两个二进制位和一个进位输入的加法运算。它是构成多位加法器的基本组件。</p>
+          <p>全加器（Full
+            Adder）是数字电路中的基本运算单元，用于执行两个二进制位和一个进位输入的加法运算。它是构成多位加法器的基本组件。</p>
 
           <h3>全加器的输入输出</h3>
           <ul>
@@ -103,9 +106,11 @@
             <li>运算结果S通过输出总线输出，进位Cout传递给下一个全加器</li>
           </ol>
         </div>
-        <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="showIntroDialog = false">我知道了</el-button>
-        </div>
+        <template v-slot:footer>
+          <div class="dialog-footer">
+            <el-button type="primary" @click="showIntroDialog = false">我知道了</el-button>
+          </div>
+        </template>
       </el-dialog>
 
       <!-- 二进制转换显示 -->
@@ -136,10 +141,10 @@
             <div class="bus-label">输入 A</div>
             <div class="bus-lines">
               <div
-                v-for="(adder, index) in adders"
-                :key="`bus-a-${index}`"
-                class="bus-line"
-                :class="{ 'line-active': isLineActive(index, 'input-a') }"
+                  v-for="(adder, index) in adders"
+                  :key="`bus-a-${index}`"
+                  class="bus-line"
+                  :class="{ 'line-active': isLineActive(index, 'input-a') }"
               >
                 <div class="line-value" :class="{ 'value-visible': adder.a !== null }">
                   {{ adder.a !== null ? adder.a : (binaryInput1 ? binaryInput1.split('').reverse()[index] : '?') }}
@@ -152,13 +157,15 @@
             <div class="bus-label">输入 B</div>
             <div class="bus-lines">
               <div
-                v-for="(adder, index) in adders"
-                :key="`bus-b-${index}`"
-                class="bus-line"
-                :class="{ 'line-active': isLineActive(index, 'input-b') }"
+                  v-for="(adder, index) in adders"
+                  :key="`bus-b-${index}`"
+                  class="bus-line"
+                  :class="{ 'line-active': isLineActive(index, 'input-b') }"
               >
                 <div class="line-value" :class="{ 'value-visible': adder.b !== null }">
-                  {{ adder.b !== null ? adder.b : (binaryInput2 || binaryInput2Complement ? (operator === '-' ? binaryInput2Complement : binaryInput2).split('').reverse()[index] : '?') }}
+                  {{
+                    adder.b !== null ? adder.b : (binaryInput2 || binaryInput2Complement ? (operator === '-' ? binaryInput2Complement : binaryInput2).split('').reverse()[index] : '?')
+                  }}
                 </div>
               </div>
             </div>
@@ -167,19 +174,20 @@
           <!-- 全加器电路 -->
           <div class="adders-circuit">
             <div
-              v-for="(adder, index) in adders"
-              :key="index"
-              class="adder-circuit-wrapper"
+                v-for="(adder, index) in adders"
+                :key="index"
+                class="adder-circuit-wrapper"
             >
               <!-- 进位输入线（从上一个全加器） -->
               <div
-                v-if="index > 0"
-                class="carry-wire carry-in-wire"
-                :class="{ 'wire-active': isCarryActive(index, 'in') }"
+                  v-if="index > 0"
+                  class="carry-wire carry-in-wire"
+                  :class="{ 'wire-active': isCarryActive(index, 'in') }"
               >
                 <div class="wire-line" :class="{ 'line-active': isCarryActive(index, 'in') }"></div>
                 <div class="carry-label carry-in-label">C<sub>in</sub></div>
-                <div class="carry-value" :class="{ 'value-visible': adder.cin !== null, 'value-active': isCarryActive(index, 'in') }">
+                <div class="carry-value"
+                     :class="{ 'value-visible': adder.cin !== null, 'value-active': isCarryActive(index, 'in') }">
                   {{ adder.cin !== null ? adder.cin : '' }}
                 </div>
               </div>
@@ -223,9 +231,9 @@
                     <div class="port-wire" :class="{ 'wire-active': isPortActive(adder, 's') }"></div>
                   </div>
                   <div
-                    v-if="index < adders.length - 1"
-                    class="port port-cout"
-                    :class="{ 'port-active': isPortActive(adder, 'cout') }"
+                      v-if="index < adders.length - 1"
+                      class="port port-cout"
+                      :class="{ 'port-active': isPortActive(adder, 'cout') }"
                   >
                     <div class="port-label">C<sub>out</sub></div>
                     <div class="port-value">{{ adder.cout !== null ? adder.cout : '?' }}</div>
@@ -236,13 +244,14 @@
 
               <!-- 进位输出线（到下一个全加器） -->
               <div
-                v-if="index < adders.length - 1"
-                class="carry-wire carry-out-wire"
-                :class="{ 'wire-active': isCarryActive(index, 'out') }"
+                  v-if="index < adders.length - 1"
+                  class="carry-wire carry-out-wire"
+                  :class="{ 'wire-active': isCarryActive(index, 'out') }"
               >
                 <div class="wire-line" :class="{ 'line-active': isCarryActive(index, 'out') }"></div>
                 <div class="carry-label carry-out-label">C<sub>out</sub></div>
-                <div class="carry-value" :class="{ 'value-visible': adder.cout !== null, 'value-active': isCarryActive(index, 'out') }">
+                <div class="carry-value"
+                     :class="{ 'value-visible': adder.cout !== null, 'value-active': isCarryActive(index, 'out') }">
                   {{ adder.cout !== null ? adder.cout : '' }}
                 </div>
               </div>
@@ -254,10 +263,10 @@
             <div class="bus-label">输出 S</div>
             <div class="bus-lines">
               <div
-                v-for="(adder, index) in adders"
-                :key="`bus-s-${index}`"
-                class="bus-line"
-                :class="{ 'line-active': isLineActive(index, 'output-s') }"
+                  v-for="(adder, index) in adders"
+                  :key="`bus-s-${index}`"
+                  class="bus-line"
+                  :class="{ 'line-active': isLineActive(index, 'output-s') }"
               >
                 <div class="line-value" :class="{ 'value-visible': adder.s !== null }">
                   {{ adder.s !== null ? adder.s : '' }}
@@ -479,14 +488,14 @@ export default {
 
         // 阶段1: 输入A数据到达
         this.activeLines.add(`input-a-${i}`)
-        this.$set(this.adders[i], 'a', bit1)
-        this.$set(this.adders[i], 'dataFlow', 'input')
+        this.adders[i].a = bit1
+        this.adders[i].dataFlow = 'input'
         await this.delay(300)
         this.$forceUpdate()
 
         // 阶段2: 输入B数据到达
         this.activeLines.add(`input-b-${i}`)
-        this.$set(this.adders[i], 'b', bit2)
+        this.adders[i].b = bit2
         await this.delay(300)
         this.$forceUpdate()
 
@@ -494,23 +503,23 @@ export default {
         if (i > 0) {
           this.activeCarries.add(`carry-in-${i}`)
           await this.delay(200)
-          this.$set(this.adders[i], 'cin', carry)
-          this.$set(this.adders[i], 'dataFlow', 'carry-in')
+          this.adders[i].cin = carry
+          this.adders[i].dataFlow = 'carry-in'
           await this.delay(300)
           this.$forceUpdate()
         } else {
-          this.$set(this.adders[i], 'cin', 0)
+          this.adders[i].cin = 0
         }
 
         // 阶段4: 全加器处理
-        this.$set(this.adders[i], 'dataFlow', 'processing')
+        this.adders[i].dataFlow = 'processing'
         await this.delay(400)
 
         // 阶段5: 计算输出
         const { s, cout } = this.fullAdder(bit1, bit2, carry)
-        this.$set(this.adders[i], 's', s)
-        this.$set(this.adders[i], 'cout', cout)
-        this.$set(this.adders[i], 'dataFlow', 'output')
+        this.adders[i].s = s
+        this.adders[i].cout = cout
+        this.adders[i].dataFlow = 'output'
         this.activeLines.add(`output-s-${i}`)
         await this.delay(300)
         this.$forceUpdate()
@@ -518,7 +527,7 @@ export default {
         // 阶段6: 进位输出传递到下一个全加器
         if (i < bits - 1) {
           this.activeCarries.add(`carry-out-${i}`)
-          this.$set(this.adders[i], 'dataFlow', 'carry-out')
+          this.adders[i].dataFlow = 'carry-out'
           await this.delay(300)
           this.$forceUpdate()
           // 清除当前进位输出状态
@@ -570,7 +579,7 @@ export default {
       })
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     if (this.animationTimer) {
       clearTimeout(this.animationTimer)
     }
