@@ -4,66 +4,66 @@
 </template>
 
 <script>
-import "codemirror/mode/clike/clike";
-import ExecutorHeaders from "./ExecutorHeaders.vue";
-import Executor from "./Executor.vue";
-import {result} from "lodash/object";
+import 'codemirror/mode/clike/clike'
+import ExecutorHeaders from './ExecutorHeaders.vue'
+import CodeExecutor from './CodeExecutor.vue'
+import { result } from 'lodash/object'
 
 export default {
   components: {
-    Executor,
+    Executor: CodeExecutor,
     ExecutorHeaders
   },
   props: {},
-  data() {
+  data () {
     return {
       formated: false,
-      result: "",
-      code: ``,
+      result: '',
+      code: '',
       recordId: null,
       versions: [{
         version: 10,
-        name: "1.0"
+        name: '1.0'
       }],
       version: {
         version: 10,
-        name: "1.0"
-      },
+        name: '1.0'
+      }
     }
   },
   methods: {
-    changes(code) {
+    changes (code) {
       this.code = code
       try {
-        this.result = JSON.stringify(JSON.parse(this.code), null, 2);
+        this.result = JSON.stringify(JSON.parse(this.code), null, 2)
         this.code = result.toString()
-      }catch (e) {
+      } catch (e) {
 
       }
     },
-    exec() {
-      if (!this.formated){
+    exec () {
+      if (!this.formated) {
         console.log('格式化')
         // 格式化
         try {
-          this.result = JSON.stringify(JSON.parse(this.code), null, 2);
+          this.result = JSON.stringify(JSON.parse(this.code), null, 2)
           this.formated = true
-        }catch (e) {
+        } catch (e) {
           console.log(e)
         }
-      }else{
+      } else {
         // 压缩
         console.log('压缩')
         try {
-          this.result = JSON.stringify(JSON.parse(this.code), null, 2);
-          this.result = this.result.replace(/\s+/g, "").replace(/,\}/g, "}").replace(/,\]/g, "]")
+          this.result = JSON.stringify(JSON.parse(this.code), null, 2)
+          this.result = this.result.replace(/\s+/g, '').replace(/,\}/g, '}').replace(/,\]/g, ']')
           this.formated = false
-        }catch (e) {
+        } catch (e) {
           console.log(e)
         }
       }
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -78,7 +78,6 @@ export default {
   display: flex;
   margin-bottom: 10px;
 }
-
 
 .code-area {
   width: 50%;

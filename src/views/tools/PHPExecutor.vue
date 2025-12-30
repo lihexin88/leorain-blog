@@ -6,11 +6,11 @@
 <script>
 import 'codemirror/mode/php/php'
 
-import Executor from './Executor.vue'
+import CodeExecutor from './CodeExecutor.vue'
 
 export default {
   components: {
-    Executor
+    Executor: CodeExecutor
   },
   props: {},
   beforeMount () {

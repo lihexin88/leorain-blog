@@ -1,25 +1,21 @@
 <template>
   <div>
-    <div class="executor-title">
-      <executor-headers :versions="versions" @updateKeyMap="updateKeyMap" @executor-submit="executor_submit" :show_version="show_version"></executor-headers>
-    </div>
     <div class="executor-container">
       <div class="code-area">
-        <code-area :isVim="isVim" id="code-area" type=1 :language="language" @executor_changes="executor_changes" :value="code"></code-area>
+        <code-area :isVim="isVim" id="code-area" :show-run="true" @executor_submit="executor_submit" type=1 :language="language" @executor_changes="executor_changes" :value="code"></code-area>
       </div>
       <div class="result-area">
-        <code-area id="result-textarea" type=2 :value="result"></code-area>
+        <code-area id="result-textarea" :show-run="false" type=2 :value="result"></code-area>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ExecutorHeaders from './ExecutorHeaders.vue'
 import CodeArea from './CodeArea.vue'
 
 export default {
-  components: { ExecutorHeaders, CodeArea },
+  components: { CodeArea },
   props: {
     versions: {
       type: Array,
@@ -86,7 +82,6 @@ export default {
 
 .executor-container {
   display: flex;
-  height: 85vh;
 }
 
 .code-area {
@@ -114,5 +109,8 @@ export default {
 
 .executor-tips {
   width: 20%;
+}
+:deep(.CodeMirror-scroll){
+  padding-bottom: 0;
 }
 </style>

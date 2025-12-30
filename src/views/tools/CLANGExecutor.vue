@@ -4,29 +4,29 @@
 </template>
 
 <script>
-import "codemirror/mode/clike/clike";
-import ExecutorHeaders from "./ExecutorHeaders.vue";
-import Executor from "./Executor.vue";
-import {result} from "lodash/object";
-import Swal from "sweetalert2";
+import 'codemirror/mode/clike/clike'
+import ExecutorHeaders from './ExecutorHeaders.vue'
+import CodeExecutor from './CodeExecutor.vue'
+import { result } from 'lodash/object'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
-    Executor,
+    Executor: CodeExecutor,
     ExecutorHeaders
   },
   props: {},
-  beforeMount() {
-    const params = new URLSearchParams(window.location.search);
+  beforeMount () {
+    const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
     if (code) {
       this.code = code
     }
   },
-  data() {
+  data () {
     return {
       formated: false,
-      result: "",
+      result: '',
       code: `#include <stdio.h>
 
 int main() {
@@ -39,32 +39,32 @@ int main() {
       versions: [
         {
           version: 11,
-          name: "gcc 11"
-        },
+          name: 'gcc 11'
+        }
       ],
       version: {
         version: 11,
-        name: "gcc 11"
-      },
+        name: 'gcc 11'
+      }
     }
   },
   methods: {
-    changes(code) {
+    changes (code) {
       this.code = code
       try {
-        this.result = JSON.stringify(JSON.parse(this.code), null, 2);
+        this.result = JSON.stringify(JSON.parse(this.code), null, 2)
         this.code = result.toString()
       } catch (e) {
 
       }
     },
-    exec(version) {
+    exec (version) {
       this.$http.post('exec/clang', {
         code: this.code,
         version: version.version
       }).then((response) => {
         if (response.status === 200) {
-          this.result = "运行中..."
+          this.result = '运行中...'
           this.recordId = response.data.record_id
           let time = 1
           const intervalId = setInterval(async () => {
@@ -73,49 +73,47 @@ int main() {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success("执行成功")
+                toastr.success('执行成功')
                 this.result = intervalResponse.data.data.output
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error("运行失败")
+                toastr.error('运行失败')
                 this.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error("运行超时")
+                toastr.error('运行超时')
                 this.result = ''
                 clearInterval(intervalId)
               }
             })
           }, 1000)
-
         } else {
           this.result = ''
-          toastr.error("运行失败")
+          toastr.error('运行失败')
         }
-
       }).catch((e) => {
         if (e.status === 401) {
           Swal.fire({
-            title: "auth.unauthorized",
-            text: "auth.unauthorized",
+            title: 'auth.unauthorized',
+            text: 'auth.unauthorized',
             icon: 'error',
             confirmButtonText: '确定',
-            cancelButtonText: "取消",
+            cancelButtonText: '取消',
             animation: true
           }).then((result) => {
             if (result.isConfirmed) {
               window.location.href = '/login'
             }
-          });
+          })
         }
         this.result = ''
-        toastr.error("运行失败")
+        toastr.error('运行失败')
       })
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -130,7 +128,6 @@ int main() {
   display: flex;
   margin-bottom: 10px;
 }
-
 
 .code-area {
   width: 50%;

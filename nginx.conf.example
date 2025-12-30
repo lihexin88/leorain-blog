@@ -1,0 +1,64 @@
+server {
+    listen 80;
+    server_name your-domain.com;  # 替换为你的域名
+
+    # 前端静态文件
+    location / {
+        root /path/to/your/project/dist;  # 替换为你的项目dist目录路径
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API 请求转发
+    location /api {
+        proxy_pass http://your-api-host;  # 替换为你的API服务器地址
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 静态资源缓存
+    location /static {
+        root /path/to/your/project/dist;  # 替换为你的项目dist目录路径
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+
+# HTTPS 配置 (可选)
+server {
+    listen 443 ssl;
+    server_name your-domain.com;  # 替换为你的域名
+
+    ssl_certificate /path/to/your/certificate.crt;  # SSL证书路径
+    ssl_certificate_key /path/to/your/private.key;  # SSL私钥路径
+
+    # 前端静态文件
+    location / {
+        root /path/to/your/project/dist;  # 替换为你的项目dist目录路径
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API 请求转发
+    location /api {
+        proxy_pass http://your-api-host;  # 替换为你的API服务器地址
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 静态资源缓存
+    location /static {
+        root /path/to/your/project/dist;  # 替换为你的项目dist目录路径
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+
+# HTTP 重定向到 HTTPS (可选)
+server {
+    listen 80;
+    server_name your-domain.com;  # 替换为你的域名
+    return 301 https://$server_name$request_uri;
+}

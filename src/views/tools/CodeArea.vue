@@ -1,8 +1,11 @@
 <template>
   <div class="code">
     <div class="code-area">
-      <textarea :id="id"></textarea>
-      <el-button class="code-copy" @click="copy" type="primary">复制</el-button>
+      <textarea id="code-area"></textarea>
+      <div class="code-opt">
+        <el-button class="code-copy" @click="copy" type="primary">复制</el-button>
+        <el-button class="code-run" v-if="showRun" @click="submit" type="primary">运行</el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -36,10 +39,16 @@ export default {
         return 'editor'
       }
     },
+    showRun: {
+      type: Boolean,
+      default () {
+        return true
+      }
+    },
     type: {
       type: String,
       default () {
-        return 1
+        return '1'
       }
     },
     autocomplete: {
@@ -69,11 +78,11 @@ export default {
       theme: 'mdn-like',
       extraKeys: { 'Ctrl-Space': 'autocomplete' } // 快捷键触发自动补全
     })
-    this.editor.getWrapperElement().style.height = '85vh'
+    this.editor.getWrapperElement().style.flex = '1'
     this.editor.setValue(this.value)
     if (this.type === '1') {
       // 监听输入事件并同步到父组件
-      this.editor.on('changes', (cm) => {
+      this.editor.on('changes', () => {
         this.$emit('executor_changes', this.editor.getValue()) // 触发 input 事件
       })
       if (this.autocomplete) {
@@ -114,11 +123,17 @@ export default {
       }).catch(() => {
         toastr.success('copy_failed')
       })
+    },
+    submit () {
+      this.$emit('executor_submit', this.editor.getValue())
     }
   }
 }
 </script>
 <style scoped lang="scss">
+.code-area{
+  display: flex;
+}
 .command-area{
   position: absolute;
   bottom: 0;
@@ -134,19 +149,17 @@ export default {
   width: 100%;
   height: 100%;
 }
-
-.code-copy {
+.code-opt {
   position: absolute;
   opacity: .5;
   right: 10px;
   top: 10px;
+}
+.code-copy {
 }
 
 .code-copy:hover {
   opacity: 1;
 }
 
-.CodeMirror {
-  height: 85vh !important;
-}
 </style>

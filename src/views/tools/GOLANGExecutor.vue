@@ -4,29 +4,29 @@
 </template>
 
 <script>
-import "codemirror/mode/go/go";
-import ExecutorHeaders from "./ExecutorHeaders.vue";
-import Executor from "./Executor.vue";
-import {result} from "lodash/object";
-import Swal from "sweetalert2";
+import 'codemirror/mode/go/go'
+import ExecutorHeaders from './ExecutorHeaders.vue'
+import CodeExecutor from './CodeExecutor.vue'
+import { result } from 'lodash/object'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
-    Executor,
+    Executor: CodeExecutor,
     ExecutorHeaders
   },
-  beforeMount() {
-    const params = new URLSearchParams(window.location.search);
+  beforeMount () {
+    const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
     if (code) {
       this.code = code
     }
   },
   props: {},
-  data() {
+  data () {
     return {
       formated: false,
-      result: "",
+      result: '',
       code: `package main
 
 import (
@@ -42,40 +42,40 @@ func main() {
       versions: [
         {
           version: 118,
-          name: "1.18"
+          name: '1.18'
         },
         {
           version: 119,
-          name: "1.19"
+          name: '1.19'
         },
         {
           version: 120,
-          name: "1.20"
-        },
+          name: '1.20'
+        }
       ],
       version: {
         version: 120,
-        name: "1.20"
-      },
+        name: '1.20'
+      }
     }
   },
   methods: {
-    changes(code) {
+    changes (code) {
       this.code = code
       try {
-        this.result = JSON.stringify(JSON.parse(this.code), null, 2);
+        this.result = JSON.stringify(JSON.parse(this.code), null, 2)
         this.code = result.toString()
       } catch (e) {
 
       }
     },
-    exec(version) {
+    exec (version) {
       this.$http.post('exec/golang', {
         code: this.code,
         version: version.version
       }).then((response) => {
         if (response.status === 200) {
-          this.result = "运行中..."
+          this.result = '运行中...'
           this.recordId = response.data.record_id
           let time = 1
           const intervalId = setInterval(async () => {
@@ -84,49 +84,47 @@ func main() {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success("执行成功")
+                toastr.success('执行成功')
                 this.result = intervalResponse.data.data.output
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error("运行失败")
+                toastr.error('运行失败')
                 this.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error("运行超时")
+                toastr.error('运行超时')
                 this.result = ''
                 clearInterval(intervalId)
               }
             })
           }, 1000)
-
         } else {
           this.result = ''
-          toastr.error("运行失败")
+          toastr.error('运行失败')
         }
-
       }).catch((e) => {
         if (e.status === 401) {
           Swal.fire({
-            title: "auth.unauthorized",
-            text: "auth.unauthorized",
+            title: 'auth.unauthorized',
+            text: 'auth.unauthorized',
             icon: 'error',
             confirmButtonText: '确定',
-            cancelButtonText: "取消",
+            cancelButtonText: '取消',
             animation: true
           }).then((result) => {
             if (result.isConfirmed) {
               window.location.href = '/login'
             }
-          });
+          })
         }
         this.result = ''
-        toastr.error("运行失败")
+        toastr.error('运行失败')
       })
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -141,7 +139,6 @@ func main() {
   display: flex;
   margin-bottom: 10px;
 }
-
 
 .code-area {
   width: 50%;

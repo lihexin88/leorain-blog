@@ -4,27 +4,27 @@
 </template>
 
 <script>
-import "codemirror/mode/clike/clike";
-import Swal from "sweetalert2";
-import ExecutorHeaders from "./ExecutorHeaders.vue";
-import Executor from "./Executor.vue";
+import 'codemirror/mode/clike/clike'
+import Swal from 'sweetalert2'
+import ExecutorHeaders from './ExecutorHeaders.vue'
+import CodeExecutor from './CodeExecutor.vue'
 
 export default {
   components: {
-    Executor,
+    Executor: CodeExecutor,
     ExecutorHeaders
   },
   props: {},
-  beforeMount() {
-    const params = new URLSearchParams(window.location.search);
+  beforeMount () {
+    const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
     if (code) {
       this.code = code
     }
   },
-  data() {
+  data () {
     return {
-      result: "",
+      result: '',
       code: `public class Main {
     public static void main(String[] args) {
         String jdkVersion = System.getProperty("java.version");
@@ -35,34 +35,34 @@ export default {
       versions: [
         {
           version: 8,
-          name: "openjdk:8"
+          name: 'openjdk:8'
         },
         {
           version: 11,
-          name: "openjdk:11"
+          name: 'openjdk:11'
         },
         {
           version: 17,
-          name: "openjdk:17"
-        },
+          name: 'openjdk:17'
+        }
       ],
       version: {
         version: 17,
-        name: "openjdk:17"
+        name: 'openjdk:17'
       }
     }
   },
   methods: {
-    changes(code){
+    changes (code) {
       this.code = code
     },
-    exec(version) {
+    exec (version) {
       this.$http.post('exec/java', {
         code: this.code,
         version: version.version
       }).then((response) => {
         if (response.status === 200) {
-          this.result = "运行中..."
+          this.result = '运行中...'
           this.recordId = response.data.record_id
           let time = 1
           const intervalId = setInterval(async () => {
@@ -71,49 +71,47 @@ export default {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success("执行成功")
+                toastr.success('执行成功')
                 this.result = intervalResponse.data.data.output
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error("运行失败")
+                toastr.error('运行失败')
                 this.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error("运行超时")
+                toastr.error('运行超时')
                 this.result = ''
                 clearInterval(intervalId)
               }
             })
           }, 1000)
-
         } else {
           this.result = ''
-          toastr.error("运行失败")
+          toastr.error('运行失败')
         }
-
       }).catch((e) => {
         if (e.status === 401) {
           Swal.fire({
-            title: "auth.unauthorized",
-            text: "auth.unauthorized",
+            title: 'auth.unauthorized',
+            text: 'auth.unauthorized',
             icon: 'error',
             confirmButtonText: '确定',
-            cancelButtonText: "取消",
+            cancelButtonText: '取消',
             animation: true
           }).then((result) => {
             if (result.isConfirmed) {
               window.location.href = '/login'
             }
-          });
+          })
         }
         this.result = ''
-        toastr.error("运行失败")
+        toastr.error('运行失败')
       })
-    },
-  },
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -127,7 +125,6 @@ export default {
   display: flex;
   margin-bottom: 10px;
 }
-
 
 .code-area {
   width: 50%;
