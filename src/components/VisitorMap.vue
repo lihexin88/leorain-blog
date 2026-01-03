@@ -224,13 +224,13 @@ export default {
 
 <style scoped lang="scss">
 /* 脉冲动画效果 */
-::v-deep .pulse-container {
+:deep(.pulse-container) {
   position: relative;
   width: 20px;
   height: 20px;
 }
 
-::v-deep .pulse-circle-red {
+:deep(.pulse-circle-red) {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -240,7 +240,7 @@ export default {
   animation: pulse 1.5s 0s 1;
 }
 
-::v-deep .pulse-circle-blue {
+:deep(.pulse-circle-blue) {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -265,7 +265,7 @@ export default {
   }
 }
 
-::v-deep .leaflet-tooltip {
+:deep(.leaflet-tooltip) {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid #ccc;
   border-radius: 4px;

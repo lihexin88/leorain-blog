@@ -8,6 +8,7 @@ import visitorMapApi from './visitorMap'
 import customEmojiApi from './customEmoji'
 import commentApi from './comment'
 import linkApi from './link'
+import guestbookApi from './guestbook'
 
 export default {
   articleApi,
@@ -19,7 +20,8 @@ export default {
   visitorMapApi,
   customEmojiApi,
   commentApi,
-  linkApi
+  linkApi,
+  guestbookApi
 }
 
 // 也可以单独导出各个模块
@@ -33,5 +35,6 @@ export {
   visitorMapApi,
   customEmojiApi,
   commentApi,
-  linkApi
+  linkApi,
+  guestbookApi
 }

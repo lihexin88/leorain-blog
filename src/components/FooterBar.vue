@@ -19,7 +19,7 @@ export default {
         浙ICP备19033456号-2
       </el-link>
     </div>
-    <div class="ali-report-wrap">
+    <div class="ali-report-wrap" v-if="false">
       <div style="display: flex;justify-content: center">
         <div class="footer-org">
           <el-tooltip class="footer-links" content="或许很多年以后，我们写下的博客就像那只“春秋蝉”，将我们记忆带回以前的那个时候。">

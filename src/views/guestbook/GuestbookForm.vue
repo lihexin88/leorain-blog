@@ -12,8 +12,8 @@
           >
             <p>检测到已输入内容，是否替换为友链格式？</p>
             <div style="text-align: right; margin: 0">
-              <el-button size="mini" type="text" @click="show_replace_tip = false">取消</el-button>
-              <el-button type="primary" size="mini" @click="generate_link_text">确定</el-button>
+              <el-button size="small" type="info" @click="show_replace_tip = false">取消</el-button>
+              <el-button type="primary" size="small" @click="generate_link_text">确定</el-button>
             </div>
             <template v-slot:reference>
               <el-button @click="check_input_value">友链</el-button>
@@ -161,16 +161,16 @@ export default {
   padding: 5px;
 }
 
-::v-deep .editor-toolbar.fullscreen {
+:deep(.editor-toolbar.fullscreen) {
   z-index: 15 !important;
   margin-top: 40px;
 }
 
-::v-deep .CodeMirror-scroll {
+:deep(.CodeMirror-scroll) {
   margin-top: 25px;
 }
 
-::v-deep .editor-preview-side {
+:deep(.editor-preview-side) {
   margin-top: 25px;
 }
 </style>

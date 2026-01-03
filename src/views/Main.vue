@@ -111,6 +111,11 @@ export default {
   left: 0;
   width: 100%;
   z-index: 1000;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .header h1 {

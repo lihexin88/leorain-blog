@@ -7,7 +7,7 @@
     </div>
     <div :show="!sampleAvatar">
       <el-dialog :show="!sampleAvatar" @cancel="sampleAvatar = !sampleAvatar">
-        <template v-slot:title>
+        <template v-slot:header>
           <div style="font-size: .9em;"><i>访客信息</i></div>
         </template>
         <div

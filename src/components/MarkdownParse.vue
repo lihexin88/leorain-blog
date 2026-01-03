@@ -2,7 +2,7 @@
   <div>
     <div class="markdown" @click="handleEvent" ref="markdownContent" v-html="rawHtml"></div>
     <el-dialog show-footer :show="executor.show_exec_result" @cancel="executor.show_exec_result = false">
-      <template v-slot:title>
+      <template v-slot:header>
         <div style="display: flex">
           <div>运行结果</div>
           <div style="display: flex;justify-content: end;align-items: center;font-size: .7em;padding-left: 20px">
@@ -82,7 +82,9 @@ export default {
     let html = await this.parse(this.content)
     html = DOMPurify.sanitize(html)
     this.rawHtml = html
-    this.$nextTick(this.addCopyButtonEvent) // 等待 DOM 渲染完成后添加复制按钮事件
+    this.$nextTick(() => {
+      this.addCopyButtonEvent()
+    }) // 等待 DOM 渲染完成后添加复制按钮事件
   },
   beforeUnmount () {
     // 组件销毁时移除事件监听器
@@ -103,7 +105,7 @@ export default {
     },
     go_tool_exec () {
       if (this.executor.executor_url === null) {
-        toastr.error('打开失败')
+        this.$message.error('打开失败')
         return false
       }
       const codeEncode = encodeURIComponent(this.executor.code)
@@ -120,7 +122,7 @@ export default {
     },
     async parse (content) {
       if (!content) return ''
-      
+
       marked.setOptions({
         highlight: (code, lang) => {
           const language = hljs.getLanguage(lang) ? lang : 'plaintext'
@@ -133,7 +135,9 @@ export default {
 
       // 自定义标题渲染，生成 ID 并存入 toc
       renderer.heading = (text, level) => {
-        const id = this.fn_Guid(text)
+        // 创建更稳定的ID，基于文本内容而不是随机数
+        const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-')
+        const id = escapedText || this.fn_Guid()
         return `<h${level} id="${id}">${text}</h${level}>`
       }
 
@@ -174,15 +178,15 @@ export default {
               // 设置当前按钮状态为“已复制”
               button.innerText = '已复制'
               lastClickedButton = button // 更新最近点击的按钮
-              toastr.success('已复制', '', {
+              this.$message.success('已复制', '', {
                 positionClass: 'toast-bottom-right', // 设置单个通知的位置
                 timeOut: 1000
               })
             }).catch(() => {
-              toastr.warning('复制失败:', '')
+              this.$message.warning('复制失败:', '')
             })
           } else {
-            toastr.warning('未找到代码元素', '')
+            this.$message.warning('未找到代码元素', '')
           }
         })
       })
@@ -265,7 +269,7 @@ export default {
           break
       }
       if (api === '') {
-        toastr.error('语言不支持')
+        this.$message.error('语言不支持')
         return false
       }
       this.executor.executor_url = executorUrl
@@ -283,7 +287,7 @@ export default {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success('执行成功')
+                this.$message.success('执行成功')
                 this.executor.result = intervalResponse.data.data.output
                 if (intervalResponse.data.data.endTime !== 0) {
                   this.executor.cost_time = intervalResponse.data.data.endTime - intervalResponse.data.data.startTime
@@ -291,14 +295,14 @@ export default {
                 // this.executor.cost_time =
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error('运行失败')
+                this.$message.error('运行失败')
                 this.executor.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error('运行超时')
+                this.$message.error('运行超时')
                 this.executor.result = ''
                 clearInterval(intervalId)
               }
@@ -306,14 +310,14 @@ export default {
           }, 1000)
         } else {
           this.executor.result = ''
-          toastr.error('运行失败')
+          this.$message.error('运行失败')
         }
         this.executor.show_exec_result = true
       }).catch((e) => {
         if (e.status === 401) {
         }
         this.result = ''
-        toastr.error('运行失败')
+        this.$message.error('运行失败')
       })
     }
   }

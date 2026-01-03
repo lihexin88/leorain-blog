@@ -33,7 +33,7 @@
         </div>
       </div>
       <el-dialog :large="true" :show="isReplayActive" @cancel="activeId = null">
-        <template v-slot:title>
+        <template v-slot:header>
           <div>留言板</div>
         </template>
         <guestbook-form @replay="setActiveId" :guestbook="null"></guestbook-form>
@@ -65,6 +65,7 @@
 import GuestbookForm from './GuestbookForm.vue'
 import Parse from '@/components/MarkdownParse.vue'
 import GuestbookTree from './GuestbookTree.vue'
+import { guestbookApi } from '@/apis'
 
 export default {
   components: { GuestbookTree, GuestbookForm, Parse },
@@ -72,7 +73,7 @@ export default {
     return {
       activeId: null,
       show_link: false,
-      total: null,
+      total: 0,
       per_page: 10,
       page: 1,
       smallWindowSize: false,
@@ -103,14 +104,12 @@ export default {
     },
     load () {
       // 加载数据
-      this.$http.get('/frontend/guestbooks', {
-        params: {
-          page: this.page,
-          per_page: this.per_page
-        }
+      guestbookApi.getGuestbooks({
+        page: this.page,
+        per_page: this.per_page
       }).then((response) => {
-        this.guestbooks = response.data.data
-        this.total = response.data.total
+        this.guestbooks = response.data
+        this.total = response.total
       })
     }
   },
@@ -131,11 +130,11 @@ export default {
     this.load()
     if (!localStorage.getItem('user')) {
       // 尝试获取用户信息，并存储在localstorage中
-      this.$http.get('/frontend/user/info').then((response) => {
-        localStorage.setItem('user', JSON.stringify(response.data))
-      }).catch(() => {
-        localStorage.removeItem('user')
-      })
+      // this.$http.get('/frontend/user/info').then((response) => {
+      //   localStorage.setItem('user', JSON.stringify(response.data))
+      // }).catch(() => {
+      //   localStorage.removeItem('user')
+      // })
     }
     this.activeId = 'no_one_active'
   },

@@ -26,7 +26,7 @@
           </div>
           <div class="card-content-area">
             <div style="width: 95%">
-              <parse :content="guestbook.content"></parse>
+              <markdown-parse :content="guestbook.content"></markdown-parse>
             </div>
           </div>
           <div v-show="isReplayActive">
@@ -38,9 +38,9 @@
         <div v-if="hasChildren">
           <guestbook-tree v-for="children in guestbook.children" @replay="setActiveId" :activeId="activeId"
                           :key="children.id" :guestbook="children"/>
-          <div v-if="guestbook.descendants_count > 1 && !show_all" class="pointer-style" @click="show_guestbook">... 展开
-          </div>
-          <div v-if="show_all" class="pointer-style" @click="hide_guestbook">折叠^</div>
+          <el-link v-if="guestbook.descendants_count > 1 && !show_all" class="pointer" @click="show_guestbook">... 展开
+          </el-link>
+          <el-link v-if="show_all" class="pointer" @click="hide_guestbook">折叠^</el-link>
         </div>
       </div>
     </el-card>
@@ -50,10 +50,12 @@
 import GuestbookForm from './GuestbookForm.vue'
 import moment from 'moment'
 import { getFriendlyDate } from '@/utils/helpers'
+import MarkdownParse from '@/components/MarkdownParse.vue'
+import { guestbookApi } from '@/apis'
 
 export default {
   name: 'GuestbookTree',
-  components: { GuestbookForm },
+  components: { GuestbookForm, MarkdownParse },
   props: {
     guestbook: {
       type: Object,
@@ -73,9 +75,9 @@ export default {
       this.$emit('replay', id)
     },
     show_guestbook () {
-      this.$http.get('frontend/guestbooks/' + this.guestbook.id).then(response => {
+      guestbookApi.getGuestbookDetail(this.guestbook.id).then(response => {
         this.guestbook.children = []
-        response.data.forEach(item => {
+        response.forEach(item => {
           this.guestbook.children.push(item)
         })
         this.show_all = true

@@ -133,7 +133,7 @@ export default {
 
 <style scoped lang="scss">
 
-::v-deep .el-switch__label {
+:deep( .el-switch__label) {
   position: absolute;
   display: none;
   color: #fff;

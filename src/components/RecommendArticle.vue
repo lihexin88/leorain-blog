@@ -1,13 +1,14 @@
 <template>
   <div style="display: flex;justify-content: center">
-    <div style="width: 95%">
+    <div>
       <el-card>
         <template v-slot:header>
           <div class="clearfix">
             <span style="font-size: 1.05em"><b>推荐文章</b></span>
-            <span style="position: absolute;right: 30px"><i>使用余弦向量算法进行推荐(分数)</i></span>
+            <span ><i>使用余弦向量算法进行推荐(分数)</i></span>
           </div>
         </template>
+
         <div class="recommend-article-box" v-for="(article,index) in articles" :key="index">
           <div class="recommend-article-item">
             <div class="recommend-article-container" @click="open_article(article.slug)">
@@ -55,8 +56,8 @@ export default {
       default: null
     },
     article_id: {
-      type: String,
-      default: '0'
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -68,16 +69,14 @@ export default {
     maxString,
     getRecommendArticles () {
       articleApi.getRecommendArticles({
-        params: {
-          query: this.query,
-          article_id: this.article_id
-        }
+        query: this.query,
+        article_id: this.article_id
       }).then(res => {
-        this.articles = res.data
+        this.articles = res
       })
     },
     open_article (slug) {
-      window.location.href = slug
+      this.$router.push({ name: 'article', params: { slug } })
     }
   },
   mounted () {
@@ -86,11 +85,11 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-::v-deep .el-divider--horizontal {
+:deep(.el-divider--horizontal) {
   margin: 12px 0;
 }
 
-::v-deep .el-card__body {
+:deep(.el-card__body) {
   padding: 10px;
 }
 
@@ -124,7 +123,7 @@ export default {
   transform: scale(1.03);
 }
 
-::v-deep .el-card__body {
+:deep(.el-card__body) {
   padding: 0 !important;
 }
 </style>

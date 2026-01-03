@@ -1,7 +1,7 @@
 <template>
   <div class="article-box">
     <div class="article-page-left">
-      <article-contents></article-contents>
+      <article-contents ref="articleContent"></article-contents>
     </div>
     <div class="article-container">
       <!-- 文章顶部 -->
@@ -29,10 +29,16 @@
           </div>
           <div>
             <div>
-              <i class="fas fa-clock"></i>{{ formatDate(article.published_at) }}
-              <a href="#article-comment-area" class="comment-link">
-                <i class="fa fa-comment"></i>{{ article.comments_count ?? 0 }}
-              </a>
+              <el-icon>
+                <Clock />
+              </el-icon>
+              {{ formatDate(article.published_at) }}
+              <el-link :href="`#article-comment-area`" class="comment-link">
+                <el-icon>
+                  <Clock />
+                </el-icon>
+                {{ article.comments_count ?? 0 }}
+              </el-link>
             </div>
           </div>
           <div>
@@ -48,7 +54,7 @@
         <div class="row container-text-overflow-wrap article-content-container">
           <div class="article-content">
             <div v-if="article.is_markdown">
-              <parse id="article-show-content" :content="article.content"></parse>
+              <parse v-if="article.content" id="article-show-content" :content="article.content"></parse>
             </div>
             <div v-else id="article-show-content" v-html="article.content"></div>
             <div class="offset-lg-1">
@@ -65,6 +71,7 @@
       </div>
       <div id="article-comment-area">
         <comment
+            v-if="article.user && false"
           title="评论"
           :user="article.user"
           :username="article.user?.name"
@@ -78,7 +85,7 @@
       </div>
     </div>
     <div class="article-page-right">
-      <recommend-article :query="article.title" :article_id="article.id"></recommend-article>
+      <recommend-article v-if="article.title" :query="article.title" :article_id="article.id"></recommend-article>
     </div>
   </div>
 </template>
@@ -92,10 +99,12 @@ import RecommendArticle from '@/components/RecommendArticle.vue'
 import { useConfigStore } from '@/store/config'
 import moment from 'moment'
 import { articleApi } from '@/apis'
+import { Clock } from '@element-plus/icons-vue'
 
 export default {
   name: 'ArticleDetail',
   components: {
+    Clock,
     ArticleContents,
     ImageViewer,
     Parse: MarkdownParse,
@@ -105,7 +114,7 @@ export default {
   data () {
     return {
       article: {
-        id: '1',
+        id: 1,
         title: '',
         subtitle: '',
         content: '',
@@ -141,12 +150,15 @@ export default {
         // const articleId = this.$route.params.id
         // const response = await articleApi.getArticle(articleId)
         // this.article = response.data
-        articleApi.getArticleDetail(this.slug).then((response) => {
+        await articleApi.getArticleDetail(this.slug).then((response) => {
           this.article = response.data
+          // 使用setTimeout确保DOM完全渲染完成
+          setTimeout(() => {
+            this.$refs.articleContent?.init()
+            // 计算字数和阅读时间
+            this.calculateWordCount()
+          }, 500) // 延迟500毫秒确保渲染完成
         })
-
-        // 计算字数和阅读时间
-        this.calculateWordCount()
       } catch (error) {
         console.error('获取文章详情失败:', error)
       }
@@ -154,8 +166,8 @@ export default {
 
     calculateWordCount () {
       const content = this.article.is_markdown
-        ? this.article.content?.raw
-        : this.stripHtmlTags(this.article.content?.html || '')
+        ? this.article.content
+        : this.stripHtmlTags(this.article.content || '')
 
       this.wordCount = content?.length || 0
       this.readingTime = Math.ceil(this.wordCount / 500)
@@ -190,27 +202,35 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/styles/main.scss';
+
 .article-box {
   display: flex;
   width: 100%;
-  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
 
 .article-page-left {
-  flex: 0 0 200px;
+  min-width: 500px;
   margin-right: 20px;
+  position: sticky;
+  top: 60px;
+  height: fit-content;
+  align-self: flex-start;
 }
 
 .article-container {
   flex: 1;
   min-width: 0;
+  border-radius: 10px;
+  padding: 20px;
+  background: whitesmoke;
 }
 
 .article-page-right {
-  flex: 0 0 300px;
+  max-width: 500px;
   margin-left: 20px;
 }
 
@@ -276,15 +296,19 @@ export default {
 }
 
 /* 响应式设计 */
-@media (max-width: 992px) {
+@include mobile {
   .article-box {
     flex-direction: column;
+    padding: 5px;
   }
 
-  .article-page-left, .article-page-right {
+  .article-page-right {
     flex: none;
     width: 100%;
     margin: 10px 0;
+  }
+  .article-page-left {
+    display: none;
   }
 }
 </style>

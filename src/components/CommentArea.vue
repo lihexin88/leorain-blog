@@ -250,7 +250,7 @@ export default {
       this.login_user_avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + this.emailHash
     }
     if (this.user !== '') {
-      this.userInfo = JSON.parse(this.user)
+      // this.userInfo = JSON.parse(this.user)
     }
   },
   methods: {
@@ -367,44 +367,44 @@ export default {
   }
 }
 
-::v-deep .editor-toolbar.fullscreen {
+:deep(.editor-toolbar.fullscreen) {
   z-index: 15 !important;
   margin-top: 40px;
 }
 
-::v-deep .CodeMirror-scroll {
+:deep(.CodeMirror-scroll) {
   margin-top: 25px;
 }
 
-::v-deep .editor-preview-side {
+:deep(.editor-preview-side) {
   margin-top: 25px;
 }
 
-::v-deep div[data-name="Custom"] ~ * span {
+:deep(div[data-name="Custom"] ~ * span) {
   width: 96px !important;
   height: 96px !important;
   background-repeat: no-repeat;
   background-position: center;
 }
 
-::v-deep .emoji-mart-preview {
+:deep(.emoji-mart-preview) {
   height: 128px !important;
 }
 
-::v-deep .emoji-mart-preview-emoji .emoji-mart-emoji {
+:deep(.emoji-mart-preview-emoji .emoji-mart-emoji) {
   height: 128px !important;
 }
 
-::v-deep .emoji-mart-preview-emoji span span {
+:deep(.emoji-mart-preview-emoji span span) {
   height: 96px !important;
   width: 96px !important;
 }
 
-::v-deep .emoji-mart-preview-data {
+:deep(.emoji-mart-preview-data) {
   padding-left: 96px;
 }
 
-::v-deep .emoji-mart-scroll {
+:deep(.emoji-mart-scroll) {
   height: 280px;
 }
 
