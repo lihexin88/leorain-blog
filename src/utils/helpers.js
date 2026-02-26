@@ -47,11 +47,13 @@ export function getUrlParams () {
  */
 export function paginateLayouts () {
   if (window.matchMedia('(orientation: portrait)').matches) {
+    console.log(123)
     return {
       smallWindowSize: true,
       layout: 'prev, pager, next'
     }
   } else {
+    console.log(456)
     return {
       smallWindowSize: false,
       layout: 'prev, pager, next, sizes, total'

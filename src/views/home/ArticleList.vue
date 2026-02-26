@@ -3,32 +3,33 @@
     <div class="row">
       <div class="article-list">
         <el-card v-for="(article,index) in articles"
-             class="media article-item"
+                 class="media article-item"
                  :key="index"
         >
           <div
               class="article-item-rotate"
           >
-
-            <a v-if="article.page_image" class="media-left mr-3 article-item-link" style="cursor: pointer"
-               :title="article.slug"
-               @click="openArticle(article.slug)"
-            >
-              <!--             图片 -->
-              <img v-if="mediaType(article.page_image) === 'image'" class="article-media" :alt="article.slug"
-                   :src="article.is_zoom ? article.page_image+'?x-oss-process=style/page-image':article.page_image"
-                   data-holder-rendered="true">
-              <!--            视频-->
-              <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted
-                     :src="article.page_image"></video>
-            </a>
-            <a v-else class="media-left mr-3 article-item-link" style="margin: auto;cursor: pointer"
-               @click="openArticle(article.slug)"
-            >
-              <img class="article-media" :alt="article.slug"
-                   src="https://images.leorain.cn/icons/assets/pure_article.png"
-                   data-holder-rendered="true">
-            </a>
+            <div>
+              <a v-if="article.page_image" class="media-left mr-3 article-item-link"
+                 :title="article.slug"
+                 @click="openArticle(article.slug)"
+              >
+                <!--             图片 -->
+                <img v-if="mediaType(article.page_image) === 'image'" class="article-media" :alt="article.slug"
+                     :src="article.is_zoom ? article.page_image+'?x-oss-process=style/page-image':article.page_image"
+                     data-holder-rendered="true">
+                <!--            视频-->
+                <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted
+                       :src="article.page_image"></video>
+              </a>
+              <a v-else class="media-left mr-3 article-item-link"
+                 @click="openArticle(article.slug)"
+              >
+                <img class="article-media" :alt="article.slug"
+                     src="https://images.leorain.cn/icons/assets/pure_article.png"
+                     data-holder-rendered="true">
+              </a>
+            </div>
             <div class="media-body article-body">
               <h6 class="media-heading" style="cursor: pointer"
               >
@@ -124,7 +125,7 @@ export default {
       rotations: [], // 用于存储每个元素的偏移量
       maxOffset: 15,
       total: null,
-      per_page: 22,
+      per_page: 15,
       smallWindowSize: false,
       layout: null,
       articles: [],
@@ -134,35 +135,9 @@ export default {
     }
   },
   methods: {
+    paginateLayouts,
     getFriendlyDate,
     mediaType,
-    smoothRotate (index) {
-      const animate = () => {
-        if (!this.rotations[index]) return
-
-        const target = this.rotations[index]
-        const current = this.currentRotations[index] || { x: 0, y: 0 }
-
-        // 计算缓动步长（插值）
-        const dx = (target.x - current.x) * 0.1 // 缓慢趋近目标值
-        const dy = (target.y - current.y) * 0.1
-
-        this.$set(this.currentRotations, index, {
-          x: current.x + dx,
-          y: current.y + dy
-        })
-
-        // 继续动画，直到接近目标值
-        if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
-          this.animationFrame[index] = requestAnimationFrame(animate)
-        } else {
-          cancelAnimationFrame(this.animationFrame[index])
-          this.animationFrame[index] = null
-        }
-      }
-
-      animate()
-    },
     getTransform (index, type) {
       const rotation = this.currentRotations[index] || { x: 0, y: 0 }
       const move = this.currentRotations[index] || { x: 0, y: 0 }
@@ -241,6 +216,7 @@ export default {
   },
   mounted () {
     const params = new URLSearchParams(window.location.search)
+    const articlePaginateLayouts = this.paginateLayouts()
     const page = parseInt(params.get('page'))
     if (page) {
       this.page = page
@@ -248,8 +224,8 @@ export default {
       this.page = 1
     }
     // 如果是竖屏，设置windowSize为6
-    this.smallWindowSize = paginateLayouts.smallWindowSize
-    this.layout = paginateLayouts.layout
+    this.smallWindowSize = articlePaginateLayouts.smallWindowSize
+    this.layout = articlePaginateLayouts.layout
     // 加载首页数据
     this.load()
   }
@@ -276,13 +252,15 @@ export default {
 }
 
 .article-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   padding-left: 8%;
   padding-right: 2%;
   padding-top: 20px;
   @media screen and (max-aspect-ratio: 1/1) {
     padding: 5px !important;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -291,17 +269,19 @@ export default {
 }
 
 .article-item {
-  width: 47%;
-  //height: 215px;
+  :deep(.el-card__body) {
+    overflow: hidden;
+  }
+
   padding: 5px !important;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
   backdrop-filter: blur(10px);
   background: linear-gradient(135deg,
-    rgba(217, 214, 217, 0.55) 0%,
-    rgba(173, 216, 230, 0.55) 50%,
-    rgba(242, 214, 218, 0.55) 100%,
+      rgba(217, 214, 217, 0.55) 0%,
+      rgba(173, 216, 230, 0.55) 50%,
+      rgba(242, 214, 218, 0.55) 100%,
   );
   position: relative;
   overflow: hidden;
@@ -315,12 +295,12 @@ export default {
     width: 200%;
     height: 200%;
     background: linear-gradient(
-      45deg,
-      rgba(255, 105, 180, 0.1) 0%,
-      rgba(135, 206, 250, 0.1) 25%,
-      rgba(147, 112, 219, 0.1) 50%,
-      rgba(255, 182, 193, 0.1) 75%,
-      rgba(255, 105, 180, 0.1) 100%
+            45deg,
+            rgba(255, 105, 180, 0.1) 0%,
+            rgba(135, 206, 250, 0.1) 25%,
+            rgba(147, 112, 219, 0.1) 50%,
+            rgba(255, 182, 193, 0.1) 75%,
+            rgba(255, 105, 180, 0.1) 100%
     );
     background-size: 400% 400%;
     animation: gradientShift 8s ease infinite;
@@ -341,18 +321,14 @@ export default {
   background-clip: padding-box;
   margin: 0;
   border-radius: 12px;
-  box-shadow:
-    0 4px 15px rgba(255, 105, 180, 0.1),
-    0 2px 8px rgba(135, 206, 250, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  margin-right: 10px;
-  margin-left: 10px;
-  margin-bottom: 10px !important;
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1),
+  0 2px 8px rgba(135, 206, 250, 0.1),
+  inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              background 0.4s ease,
-              border-color 0.4s ease,
-              box-shadow 0.4s ease,
-              z-index 0s;
+  background 0.4s ease,
+  border-color 0.4s ease,
+  box-shadow 0.4s ease,
+  z-index 0s;
   will-change: transform, box-shadow;
   z-index: 1;
 }
@@ -369,9 +345,9 @@ export default {
 .article-item:hover {
   transform: translateY(-8px) scale(1.02);
   background: linear-gradient(135deg,
-    rgba(221, 160, 221, 0.25) 0%,
-    rgba(173, 216, 230, 0.25) 50%,
-    rgba(255, 182, 193, 0.25) 100%,
+      rgba(221, 160, 221, 0.25) 0%,
+      rgba(173, 216, 230, 0.25) 50%,
+      rgba(255, 182, 193, 0.25) 100%,
   );
   border-color: rgba(255, 105, 180, 0.3);
   z-index: 10;
@@ -380,11 +356,10 @@ export default {
     opacity: 1;
   }
 
-  box-shadow:
-    0 12px 30px rgba(255, 105, 180, 0.25),
-    0 8px 20px rgba(135, 206, 250, 0.2),
-    0 4px 10px rgba(147, 112, 219, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(255, 105, 180, 0.25),
+  0 8px 20px rgba(135, 206, 250, 0.2),
+  0 4px 10px rgba(147, 112, 219, 0.15),
+  inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .article-item-link {
@@ -392,6 +367,7 @@ export default {
   padding: 5px !important;
   justify-content: center;
   width: 200px;
+  margin: auto;
   position: relative;
   z-index: 1;
   @media screen and (max-aspect-ratio: 1/1) {
@@ -408,15 +384,14 @@ export default {
   object-fit: contain;
   border-radius: 10px;
   border: 2px solid rgba(240, 200, 200, 0.3);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+  inset 0 1px 0 rgba(255, 255, 255, 0.2);
   @media screen and (max-aspect-ratio: 1/1) {
     max-width: 1500px;
   }
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.4s ease,
-              border-color 0.4s ease;
+  box-shadow 0.4s ease,
+  border-color 0.4s ease;
   transform-origin: center;
   position: relative;
   z-index: 1;
@@ -425,16 +400,16 @@ export default {
 
 .article-item:hover .article-media {
   transform: scale(1.08) rotate(2deg);
-  box-shadow:
-    0 8px 20px rgba(255, 105, 180, 0.3),
-    0 4px 12px rgba(135, 206, 250, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3),
+  0 4px 12px rgba(135, 206, 250, 0.2),
+  inset 0 1px 0 rgba(255, 255, 255, 0.4);
   border-color: rgba(255, 105, 180, 0.5);
 }
 
 .article-title {
   position: relative;
   z-index: 1;
+
   a {
     background: linear-gradient(135deg, #ff6b9d 0%, #87ceeb 50%, #9370db 100%);
     -webkit-background-clip: text;
@@ -442,7 +417,7 @@ export default {
     background-clip: text;
     font-weight: 600;
     transition: transform 0.3s ease,
-                background 0.3s ease;
+    background 0.3s ease;
     display: inline-block;
     transform: scale(1);
   }
@@ -502,10 +477,10 @@ export default {
   color: #6c757d;
   font-weight: 500;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.3s ease,
-              border-color 0.3s ease,
-              box-shadow 0.3s ease,
-              color 0.3s ease;
+  background 0.3s ease,
+  border-color 0.3s ease,
+  box-shadow 0.3s ease,
+  color 0.3s ease;
   position: relative;
   overflow: hidden;
   transform: scale(1) translateY(0);
@@ -525,9 +500,8 @@ export default {
     transform: scale(1.1) translateY(-2px);
     background: linear-gradient(135deg, rgba(255, 105, 180, 0.4) 0%, rgba(135, 206, 250, 0.4) 100%);
     border-color: rgba(255, 105, 180, 0.5);
-    box-shadow:
-      0 4px 12px rgba(255, 105, 180, 0.3),
-      0 2px 6px rgba(135, 206, 250, 0.2);
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.3),
+    0 2px 6px rgba(135, 206, 250, 0.2);
     color: #495057;
 
     &::before {
@@ -539,30 +513,27 @@ export default {
 .article-item-rotate {
   border-radius: 10px;
   background: linear-gradient(135deg,
-    rgba(255, 182, 193, 0.08) 0%,
-    rgba(173, 216, 230, 0.08) 50%,
-    rgba(221, 160, 221, 0.08) 100%);
+      rgba(255, 182, 193, 0.08) 0%,
+      rgba(173, 216, 230, 0.08) 50%,
+      rgba(221, 160, 221, 0.08) 100%);
   padding: 8px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-end;
-  flex-wrap: wrap;
   height: 100%;
   position: relative;
   z-index: 1;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              background 0.4s ease;
+  background 0.4s ease;
   backdrop-filter: blur(5px);
   transform: scale(1);
 }
 
 .article-item:hover .article-item-rotate {
   background: linear-gradient(135deg,
-    rgba(255, 182, 193, 0.15) 0%,
-    rgba(173, 216, 230, 0.15) 50%,
-    rgba(221, 160, 221, 0.15) 100%);
+      rgba(255, 182, 193, 0.15) 0%,
+      rgba(173, 216, 230, 0.15) 50%,
+      rgba(221, 160, 221, 0.15) 100%);
   transform: scale(1.01);
 }
+
 .article-item:hover {
   scale: 1.02;
   transition: scale 0.5s ease-in-out;
@@ -579,8 +550,8 @@ export default {
 .info {
   i {
     transition: transform 0.3s ease,
-                background 0.3s ease,
-                color 0.3s ease;
+    background 0.3s ease,
+    color 0.3s ease;
     padding: 2px 4px;
     border-radius: 4px;
     transform: scale(1);
@@ -594,8 +565,8 @@ export default {
 
   a {
     transition: transform 0.3s ease,
-                background 0.3s ease,
-                color 0.3s ease;
+    background 0.3s ease,
+    color 0.3s ease;
     padding: 2px 8px;
     border-radius: 6px;
     transform: translateX(0) scale(1);
