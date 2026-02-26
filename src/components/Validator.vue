@@ -1,8 +1,15 @@
 <script>
 
 import captchaApi from '@/apis/captcha'
+import { Refresh } from '@element-plus/icons-vue'
 
 export default {
+  components: { Refresh },
+  setup () {
+    return {
+      Refresh
+    }
+  },
   mounted () {
     this.getImageData()
   },
@@ -68,7 +75,9 @@ export default {
       </div>
       <div class="validator-item">
         <!--      refresh area-->
-        <el-button @click="getImageData"><i class="el-icon-refresh"></i></el-button>
+        <el-button @click="getImageData">
+          <el-icon><Refresh /></el-icon>
+        </el-button>
       </div>
       <div class="validator-item">
         <!--      result input area-->
