@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-if="imageType === 'image'">
-      <el-image :style="{maxWidth: maxWidth,borderRadius: '5px',maxHeight: maxHeight}" @click="show = true"
+      <el-image :style="{maxWidth: maxWidth,borderRadius: '5px',maxHeight: maxHeight}" @click="show = true" preview-teleport
                 :src="image_thumbnail" :preview-src-list="[image_src]" :title="title" :alt="title"></el-image>
     </div>
     <div v-else-if="imageType === 'video'">

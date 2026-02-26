@@ -140,6 +140,11 @@ const routes = [
         path: 'links',
         name: 'Links',
         component: () => import('../views/links/LinksPage.vue')
+      },
+      {
+        path: 'assets',
+        name: 'AssetList',
+        component: () => import('../views/assets/AssetList.vue')
       }
     ]
   }

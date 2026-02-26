@@ -71,7 +71,7 @@
         <span>鱼乐一下</span>
       </el-menu-item>
     </el-sub-menu>
-    <el-menu-item index="/vector-search">向量检索</el-menu-item>
+    <el-menu-item index="/assets">向量检索</el-menu-item>
     <el-menu-item index="/quiz">测验</el-menu-item>
     <el-menu-item index="/guestbook">留言板</el-menu-item>
     <el-menu-item index="/games">童年游戏</el-menu-item>

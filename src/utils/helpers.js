@@ -14,18 +14,20 @@ export function mediaType (fileName) {
 
 /**
  * 修改url中的分页参数
- * @param page
- * @param perPage
+ * @param {Object} paramsObj
  */
-export function syncUrlPaginate (page, perPage) {
+export function syncUrlPaginate (paramsObj) {
   const params = new URLSearchParams(window.location.search)
-  if (page) {
-    params.set('page', page) // 修改参数
-  }
-  if (perPage) {
-    params.set('per_page', perPage) // 修改参数
-  }
-  window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
+  Object.keys(paramsObj).forEach(key => {
+    if (paramsObj[key] !== null && paramsObj[key] !== undefined && paramsObj[key] !== '') {
+      params.set(key, paramsObj[key])
+    } else {
+      params.delete(key)
+    }
+  })
+  const newSearch = params.toString()
+  const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}`
+  window.history.replaceState({}, '', newUrl)
 }
 
 /**
