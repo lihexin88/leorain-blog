@@ -4,6 +4,7 @@
       class="nav-el-menu"
       mode="horizontal"
       :router="true"
+      :ellipsis="false"
       @select="handleSelect"
   >
     <el-menu-item index="/">首页</el-menu-item>
@@ -77,20 +78,73 @@
     <el-menu-item index="/links">友情链接</el-menu-item>
     <el-menu-item index="/categories">所有分类</el-menu-item>
     <el-menu-item index="/discussion">讨论</el-menu-item>
+
+    <div class="flex-grow"></div>
+
+    <div class="user-menu-container">
+      <el-dropdown trigger="click" @command="handleCommand">
+        <div class="el-dropdown-link">
+          <template v-if="isLoggedIn">
+            <el-avatar :size="30" :src="userAvatar" class="user-avatar" />
+          </template>
+          <template v-else>
+            <el-icon :size="24"><User /></el-icon>
+          </template>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <template v-if="!isLoggedIn">
+              <el-dropdown-item command="/login">登录</el-dropdown-item>
+              <el-dropdown-item command="/register">注册</el-dropdown-item>
+            </template>
+            <template v-else>
+              <el-dropdown-item :command="'/user/' + (user?.id || '')">个人中心</el-dropdown-item>
+              <el-dropdown-item command="/dashboard">面板</el-dropdown-item>
+              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+            </template>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
   </el-menu>
 </template>
 
 <script>
+import { useUserStore } from '@/store/user'
+import { mapState, mapActions } from 'pinia'
+import { User } from '@element-plus/icons-vue'
+
 export default {
   name: 'NavBar',
+  components: {
+    User
+  },
   data () {
     return {
       activeIndex: this.$route.path
     }
   },
+  computed: {
+    ...mapState(useUserStore, ['user', 'isLoggedIn']),
+    userAvatar () {
+      return this.user?.avatar || 'https://images.leorain.cn/avatar/default_avatar.png'
+    }
+  },
   methods: {
+    ...mapActions(useUserStore, ['logout']),
     handleSelect (key) {
       this.activeIndex = key
+    },
+    handleCommand (command) {
+      if (command === 'logout') {
+        this.handleLogout()
+      } else {
+        this.$router.push(command)
+      }
+    },
+    handleLogout () {
+      this.logout()
+      this.$router.push('/login')
     }
   },
   watch: {
@@ -105,6 +159,32 @@ export default {
 .nav-el-menu {
   background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px) saturate(180%);
+  display: flex;
+  align-items: center;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.user-menu-container {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 10px;
+  outline: none;
+}
+
+.el-dropdown-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.user-avatar {
+  border: 1px solid #eee;
 }
 
 .menu-icon {
