@@ -1,52 +1,9 @@
-<template>
-  <div class="fish-container" :class="{ 'grabbing': isGrabbing }" @click="handleGrabClick">
-    <!-- Three.js 渲染器将通过 JavaScript 动态添加 -->
-    <!-- 鱼的 DOM 元素将通过 JavaScript 动态添加 -->
-
-    <el-dialog
-      v-model:visible="dialogVisible"
-      title="钓鱼小游戏"
-      width="30%"
-      max-width="600px"
-      :before-close="handleClose"
-      center
-      :close-on-click-modal="false"
-    >
-      <div v-if="fishing" class="game-container">
-        <div class="stats">
-          <p>命中次数: {{ hits }}/3 | 未命中次数: {{ misses }}/5</p>
-          <p class="message" :class="{ 'hit': message === '命中！', 'miss': message === '未命中！' }">{{ message }}</p>
-        </div>
-
-        <div class="progress-container">
-          <!-- 只显示中间滑动的部分，不显示左侧进度条 -->
-          <div class="progress-track"></div>
-          <div class="progress-indicator" :style="{ left: progress + '%' }"></div>
-          <!-- 增加目标区域宽度 -->
-          <div class="target-area" :style="{ left: (targetArea - 10) + '%', width: '20%' }"></div>
-        </div>
-
-        <div class="instructions">
-          <p>按空格键或点击下方按钮击中目标区域！</p>
-          <p>连续命中3次即可钓到鱼！未命中5次鱼会跑掉！</p>
-        </div>
-
-        <div class="action-button-container">
-          <el-button type="primary" size="medium" @click="hitTarget" class="fish-button">拉线</el-button>
-        </div>
-      </div>
-    </el-dialog>
-  </div>
-</template>
-
 <script>
+import fishApi from '@/apis/fish'
 import * as THREE from 'three'
-import { markRaw } from 'vue'
 
 export default {
   name: 'ToolFish',
-  components: {
-  },
   data () {
     return {
       // 弹窗显示状态
@@ -79,46 +36,49 @@ export default {
       misses: 0,
       // 消息
       message: '',
-      // 定时器ID
-      timer: null,
       // 移动方向，1为向右，-1为向左
-      direction: 1,
-      // Three.js 相关属性 - 使用 markRaw 防止 Vue 响应式代理
-      scene: null,
-      camera: null,
-      renderer: null,
-      fishGroup: null,
-      bubbleGroup: null,
-      fishMeshes: [],
-      bubbleMeshes: []
+      direction: 1
     }
+  },
+  created () {
+    // 初始化 Three.js 相关的非响应式属性
+    this.scene = null
+    this.camera = null
+    this.renderer = null
+    this.fishGroup = null
+    this.bubbleGroup = null
+    this.fishMeshes = []
+    this.bubbleMeshes = []
+
+    // 游戏相关的非响应式属性
+    this.timer = null
   },
   methods: {
     // 初始化 Three.js 场景
     initThreeScene () {
       // 创建场景
-      this.scene = markRaw(new THREE.Scene())
+      this.scene = new THREE.Scene()
 
       // 创建相机
-      this.camera = markRaw(new THREE.OrthographicCamera(
+      this.camera = new THREE.OrthographicCamera(
         window.innerWidth / -2,
         window.innerWidth / 2,
         window.innerHeight / 2,
         window.innerHeight / -2,
         1,
         1000
-      ))
+      )
       this.camera.position.z = 10
 
       // 创建渲染器
-      this.renderer = markRaw(new THREE.WebGLRenderer({ alpha: true, antialias: true }))
+      this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
       this.renderer.setSize(window.innerWidth, window.innerHeight)
       this.renderer.setClearColor(0x000000, 0) // 透明背景
       this.renderer.setPixelRatio(window.devicePixelRatio)
 
       // 创建鱼和气泡的组
-      this.fishGroup = markRaw(new THREE.Group())
-      this.bubbleGroup = markRaw(new THREE.Group())
+      this.fishGroup = new THREE.Group()
+      this.bubbleGroup = new THREE.Group()
       this.scene.add(this.fishGroup)
       this.scene.add(this.bubbleGroup)
 
@@ -157,32 +117,21 @@ export default {
     // 创建气泡的网格
     createBubbleMesh (bubbleData) {
       // 创建圆形几何体
-      const geometry = markRaw(new THREE.CircleGeometry(bubbleData.size / 2, 16))
+      const geometry = new THREE.CircleGeometry(bubbleData.size / 2, 16)
+
+      // 提取 hsl 颜色而不包含 alpha 通道，因为 THREE.Color 不支持 alpha
+      const hslColor = bubbleData.color1.replace('hsla', 'hsl').replace(/,[^,]+\)$/, ')')
 
       // 创建材质
-      // 从 HSLA 字符串中提取 HSL 值，忽略 Alpha
-      const hslMatch = bubbleData.color1.match(/hsla?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%/)
-      let color
-      if (hslMatch) {
-        // 使用 HSL 值创建颜色
-        const h = parseFloat(hslMatch[1]) / 360
-        const s = parseFloat(hslMatch[2]) / 100
-        const l = parseFloat(hslMatch[3]) / 100
-        color = new THREE.Color().setHSL(h, s, l)
-      } else {
-        // 如果不是 HSL 格式，直接使用原始值
-        color = new THREE.Color(bubbleData.color1)
-      }
-
-      const material = markRaw(new THREE.MeshBasicMaterial({
-        color: color,
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(hslColor),
         transparent: true,
         opacity: bubbleData.opacity,
         side: THREE.DoubleSide
-      }))
+      })
 
       // 创建网格
-      const mesh = markRaw(new THREE.Mesh(geometry, material))
+      const mesh = new THREE.Mesh(geometry, material)
 
       // 设置初始位置
       mesh.position.set(
@@ -271,7 +220,7 @@ export default {
         // 创建 Three.js 气泡网格并添加到场景
         const bubbleMesh = this.createBubbleMesh(bubbleData)
         this.bubbleGroup.add(bubbleMesh)
-        this.bubbleMeshes.push(markRaw(bubbleMesh))
+        this.bubbleMeshes.push(bubbleMesh)
       }
       this.bubbles = bubbles
     },
@@ -499,26 +448,66 @@ export default {
         this.hits++
         this.message = '命中！'
         this.setTargetArea()
-        if (this.hits >= 3) {
-          this.fishing = false
-          Message.success('恭喜！你钓到了一条鱼！')
-          setTimeout(() => {
-            this.dialogVisible = false
-          }, 1500)
-          this.message = ''
-        }
+
+        // 每次命中都调用后端接口
+        this.fishing = false // 先暂停动画，等待请求结果
+        fishApi.takeItem()
+          .then((response) => {
+            const data = response || {}
+            if (data.status === 'granted') {
+              const itemName = data.item ? data.item.name : '物资'
+              this.$message.success(`恭喜！你获得了${itemName}！`)
+              setTimeout(() => {
+                this.dialogVisible = false
+              }, 1200)
+              this.message = ''
+            } else if (data.status === 'pending') {
+              const left = data.attempts_left || 0
+              if (left > 0) {
+                this.$message.info(`命中成功！还需再命中 ${left} 次`)
+                // 继续游戏
+                this.startFishingAfterHit()
+              } else {
+                // 理论上不会走到这里，因为 left=0 时 status 应该是 granted
+                this.startFishingAfterHit()
+              }
+            } else if (data.status === 'out_of_stock') {
+              this.$message.error('很遗憾，物资已发完')
+              setTimeout(() => {
+                this.dialogVisible = false
+              }, 1200)
+              this.message = ''
+            } else {
+              this.$message.info('已记录本次命中，请继续加油~')
+              this.startFishingAfterHit()
+            }
+          })
+          .catch(() => {
+            this.$message.error('请求失败，请稍后再试')
+            this.fishing = true
+            this.moveProgressBar()
+          })
       } else {
         this.misses++
         this.message = '未命中！'
         if (this.misses >= 5) {
           this.fishing = false
-          Message.error('鱼跑了！未命中次数过多。')
+          this.$message.error('鱼跑了！未命中次数过多。')
           setTimeout(() => {
             this.dialogVisible = false
           }, 1500)
           this.message = ''
         }
       }
+    },
+    // 命中后的继续游戏（不重置hits）
+    startFishingAfterHit () {
+      this.fishing = true
+      this.progress = 0
+      this.direction = 1
+      this.message = ''
+      this.setTargetArea()
+      this.moveProgressBar()
     },
     // 键盘事件处理
     onKeyDown (event) {
@@ -591,7 +580,7 @@ export default {
 
       // 创建SVG
       return `
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="50px" height="50px" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:auto; fill-rule:evenodd; clip-rule:evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="50px" height="50px" style="shape-rendering:auto; text-rendering:auto; image-rendering:auto; fill-rule:evenodd; clip-rule:evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
           <defs>
             <linearGradient id="fishGradient${id}" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color:${color1};stop-opacity:1" />
@@ -660,6 +649,47 @@ export default {
   }
 }
 </script>
+
+<template>
+  <div class="fish-container" :class="{ 'grabbing': isGrabbing }" @click="handleGrabClick">
+    <!-- Three.js 渲染器将通过 JavaScript 动态添加 -->
+    <!-- 鱼的 DOM 元素将通过 JavaScript 动态添加 -->
+
+    <el-dialog
+      v-model="dialogVisible"
+      title="钓鱼小游戏"
+      width="30%"
+      max-width="600px"
+      :before-close="handleClose"
+      center
+      :close-on-click-modal="false"
+    >
+      <div v-if="fishing" class="game-container">
+        <div class="stats">
+          <p>命中次数: {{ hits }}/3 | 未命中次数: {{ misses }}/5</p>
+          <p class="message" :class="{ 'hit': message === '命中！', 'miss': message === '未命中！' }">{{ message }}</p>
+        </div>
+
+        <div class="progress-container">
+          <!-- 只显示中间滑动的部分，不显示左侧进度条 -->
+          <div class="progress-track"></div>
+          <div class="progress-indicator" :style="{ left: progress + '%' }"></div>
+          <!-- 增加目标区域宽度 -->
+          <div class="target-area" :style="{ left: (targetArea - 10) + '%', width: '20%' }"></div>
+        </div>
+
+        <div class="instructions">
+          <p>按空格键或点击下方按钮击中目标区域！</p>
+          <p>累计命中3次即可获得物资！未命中5次鱼会跑掉！</p>
+        </div>
+
+        <div class="action-button-container">
+          <el-button type="primary" size="medium" @click="hitTarget" class="fish-button">拉线</el-button>
+        </div>
+      </div>
+    </el-dialog>
+  </div>
+</template>
 
 <style scoped lang="scss">
 .fish-container {
