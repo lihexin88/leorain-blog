@@ -88,7 +88,7 @@
       <div style="width: 100%;display: flex;justify-content: center;align-items: center;padding: 10px">
         <el-pagination
             v-model:page-size="per_page"
-            :page-sizes="[22, 40, 50]"
+            :page-sizes="[18, 21, 36]"
             v-model:current-page="page"
             @current-change="load"
             background
@@ -105,7 +105,8 @@
 import {
   getFriendlyDate,
   mediaType,
-  paginateLayouts
+  paginateLayouts,
+  syncUrlPaginate
 } from '@/utils/helpers'
 import moment from 'moment'
 import anime from 'animejs'
@@ -125,7 +126,7 @@ export default {
       rotations: [], // 用于存储每个元素的偏移量
       maxOffset: 15,
       total: null,
-      per_page: 15,
+      per_page: 21,
       smallWindowSize: false,
       layout: null,
       articles: [],
@@ -138,6 +139,7 @@ export default {
     paginateLayouts,
     getFriendlyDate,
     mediaType,
+    syncUrlPaginate,
     getTransform (index, type) {
       const rotation = this.currentRotations[index] || { x: 0, y: 0 }
       const move = this.currentRotations[index] || { x: 0, y: 0 }
@@ -186,6 +188,17 @@ export default {
       }).then((response) => {
         this.articles = response.data
         this.total = response.total
+        if (this.page === 1) {
+          this.syncUrlPaginate({
+            page: null,
+            per_page: null
+          })
+        } else {
+          this.syncUrlPaginate({
+            page: this.page,
+            per_page: this.per_page
+          })
+        }
         window.scrollTo({ top: 0 })
         this.$nextTick(() => {
           // 增加动画 - 更年轻化的动画效果
