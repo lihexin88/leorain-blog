@@ -48,7 +48,7 @@
     </el-card>
 
     <!-- Lottery Scratch Modal -->
-    <el-dialog v-model:visible="lotteryModalVisible" width="80%" max-width="600px" :before-close="handleCloseModal"
+    <el-dialog v-model="lotteryModalVisible" width="80%" max-width="600px" :before-close="handleCloseModal"
                title="刮刮乐" custom-class="lottery-dialog" @opened="onDialogOpened">
       <div v-if="modalTicket" class="lottery-ticket-wrapper"
            :style="{ backgroundImage: `url(${categoryBackgroundImage})` }">
@@ -67,11 +67,10 @@
         >
           <div v-for="(spot, index) in modalTicket.spots" :key="modalTicket.id + '-' + index"
                class="scratch-spot-container">
-            <div class="prize-area">
+            <div class="prize-area" v-show="canvasesInitialized">
               <span class="symbol">{{ spot.symbol }}</span>
               <span class="prize">￥{{ spot.prize }}</span>
             </div>
-            111
             <canvas
               @dblclick="revealSpot(index)"
               :ref="el => setCanvasRef(el, index)"
@@ -111,6 +110,7 @@ export default {
       totalWinnings: 0,
       revealedCount: 0,
       isScratching: false,
+      canvasesInitialized: false,
       canvasRefs: []
     }
   },
@@ -161,6 +161,7 @@ export default {
     },
     openExistingLottery (userItem) {
       this.loading = true
+      this.canvasesInitialized = false
       userApi.getUserItemDetail(userItem.id, { include: 'origin.data.category' }).then(response => {
         const fullUserItem = response.data
         this.currentLotteryUserItemId = fullUserItem.id
@@ -178,6 +179,7 @@ export default {
     },
     onDialogOpened () {
       // 在对话框完全打开并渲染后再初始化 canvas，避免 refs 为空
+      this.canvasesInitialized = false
       this.$nextTick(() => this.initializeCanvases())
     },
     handleCloseModal () {
@@ -187,6 +189,7 @@ export default {
       this.totalWinnings = 0
       this.revealedCount = 0
       this.canvasRefs = []
+      this.canvasesInitialized = false
     },
     setCanvasRef (el, index) {
       if (el) this.canvasRefs[index] = el
@@ -203,6 +206,7 @@ export default {
             spot.revealed = false
           }
         })
+        this.canvasesInitialized = true
       }
     },
     handleScratchStart (event) {

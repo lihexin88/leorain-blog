@@ -180,12 +180,10 @@ export default {
 
 <style scoped lang="scss">
 .user-profile-container {
-  background-color: #f5f7fa;
   min-height: calc(100vh - 60px);
 }
 
 .user-header-jumbotron {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 60px 0;
   margin-bottom: 30px;

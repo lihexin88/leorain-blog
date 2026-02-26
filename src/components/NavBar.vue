@@ -85,7 +85,7 @@
       <el-dropdown trigger="click" @command="handleCommand">
         <div class="el-dropdown-link">
           <template v-if="isLoggedIn">
-            <el-avatar :size="30" :src="userAvatar" class="user-avatar" />
+            <el-avatar :size="40" :src="userAvatar" class="user-avatar" />
           </template>
           <template v-else>
             <el-icon :size="24"><User /></el-icon>
@@ -174,6 +174,10 @@ export default {
   height: 100%;
   padding: 0 10px;
   outline: none;
+
+  @media (min-width: 768px) {
+    margin-right: 20px;
+  }
 }
 
 .el-dropdown-link {

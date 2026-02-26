@@ -116,40 +116,7 @@
 
           <!-- Right Column: Lottery Records -->
           <el-col :xs="24" :sm="24" :md="12">
-            <el-card shadow="hover" class="records-card">
-              <template v-slot:header>
-                <div class="card-header">
-                  <span>我的获取记录</span>
-                </div>
-              </template>
-              <el-table :data="userLotteries" style="width: 100%" v-loading="lotteryRecordsLoading">
-                <el-table-column prop="id" label="ID" width="80"></el-table-column>
-                <el-table-column prop="created_at" label="获取时间"></el-table-column>
-                <el-table-column label="名称">
-                  <template v-slot="scope">
-                    {{ scope.row.origin.data.name }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="状态" width="80">
-                  <template v-slot="scope">
-                    <el-button v-if="scope.row.status === 1" type="primary" size="small"
-                               @click="openExistingLottery(scope.row)">刮开
-                    </el-button>
-                    <span v-else>{{ scope.row.status_display }}</span>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <el-pagination
-                  v-if="userLotteriesMeta"
-                  background
-                  layout="prev, pager, next"
-                  :total="userLotteriesMeta.total"
-                  :page-size="userLotteriesMeta.per_page"
-                  v-model:current-page="lotteryCurrentPage"
-                  @current-change="handleLotteryPageChange"
-                  class="mt-4 text-center">
-              </el-pagination>
-            </el-card>
+            <user-items ref="userItems" type="lottery" @after-exchange="handleAfterExchange" />
           </el-col>
         </el-row>
       </el-col>
@@ -157,7 +124,7 @@
 
     <!-- Lottery Scratch Modal -->
     <el-dialog v-model="lotteryModalVisible" width="80%" max-width="600px" :before-close="handleCloseModal"
-               @opened="initializeCanvases"
+               @opened="onDialogOpened"
                title="刮刮乐" custom-class="lottery-dialog">
       <div v-if="modalTicket" class="lottery-ticket-wrapper"
            :style="{ backgroundImage: `url(${categoryBackgroundImage})` }">
@@ -176,7 +143,7 @@
         >
           <div v-for="(spot, index) in modalTicket.spots" :key="modalTicket.id + '-' + index"
                class="scratch-spot-container">
-            <div class="prize-area">
+            <div class="prize-area" v-show="canvasesInitialized">
               <span class="symbol">{{ spot.symbol }}</span>
               <span class="prize">￥{{ spot.prize }}</span>
             </div>
@@ -199,9 +166,13 @@
 <script>
 import confetti from 'canvas-confetti'
 import lotteryApi from '@/apis/lottery'
+import UserItems from '@/components/UserItems.vue'
 
 export default {
   name: 'ToolLottery',
+  components: {
+    UserItems
+  },
   data () {
     return {
       categories: [],
@@ -214,14 +185,11 @@ export default {
       canvasRefs: [],
       revealedCount: 0,
       loading: false,
+      canvasesInitialized: false,
       userScore: 0,
       scoreLogs: [],
       scoreLogMeta: null,
-      scoreLogLoading: false,
-      userLotteries: [],
-      userLotteriesMeta: null,
-      lotteryRecordsLoading: false,
-      lotteryCurrentPage: 1
+      scoreLogLoading: false
     }
   },
   computed: {
@@ -233,25 +201,15 @@ export default {
     }
   },
   methods: {
-    fetchUserLotteries (page = 1) {
-      this.lotteryRecordsLoading = true
-      lotteryApi.getUserLotteries({
-        type: 'lottery',
-        include: 'origin',
-        page
-      }).then(response => {
-        this.userLotteries = response.data
-        this.userLotteriesMeta = response.meta.pagination
-        this.lotteryCurrentPage = page
-      }).catch(error => {
-        this.$message.error('获取记录失败')
-        console.error(error)
-      }).finally(() => {
-        this.lotteryRecordsLoading = false
+    onDialogOpened () {
+      this.canvasesInitialized = false
+      this.$nextTick(() => {
+        this.initializeCanvases()
       })
     },
-    handleLotteryPageChange (newPage) {
-      this.fetchUserLotteries(newPage)
+    handleAfterExchange () {
+      this.fetchUserScore()
+      this.fetchScoreLogs()
     },
     setCanvasRef (el, index) {
       if (el) this.canvasRefs[index] = el
@@ -350,7 +308,9 @@ export default {
         this.fetchUserScore() // Refresh score after getting a new ticket
         this.fetchScoreLogs()
         this.fetchCategories()
-        this.fetchUserLotteries(this.lotteryCurrentPage) // Refresh lottery list
+        if (this.$refs.userItems) {
+          this.$refs.userItems.fetchUserItems()
+        }
       }).catch((error) => {
         if (error.response.status === 401) {
           this.openLogin()
@@ -368,26 +328,6 @@ export default {
         this.loading = false
       })
     },
-    openExistingLottery (userItem) {
-      this.lotteryRecordsLoading = true
-      lotteryApi.getLotteryDetail(userItem.id, {
-        include: 'origin.data.category'
-      }).then(response => {
-        const fullUserItem = response.data
-        this.currentLotteryUserItemId = fullUserItem.id
-        this.modalTicket = fullUserItem.origin.data
-        this.selectedCategory = this.modalTicket.category
-        this.totalWinnings = 0
-        this.revealedCount = 0
-        this.canvasRefs = []
-        this.lotteryModalVisible = true
-      }).catch(error => {
-        this.$message.error('打开彩票失败')
-        console.error(error)
-      }).finally(() => {
-        this.lotteryRecordsLoading = false
-      })
-    },
     redeemTicket () {
       if (!this.currentLotteryUserItemId) return
       lotteryApi.redeemLottery(this.currentLotteryUserItemId)
@@ -395,7 +335,9 @@ export default {
           this.$message.success('兑换成功!')
           this.fetchUserScore()
           this.fetchScoreLogs()
-          this.fetchUserLotteries(this.lotteryCurrentPage)
+          if (this.$refs.userItems) {
+            this.$refs.userItems.fetchUserItems()
+          }
         })
         .catch(error => {
           this.$message.error(error.response.messages[0] || '兑换失败')
@@ -409,6 +351,7 @@ export default {
       this.totalWinnings = 0
       this.revealedCount = 0
       this.canvasRefs = []
+      this.canvasesInitialized = false
     },
     initializeCanvases () {
       if (this.modalTicket && this.modalTicket.spots) {
@@ -422,6 +365,7 @@ export default {
             spot.revealed = false // Ensure revealed status is reset
           }
         })
+        this.canvasesInitialized = true
       }
     },
     handleScratchStart (event) {
@@ -525,7 +469,6 @@ export default {
     this.fetchCategories()
     this.fetchUserScore()
     this.fetchScoreLogs()
-    this.fetchUserLotteries()
   }
 }
 </script>
@@ -571,9 +514,6 @@ export default {
 
 .card-header {
   text-align: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
   font-size: 1.2rem;
   font-weight: bold;
   color: #409EFF;
@@ -687,6 +627,7 @@ export default {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  z-index: 1;
 
   .symbol {
     color: #E91E63;
@@ -703,6 +644,7 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 2;
   touch-action: none;
 }
 
@@ -716,9 +658,12 @@ export default {
     color: #333;
   }
 
-  .text-success {
-    color: #67C23A;
-  }
+}
+.text-success {
+  color: #67C23A;
+}
+.text-danger{
+  color: #F56C6C;
 }
 
 .score-logs-container {
