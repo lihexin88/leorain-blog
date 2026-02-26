@@ -31,7 +31,7 @@
               </a>
             </div>
             <div class="media-body article-body">
-              <h6 class="media-heading" style="cursor: pointer"
+              <div class="media-heading" style="cursor: pointer"
               >
                 <a @click="openArticle(article.slug)" :title="article.title"
                 >
@@ -39,7 +39,7 @@
                     {{ article.title }}
                 </span>
                 </a>
-              </h6>
+              </div>
               <div class="article-description" style="cursor: pointer"
                    :style="getTransform(index,'description')"
               >
@@ -444,7 +444,8 @@ export default {
 
 .article-description {
   margin-top: .6em;
-  font-size: 1em;
+  font-size: .8em;
+  height: 40px;
   line-height: 1.4285em;
   color: #6c757d;
   //height: 93px;
