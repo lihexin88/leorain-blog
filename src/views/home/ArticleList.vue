@@ -164,8 +164,11 @@ export default {
       }
       return transform
     },
-    go_user (name) {
-      window.location.href = '/user/' + name
+    go_user (uid) {
+      this.$router.push({
+        name: 'UserProfile',
+        query: { uid }
+      })
     },
     openArticle (slug) {
       this.$router.push({

@@ -115,19 +115,24 @@ export default {
     }
   },
   computed: {
-    ...mapState(useUserStore, ['user']),
+    ...mapState(useUserStore, ['user', 'isLoggedIn']),
     uid () {
-      return this.$route.params.uid
+      return this.$route.query.uid || this.user?.uid
     },
     isMyProfile () {
       return this.user && String(this.user.uid) === String(this.uid)
     }
   },
   mounted () {
+    if (!this.uid) {
+      this.$router.push('/login')
+      return
+    }
     this.fetchData()
   },
   methods: {
     async fetchData () {
+      if (!this.uid) return
       try {
         const response = await userApi.getUserByUid(this.uid)
         const data = response.data || response
@@ -136,14 +141,17 @@ export default {
         this.discussions = data.discussions || []
       } catch (error) {
         console.error('Fetch user profile error:', error)
-        // 如果是自己的 ID 且接口报错，尝试从 store 中读取基本信息
+        // 如果是访问自己的 profile 且接口报错，尝试从 store 中读取基本信息
         if (this.isMyProfile) {
           this.userInfo = this.user
+        } else {
+          this.$message.error('获取用户信息失败')
         }
       }
     },
     handleEditProfile () {
-      this.$router.push('/user/profile')
+      // 已经在 profile 页面，可以跳转到编辑页面，但这里需求没提，暂时保留
+      this.$message.info('编辑资料功能开发中')
     },
     getCommentableLink (comment) {
       if (comment.commentable_type === 'articles') {

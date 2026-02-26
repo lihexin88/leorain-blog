@@ -98,7 +98,7 @@
               <el-dropdown-item command="/register">注册</el-dropdown-item>
             </template>
             <template v-else>
-              <el-dropdown-item :command="'/user/' + (user?.uid || '')">个人中心</el-dropdown-item>
+              <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
               <el-dropdown-item command="/dashboard">面板</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </template>
