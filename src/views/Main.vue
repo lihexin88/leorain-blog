@@ -44,6 +44,7 @@
 import NavBar from '@/components/NavBar.vue'
 import ScrollProgress from '@/components/ScrollProgress.vue'
 import { useConfigStore } from '@/store/config'
+import { useUserStore } from '@/store/user'
 import FooterBar from '@/components/FooterBar.vue'
 
 export default {
@@ -55,6 +56,7 @@ export default {
   },
   setup () {
     const configStore = useConfigStore()
+    const userStore = useUserStore()
 
     // 判断URL是否为视频
     const isVideo = (url) => {
@@ -66,11 +68,20 @@ export default {
 
     return {
       configStore,
+      userStore,
       isVideo
     }
   },
   mounted () {
     this.configStore.fetchConfigs()
+
+    // 检查登录状态：如果 token 存在且用户信息为空，尝试获取用户信息
+    if (this.userStore.token && !this.userStore.user) {
+      this.userStore.fetchUserInfo().catch(() => {
+        // 如果获取用户信息失败（比如 token 过期），清除本地存储并重置状态
+        this.userStore.logout()
+      })
+    }
   }
 }
 </script>

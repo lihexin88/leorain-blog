@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="info" style="color: grey">
-                  <i class="fas fa-user" @click="go_user(article.user.name)" style="cursor: pointer">
+                  <i class="fas fa-user" @click="go_user(article.user.uid)" style="cursor: pointer">
                     {{ article.user.name ?? 'null' }}
                   </i>
                   <i :title=" moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">

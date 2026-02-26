@@ -39,9 +39,14 @@ const routes = [
         component: () => import('../views/tags/TagDetail.vue')
       },
       {
-        path: 'user/:username',
+        path: 'user/:uid',
         name: 'UserProfile',
-        component: () => import('../views/profile/UserProfile.vue')
+        component: () => import('../views/user/UserProfile.vue')
+      },
+      {
+        path: 'login',
+        name: 'Login',
+        component: () => import('../views/user/UserLogin.vue')
       },
       {
         path: 'tools',
