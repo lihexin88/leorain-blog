@@ -2,6 +2,9 @@
 
 import anime from 'animejs'
 import * as echarts from 'echarts'
+import { mapState } from 'pinia'
+import { useUserStore } from '@/store/user'
+import schulteApi from '@/apis/schulte'
 
 export default {
   data () {
@@ -123,6 +126,9 @@ export default {
       showUnauthorized: false
     }
   },
+  computed: {
+    ...mapState(useUserStore, ['isLoggedIn'])
+  },
   methods: {
     stop () {
       this.clearCostTimeInterval()
@@ -150,10 +156,10 @@ export default {
         this.stop()
         this.succeed = true
         // 上报
-        this.$http.patch('frontend/topic/schulte/submit', {
+        schulteApi.submitAnswer({
           question_id: this.questionId,
           answer: this.costTime
-        }).then((data) => {
+        }).then(() => {
           this.getSchultAnswers()
         })
         return true
@@ -161,8 +167,8 @@ export default {
       this.playNext = next
     },
     getSchultAnswers () {
-      this.$http.get('frontend/schulte-answers').then((data) => {
-        this.userScores = data.data.map((item) => {
+      schulteApi.getAnswers().then((data) => {
+        this.userScores = data.map((item) => {
           return parseInt(item.answer)
         })
         this.generateRanking()
@@ -224,21 +230,19 @@ export default {
       window.location.href = '/login'
     },
     getTopic () {
-      this.$http.get('/frontend/topic/schulte').then((data) => {
-        this.questionId = data.data.questions[0].id
+      schulteApi.getTopic().then((data) => {
+        this.questionId = data.questions[0].id
       })
     },
     getUserInfo () {
-      this.$http.get('/user/info').then((data) => {
+      this.getSchultAnswers()
+      if (this.isLoggedIn) {
         this.unauthorized = false
         this.showUnauthorized = false
-        this.getSchultAnswers()
-      }).catch((err) => {
-        if (err.status === 401) {
-          this.unauthorized = true
-          this.showUnauthorized = true
-        }
-      })
+      } else {
+        this.unauthorized = true
+        this.showUnauthorized = true
+      }
     },
     generateRanking () {
       if (this.userScores.length < 2) {
@@ -344,8 +348,8 @@ export default {
           <div class="display-area">
             <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span><span>秒</span>
           </div>
-          <div  class="play-area">
-            <div slot="default" ref="animatedElement" class="play-item-container">
+          <div class="play-area">
+            <div ref="animatedElement" class="play-item-container">
               <div :class="['play-item',]" @click="clickBox(cur.val,cur.next)" v-for="(cur,index) in shuffledArray"
                    :key="index">
                 <el-button :class="['item-button', wrongIndex === cur.val && 'wrong-item-button']"
@@ -366,7 +370,7 @@ export default {
           </div>
         </el-card>
       </div>
-      <div v-if="!unauthorized" class="ranking-list draggable-test">
+      <div class="ranking-list draggable-test">
         <el-card class="ranking-list-echarts-card">
           <div ref="rankingListEcharts" id="ranking-list-echarts" class="ranking-list-echarts">
           </div>
@@ -374,22 +378,24 @@ export default {
       </div>
     </div>
     <transition>
-      <el-dialog :visible.sync="succeed">
+      <el-dialog v-model="succeed" >
         恭喜完成！耗时：{{ costTime / 1000 }} 秒
       </el-dialog>
     </transition>
     <el-dialog
-      :visible.sync="showUnauthorized"
+      v-model="showUnauthorized"
       title="确认登录？"
       ref="unauthorizedDialog"
       width="30%"
       class="unauthorized-dialog"
     >
       <span>登录后可以参与排名，确认登录吗？</span>
-      <span slot="footer" class="dialog-footer">
+      <template v-slot:footer>
+<span  class="dialog-footer">
         <el-button @click="showUnauthorized = false">取 消</el-button>
         <el-button type="primary" @click="gotoLogin">确 定</el-button>
       </span>
+</template>
     </el-dialog>
   </div>
 </template>
@@ -495,7 +501,8 @@ export default {
         display: flex;
         justify-content: center;
         .ranking-list-echarts {
-          width: 768px;
+          width: 100%;
+          height: 400px;
           aspect-ratio: 16/9;
           display: flex;
           justify-content: center;
