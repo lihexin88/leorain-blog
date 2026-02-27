@@ -151,11 +151,16 @@ export default {
     },
     init () {
       this.get_toc_list()
-      console.log(this.headings)
-      window.addEventListener('scroll', () => {
+      this.scrollHandler = () => {
         this.checkActiveHeading()
-      })
+      }
+      window.addEventListener('scroll', this.scrollHandler)
       this.checkActiveHeading()
+    }
+  },
+  beforeUnmount () {
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler)
     }
   },
   mounted () {

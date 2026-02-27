@@ -5,49 +5,64 @@
         <h5>{{ title }}</h5>
         <div :class="nullClass" v-if="comments.length == this.commentsCount" class="heading">
           <a href="javascript:;" @click="commentLoad()">
-            <i class="fas fa-plus">&nbsp;&nbsp;&nbsp;&nbsp; load more comments</i>
+            <el-icon>
+              <Plus/>
+            </el-icon>&nbsp;&nbsp;&nbsp;&nbsp; load more comments
           </a>
         </div>
       </div>
       <div :class="contentWrapperClass">
         <div :class="nullClass" v-if="comments.length == 0">{{ nullText }}</div>
         <div class="media" v-for="(comment, index) in comments" :key="index" v-else>
-          <div class="media-left mr-3" v-if="comment.user_id != null">
-            <a :href="'/user/' + comment.username">
-              <el-image class="media-object rounded-circle" :src="comment.avatar"></el-image>
-            </a>
-          </div>
-          <div class="media-left mr-3" v-else>
-            <span>
-              <el-image class="media-object rounded-circle" :src="comment.avatar"></el-image>
-            </span>
-          </div>
           <div class="media-body box-body">
             <div class="comment-heading">
+              <div class="header-avatar" v-if="comment.user_id != null">
+                <router-link :to="`/user/profile?uid=`+uid">
+                  <el-avatar :size="40" class="media-object rounded-circle" :src="comment.avatar"></el-avatar>
+                </router-link>
+              </div>
+              <div class="header-avatar" v-else>
+                <el-avatar :size="40" class="media-object rounded-circle" :src="comment.avatar"></el-avatar>
+              </div>
               <div class="comment-heading-tips-container">
                 <div class="comment-heading-tips" v-if="comment.user_id != null">
-                  <i class="fas fa-user"></i><a :href="'/user/' + comment.username">{{ comment.username }}</a>
+                  <el-icon>
+                    <User/>
+                  </el-icon>
+                  <span>{{ comment.username }}</span>
                 </div>
                 <div class="comment-heading-tips" v-else>
-                  <i class="fas fa-user"></i><span><em>游客</em></span>
+                  <el-icon>
+                    <User/>
+                  </el-icon>
+                  <span><em>游客</em></span>
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week">
-                  <i class="fas fa-clock"></i>{{ comment.created_at }}
+                  <el-icon>
+                    <Clock/>
+                  </el-icon>
+                  {{ comment.created_at }}
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week" v-if="comment.visitor">
-                  <i class="fa fa-map-marker-alt"></i>{{ comment.visitor?.country ?? null }}
+                  <el-icon>
+                    <Location/>
+                  </el-icon>
+                  {{ comment.visitor?.country ?? null }}
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week" v-if="comment.visitor">
-                  <i class="fa fa-globe"></i>{{ comment.visitor?.user_agent ?? null }}
+                  <el-icon>
+                    <ChromeFilled/>
+                  </el-icon>
+                  {{ comment.visitor?.user_agent ?? null }}
                 </div>
                 <div class="comment-heading-tips">
                   <span class="float-right operate">
-                     <vote-button v-if="username !== comment.username" :item="comment"></vote-button>
-                     <a href="javascript:;" @click="commentDelete(index, comment.id)"
-                        v-if="username === comment.username">
-                       <i class="fas fa-trash-alt"></i>
-                     </a>
-                     <a href="javascript:;" @click="reply(comment.username)"><i class="fas fa-share"></i></a>
+                     <vote-button v-if="uid !== comment.uid" :item="comment"></vote-button>
+                       <el-icon
+                           v-if="uid === comment.uid"
+                           @click="commentDelete(index, comment.id)"
+                       ><Delete/></el-icon>
+                       <el-icon @click="reply(comment.username, comment.uid)"><Share/></el-icon>
                   </span>
                 </div>
               </div>
@@ -56,17 +71,15 @@
                  v-html="comment.content_html"></div>
           </div>
         </div>
-        <form class="form mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
-          <div class="form-group row comment-submit-area">
-            <user-form ref="userForm" v-if="!this.userInfo"></user-form>
-            <label v-if="user_id" class="col-sm-2 col-form-label own-avatar">
-              <a :href="'/user/' + username">
-                <el-avatar alt="user avatar" width="60" class="avatar rounded-circle"
-                           :src="login_user_avatar"></el-avatar>
-              </a>
-            </label>
-            <div class="col-sm-10 comment-area">
-              <div style="background-color: aliceblue;border-radius: 3px">
+        <el-form class="mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
+          <el-row :gutter="20" class="comment-submit-area">
+            <el-col :span="2" class="own-avatar">
+              <user-form ref="userForm" v-if="!userInfo"></user-form>
+              <el-avatar v-else alt="user avatar" :size="60" class="avatar rounded-circle"
+                         :src="login_user_avatar"></el-avatar>
+            </el-col>
+            <el-col :span="22" class="comment-area">
+              <div class="comment-editor-wrapper">
                 <Picker v-if="show_emoji_picker && custom_emojis.length > 0"
                         :per-line="16"
                         ref="picker"
@@ -80,15 +93,16 @@
                 />
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
               </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <div class="col-sm-12">
-              <button type="submit" :disabled="isSubmiting" class="btn btn-success float-right">
-              </button>
-            </div>
-          </div>
-        </form>
+            </el-col>
+          </el-row>
+          <el-row class="mt-2">
+            <el-col :span="24" class="text-right">
+              <el-button type="success" :loading="isSubmiting" native-type="submit">
+                {{ $t ? $t('form.submit_comment') : '提交' }}
+              </el-button>
+            </el-col>
+          </el-row>
+        </el-form>
       </div>
     </div>
   </div>
@@ -103,12 +117,13 @@ import SimpleMDE from 'simplemde'
 import 'vue-emoji-mart-sort/css/emoji-mart.css'
 import { Picker } from 'vue-emoji-mart-sort'
 
-import { emojiToImage } from '@/services/customEmoji'
+import { emojiI18n, emojiToImage, getEmojiData } from '@/services/customEmoji'
 import UserForm from './UserForm.vue'
 import { commentApi } from '@/apis'
+import { Plus, User, Clock, Location, Delete, Share, ChromeFilled } from '@element-plus/icons-vue'
 
 export default {
-  components: { UserForm, VoteButton, Picker },
+  components: { ChromeFilled, UserForm, VoteButton, Picker, Plus, User, Clock, Location, Delete, Share },
   props: {
     contentWrapperClass: {
       type: String,
@@ -117,7 +132,7 @@ export default {
       }
     },
     user: {
-      type: String,
+      type: Object,
       default () {
         return null
       }
@@ -128,7 +143,7 @@ export default {
         return ''
       }
     },
-    username: {
+    uid: {
       type: String,
       default () {
         return ''
@@ -159,7 +174,7 @@ export default {
       }
     },
     commentableId: {
-      type: String,
+      type: [String, Number],
       default () {
         return '0'
       }
@@ -193,11 +208,21 @@ export default {
       isSubmiting: false,
       show_emoji_picker: false,
       custom_emojis: [],
+      emojiI18n,
       login_user_avatar: this.userAvatar,
       userInfo: null
     }
   },
   async mounted () {
+    // 表情包
+    try {
+      await getEmojiData().then((res) => {
+        this.custom_emojis = res
+        this.emojiI18n = emojiI18n
+      })
+    } catch (error) {
+      this.custom_emojis = []
+    }
     this.simplemde = new SimpleMDE({
       element: document.getElementById('comment_textarea_id'),
       placeholder: '# markdown..',
@@ -206,7 +231,7 @@ export default {
       autoRefresh: true,
       lineNumbers: false,
       theme: 'mdn-like',
-      previewRender: (plainText, preview) => {
+      previewRender (plainText, preview) {
         preview.className += ' markdown'
         marked.setOptions({
           highlight: (code) => {
@@ -214,11 +239,7 @@ export default {
           },
           sanitize: true
         })
-        emojiToImage(plainText).then(processedText => {
-          const html = emojione.toImage(marked(processedText))
-          preview.innerHTML = html
-        })
-        return 'Rendering...'
+        return emojione.toImage(marked(plainText))
       },
       toolbar: [
         'bold', 'italic', '|',
@@ -229,7 +250,7 @@ export default {
           action: () => {
             this.show_emoji_picker = !this.show_emoji_picker
           },
-          className: 'fa fa-smile',
+          className: 'el-icon-chat-line-round',
           title: 'emoji'
         }
       ]
@@ -240,7 +261,7 @@ export default {
       commentsCount: this.commentsCount
     }).then(async (response) => {
       for (const data of response.data) {
-        data.content_html = await this.parse(data.content_raw)
+        data.content_html = await emojiToImage(data.content_html)
         if (!data.avatar || data.avatar === '/images/default.png') {
           data.avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + data.user_email_hash
         }
@@ -251,8 +272,13 @@ export default {
     if (this.login_user_avatar === '') {
       this.login_user_avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + this.emailHash
     }
-    if (this.user !== '') {
-      // this.userInfo = JSON.parse(this.user)
+    if (this.user) {
+      this.userInfo = this.user
+    } else {
+      const guestInfo = localStorage.getItem('guest_info')
+      if (guestInfo) {
+        this.userInfo = JSON.parse(guestInfo)
+      }
     }
   },
   methods: {
@@ -268,7 +294,7 @@ export default {
         commentable_id: this.commentableId,
         commentable_type: this.commentableType
       }
-      if (!this.user_id) {
+      if (!this.user_id && !this.userInfo?.uid) {
         if (!this.$refs.userForm.validateData()) {
           return
         }
@@ -284,7 +310,7 @@ export default {
         .then(async (response) => {
           let comment = null
           comment = response.data
-          comment.content_html = await this.parse(comment.content_raw)
+          comment.content_html = await emojiToImage(comment.content_html)
 
           this.comments.push(comment)
           this.content = ''
@@ -293,20 +319,24 @@ export default {
         }).catch(({ response }) => {
           this.isSubmiting = false
           const errors = response.errors
-          let errorMessage = ''
           for (const key in errors) {
             errors[key].forEach((value) => {
-              errorMessage += value + ','
+              console.error(value)
             })
           }
-          this.$message.error(errorMessage)
         })
     },
-    reply (name) {
+    reply (name, uid) {
       $('#content').focus()
-      this.simplemde.value('@' + name + ' ')
+      this.simplemde.value('@' + uid + ' ')
+      this.simplemde.codemirror.focus()
+      this.simplemde.codemirror.setCursor(this.simplemde.codemirror.lineCount(), 0)
     },
-    commentDelete (/* index, id */) {
+    commentDelete (index, id) {
+      commentApi.deleteComment(id)
+        .then(() => {
+          this.comments.splice(index, 1)
+        })
     },
     commentLoad () {
       commentApi.getComments({
@@ -315,7 +345,7 @@ export default {
         commentsCount: this.commentsCount + 1
       }).then(async (response) => {
         for (const data of response.data) {
-          data.content_html = await this.parse(data.content_raw)
+          data.content_html = await emojiToImage(data.content_html)
         }
         this.comments = response.data
         this.commentsCount += 1
@@ -331,8 +361,7 @@ export default {
       return emojione.toImage(marked(html))
     }
   },
-  watch: {
-  }
+  watch: {}
 }
 </script>
 <style scoped>
@@ -348,6 +377,8 @@ export default {
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
+  align-content: center;
+  margin-left: 10px;
 }
 
 .comment-heading-tips:last-child {
@@ -358,65 +389,81 @@ export default {
 }
 
 .comment-heading {
-  padding: 10px 10px;
+  padding: 3px;
   background: #ECF0F1;
+  display: flex;
+  align-content: center;
 
   a {
     color: #7F8C8D;
   }
 }
 
-:deep(.editor-toolbar.fullscreen) {
+::v-deep .editor-toolbar.fullscreen {
   z-index: 15 !important;
   margin-top: 40px;
 }
 
-:deep(.CodeMirror-scroll) {
+::v-deep .CodeMirror-scroll {
   margin-top: 25px;
 }
 
-:deep(.editor-preview-side) {
+::v-deep .editor-preview-side {
   margin-top: 25px;
 }
 
-:deep(div[data-name="Custom"] ~ * span) {
+::v-deep div[data-name="Custom"] ~ * span {
   width: 96px !important;
   height: 96px !important;
   background-repeat: no-repeat;
   background-position: center;
 }
 
-:deep(.emoji-mart-preview) {
+::v-deep .emoji-mart-preview {
   height: 128px !important;
 }
 
-:deep(.emoji-mart-preview-emoji .emoji-mart-emoji) {
+::v-deep .emoji-mart-preview-emoji .emoji-mart-emoji {
   height: 128px !important;
 }
 
-:deep(.emoji-mart-preview-emoji span span) {
+::v-deep .emoji-mart-preview-emoji span span {
   height: 96px !important;
   width: 96px !important;
 }
 
-:deep(.emoji-mart-preview-data) {
+::v-deep .emoji-mart-preview-data {
   padding-left: 96px;
 }
 
-:deep(.emoji-mart-scroll) {
+::v-deep .emoji-mart-scroll {
   height: 280px;
 }
 
-@media screen and (max-aspect-ratio: 1/1) {
-  .comment-area {
-    flex: none;
-    max-width: 100%;
-  }
+.comment-editor-wrapper {
+  background-color: aliceblue;
+  border-radius: 3px;
+  border: 1px solid #dcdfe6;
 }
 
-.comment-submit-area {
+.comment-editor-wrapper:focus-within {
+  border-color: #409eff;
+}
+
+.text-right {
   display: flex;
-  justify-content: right;
+  justify-content: flex-end;
+}
+
+@media screen and (max-width: 768px) {
+  .own-avatar {
+    display: none;
+  }
+  .comment-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
 }
 
 </style>

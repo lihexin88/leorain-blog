@@ -71,16 +71,16 @@
       </div>
       <div id="article-comment-area">
         <comment-area
-          v-if="article.user"
           title="评论"
           :user="article.user"
-          :username="article.user?.name"
+          :uid="article.user?.uid"
           :user-avatar="article.user?.avatar"
           :email-hash="article.user?.email_hash"
           :user-id="article.user?.uid"
           commentable-type="articles"
           :commentable-id="article.id"
           :can-comment="true"
+          v-if="article.id"
         ></comment-area>
       </div>
     </div>
@@ -114,7 +114,7 @@ export default {
   data () {
     return {
       article: {
-        id: 1,
+        id: 0,
         title: '',
         subtitle: '',
         content: '',
@@ -214,6 +214,7 @@ export default {
 
 .article-page-left {
   max-width: 500px;
+  width: 20%;
   margin-right: 20px;
   position: sticky;
   top: 60px;
