@@ -218,7 +218,7 @@ export default {
       this.$http.delete('/draws/' + asset_id).then((response) => {
         console.log(response)
         this.draw_list = this.draw_list.filter(item => item.asset_id !== asset_id)
-        toastr.warning('已删除')
+        this.$message.warning('已删除')
       })
     },
     check_current (asset_id) {
@@ -237,9 +237,7 @@ export default {
     }, 500),
     create_new_draw () {
       if (!this.new_asset_name) {
-        toastr.error('名称不能为空', '', {
-          positionClass: 'toast-top-center'
-        })
+        this.$message.error('名称不能为空')
         return
       }
       this.$http.post('/draws', {
@@ -263,7 +261,7 @@ export default {
       this.$http.post(process.env.DRAW_WS_HOST + '/draw/paint/save', {
         draw_id: this.asset_id
       }).then((response) => {
-        toastr.success('保存成功')
+        this.$message.success('保存成功')
       })
     },
     /**
@@ -313,15 +311,15 @@ export default {
         const file = new File([blob], this.asset_id + '.png', { type: blob.type })
         let xhr = new XMLHttpRequest()
         xhr.open('PUT', fileUrl, false)
-        xhr.onload = function () {
+        xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            toastr.success('封面图已上传')
+            this.$message.success('封面图已上传')
           } else {
-            toastr.error('上传失败')
+            this.$message.error('上传失败')
           }
         }
-        xhr.onerror = function () {
-          toastr.error('上传失败')
+        xhr.onerror = () => {
+          this.$message.error('上传失败')
         }
         xhr.setRequestHeader('Content-Type', '')
         xhr.send(file)
@@ -345,7 +343,7 @@ export default {
             })
           })
         }).catch(({ response }) => {
-          toastr.error(response.status + ' : ' + response.statusText)
+          this.$message.error(response.status + ' : ' + response.statusText)
         })
       })
     },
@@ -403,7 +401,7 @@ export default {
     },
     checkIfShowDrawer () {
       if (this.asset_id === null) {
-        toastr.error('请先选择或创建画布')
+        this.$message.error('请先选择或创建画布')
         this.show_draw_list = true
       } else {
         this.show_draw_list = !this.show_draw_list
@@ -452,7 +450,7 @@ export default {
     async connectWebSocket () {
       const accessToken = await this.$accessToken(1)
       if (accessToken === false) {
-        toastr.error('获取Access token失败')
+        this.$message.error('获取Access token失败')
         return false
       }
       this.tool_access_token = accessToken
@@ -469,7 +467,7 @@ export default {
 
       // 3. 连接 WebSocket
       this.stompClient.onConnect = () => {
-        toastr.success('服务器已连接')
+        this.$message.success('服务器已连接')
         // 订阅服务端的频道 "/topic/timestamp"
         this.stompClient.subscribe('/draw/message', (message) => {
           const paintBean = JSON.parse(message.body)
@@ -501,7 +499,7 @@ export default {
       }
       this.stompClient.onWebSocketClose = (frame) => {
         setTimeout(() => {
-          toastr.warning('断线重连中')
+          this.$message.warning('断线重连中')
           this.connectWebSocket()
         }, 2000)
       }

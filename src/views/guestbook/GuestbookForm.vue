@@ -123,9 +123,9 @@ export default {
         // 关闭输入框
         this.$emit('replay', null)
         this.simplemde.value('')
-        toastr.success('提交成功')
+        this.$message.success('提交成功')
       }).catch((res) => {
-        toastr.error('提交失败')
+        this.$message.error('提交失败')
       })
     },
     submit () {

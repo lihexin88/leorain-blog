@@ -11,7 +11,7 @@
             <h4>{{ article.title }}</h4>
             <h6>{{ article.subtitle }}</h6>
             <div class="header">
-              <router-link :to="`/user/${article.user?.name}`" class="author-link">
+              <router-link :to="`/user/profile?uid=${article.user?.name}`" class="author-link">
                 <i class="fas fa-user"></i>{{ article.user?.name ?? 'null' }}
               </router-link>
               <template v-if="article.tags && article.tags.length">
@@ -72,9 +72,7 @@
       <div id="article-comment-area">
         <comment-area
           title="评论"
-          :user="article.user"
           :uid="article.user?.uid"
-          :user-avatar="article.user?.avatar"
           :email-hash="article.user?.email_hash"
           :user-id="article.user?.uid"
           commentable-type="articles"

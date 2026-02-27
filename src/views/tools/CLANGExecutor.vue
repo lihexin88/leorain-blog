@@ -73,18 +73,18 @@ int main() {
             }).then((intervalResponse) => {
               let status = intervalResponse.data.data.status
               if (status === 3) {
-                toastr.success('执行成功')
+                this.$message.success('执行成功')
                 this.result = intervalResponse.data.data.output
                 clearInterval(intervalId)
               } else if (status === 4) {
-                toastr.error('运行失败')
+                this.$message.error('运行失败')
                 this.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
-                toastr.error('运行超时')
+                this.$message.error('运行超时')
                 this.result = ''
                 clearInterval(intervalId)
               }
@@ -92,7 +92,7 @@ int main() {
           }, 1000)
         } else {
           this.result = ''
-          toastr.error('运行失败')
+          this.$message.error('运行失败')
         }
       }).catch((e) => {
         if (e.status === 401) {
@@ -110,7 +110,7 @@ int main() {
           })
         }
         this.result = ''
-        toastr.error('运行失败')
+        this.$message.error('运行失败')
       })
     }
   }

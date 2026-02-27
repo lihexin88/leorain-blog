@@ -13,6 +13,9 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+    if (config.url.startsWith('/api/')) {
+      config.baseURL = ''
+    }
     return config
   },
   error => {

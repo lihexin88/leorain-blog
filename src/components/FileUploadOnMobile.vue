@@ -46,18 +46,18 @@
     <div class="upload-submit-button">
       <el-button @click="submit()">提交</el-button>
     </div>
-    <el-dialog :visible.sync="dialogVisible">
+    <el-dialog v-model:visible="dialogVisible">
       <img width="100%" :src="dialogImageUrl" alt="">
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {uploadFile} from "../../../plugins/file/upload";
-import {get_url_params} from "../../../configApi/helper";
+import { uploadFile } from '../../../plugins/file/upload'
+import { get_url_params } from '../../../configApi/helper'
 
 export default {
-  data() {
+  data () {
     return {
       file: null,
       fileList: [],
@@ -69,23 +69,23 @@ export default {
   },
   props: {},
   methods: {
-    handleDownload() {
+    handleDownload () {
 
     },
-    handleRemove() {
+    handleRemove () {
 
     },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
+    handlePictureCardPreview (file) {
+      this.dialogImageUrl = file.url
+      this.dialogVisible = true
     },
-    upload({file}) {
+    upload ({ file }) {
       if (!this.token) {
-        toastr.error('未认证')
+        this.$message.error('未认证')
         return
       }
       uploadFile(file, file.name, this.token).then((response) => {
-        this.$http.post('frontend/file/mobile_upload/patch_result',{
+        this.$http.post('frontend/file/mobile_upload/patch_result', {
           status: 3,
           fileName: file.name,
           fileSize: file.size,
@@ -95,18 +95,18 @@ export default {
         })
       })
     },
-    submit() {
+    submit () {
       this.$refs.upload.submit()
     }
   },
-  mounted() {
+  mounted () {
     const urlParams = get_url_params()
     if (!urlParams.token) {
-      toastr.error('未认证')
+      this.$message.error('未认证')
       return
     }
     this.token = urlParams.token
-    this.$http.post('frontend/file/mobile_upload/patch_result',{
+    this.$http.post('frontend/file/mobile_upload/patch_result', {
       status: 2,
       token: this.token
     })

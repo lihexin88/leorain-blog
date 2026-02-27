@@ -8,7 +8,7 @@ export default {
   },
   // 创建评论
   createComment (data) {
-    return api.post('comments', data)
+    return api.post('/api/comments', data)
   },
   // 删除评论
   deleteComment (id) {

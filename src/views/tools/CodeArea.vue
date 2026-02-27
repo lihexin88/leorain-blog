@@ -108,10 +108,10 @@ export default {
     },
     isVim (isVim) {
       if (isVim) {
-        toastr.success('vim keymap enabled')
+        this.$message.success('vim keymap enabled')
         this.editor.setOption('keyMap', 'vim')
       } else {
-        toastr.success('basic keymap enabled')
+        this.$message.success('basic keymap enabled')
         this.editor.setOption('keyMap', 'basic')
       }
     }
@@ -119,9 +119,9 @@ export default {
   methods: {
     copy () {
       navigator.clipboard.writeText(this.value).then(() => {
-        toastr.success('copied')
+        this.$message.success('copied')
       }).catch(() => {
-        toastr.success('copy_failed')
+        this.$message.success('copy_failed')
       })
     },
     submit () {
