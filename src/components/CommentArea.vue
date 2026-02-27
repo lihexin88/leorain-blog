@@ -77,7 +77,7 @@
                          :src="currentUserAvatar"></el-avatar>
             </el-col>
             <el-col :span="22" class="comment-area">
-              <div class="comment-editor-wrapper">
+              <div class="comment-editor-wrapper" @click="handleCommentAreaClick">
                 <div v-show="show_emoji_picker" ref="emojiPickerContainer" class="emoji-picker-container"></div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
               </div>
@@ -86,7 +86,7 @@
           <el-row class="mt-2">
             <el-col :span="24" class="text-right">
               <el-button type="success" :loading="isSubmiting" native-type="submit">
-                {{ $t ? $t('comment.submit') : '提交' }}
+                提交
               </el-button>
             </el-col>
           </el-row>
@@ -103,9 +103,7 @@ import { marked } from 'marked'
 import SimpleMDE from 'simplemde'
 import 'simplemde/dist/simplemde.min.css'
 
-import data from '@emoji-mart/data'
 import { Picker } from 'emoji-mart'
-
 import { emojiI18n, emojiToImage, getEmojiData } from '@/services/customEmoji'
 import UserForm from './UserForm.vue'
 import { commentApi } from '@/apis'
@@ -199,23 +197,41 @@ export default {
     }
 
     // 初始化表情选择器
-    this.emojiPicker = new Picker({
-      data,
-      parent: this.$refs.emojiPickerContainer,
-      onEmojiSelect: (emoji) => {
-        this.addEmoji(emoji)
-      },
-      custom: [
-        {
-          id: 'custom',
-          name: emojiI18n.categories.custom,
-          emojis: this.custom_emojis
-        }
-      ],
-      i18n: emojiI18n,
-      locale: 'zh',
-      set: 'apple'
-    })
+    try {
+      const emojiData = await fetch('https://cdn.jsdelivr.net/npm/@emoji-mart/data').then(res => res.json())
+      this.emojiPicker = new Picker({
+        parent: this.$refs.emojiPickerContainer,
+        data: emojiData,
+        onEmojiSelect: (emoji) => {
+          this.addEmoji(emoji)
+        },
+        custom: [
+          {
+            id: 'custom',
+            name: emojiI18n.categories.custom,
+            emojis: this.custom_emojis
+          }
+        ],
+        locale: 'zh'
+      })
+    } catch (error) {
+      console.error('Failed to load emoji data:', error)
+      // 如果 CDN 加载失败，至少初始化一个只有自定义表情的 Picker
+      this.emojiPicker = new Picker({
+        parent: this.$refs.emojiPickerContainer,
+        onEmojiSelect: (emoji) => {
+          this.addEmoji(emoji)
+        },
+        custom: [
+          {
+            id: 'custom',
+            name: emojiI18n.categories.custom,
+            emojis: this.custom_emojis
+          }
+        ],
+        locale: 'zh'
+      })
+    }
 
     this.simplemde = new SimpleMDE({
       element: document.getElementById('comment_textarea_id'),
@@ -278,6 +294,13 @@ export default {
       this.simplemde.value(this.simplemde.value() + emojiContent)
       this.show_emoji_picker = false
     },
+    handleCommentAreaClick () {
+      if (!this.isLoggedIn) {
+        if (!this.$refs.userForm.validateData()) {
+          this.$refs.userForm.showDialog = true
+        }
+      }
+    },
     comment () {
       if (!this.simplemde.value()) {
         return
@@ -289,6 +312,7 @@ export default {
       }
       if (!this.isLoggedIn) {
         if (!this.$refs.userForm.validateData()) {
+          this.$refs.userForm.showDialog = true
           return
         }
         data.name = this.$refs.userForm.guest.name
@@ -426,34 +450,6 @@ export default {
 
 ::v-deep .editor-preview-side {
   margin-top: 25px;
-}
-
-::v-deep div[data-name="Custom"] ~ * span {
-  width: 96px !important;
-  height: 96px !important;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-::v-deep .emoji-mart-preview {
-  height: 128px !important;
-}
-
-::v-deep .emoji-mart-preview-emoji .emoji-mart-emoji {
-  height: 128px !important;
-}
-
-::v-deep .emoji-mart-preview-emoji span span {
-  height: 96px !important;
-  width: 96px !important;
-}
-
-::v-deep .emoji-mart-preview-data {
-  padding-left: 96px;
-}
-
-::v-deep .emoji-mart-scroll {
-  height: 280px;
 }
 
 .emoji-picker-container {

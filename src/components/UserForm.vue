@@ -48,6 +48,7 @@
 
 <script>
 import MD5 from 'crypto-js/md5'
+import debounce from 'lodash/debounce'
 
 export default {
   components: {},
@@ -55,14 +56,32 @@ export default {
   data () {
     return {
       guest: {
-        avatar: this.guestAvatarPrefix,
         name: null,
         email: null,
         website: null
       },
+      avatar: '',
       guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
-      showDialog: false
+      showDialog: false,
+      debouncedUpdateAvatar: null
     }
+  },
+  watch: {
+    'guest.email': {
+      handler (val) {
+        if (!this.avatar || this.avatar === this.guestAvatarPrefix + MD5('').toString()) {
+          this.updateAvatar(val)
+        } else {
+          this.debouncedUpdateAvatar(val)
+        }
+      },
+      immediate: true
+    }
+  },
+  created () {
+    this.debouncedUpdateAvatar = debounce((val) => {
+      this.updateAvatar(val)
+    }, 1000)
   },
   mounted () {
     this.loadGuestInfo()
@@ -70,7 +89,15 @@ export default {
       this.showDialog = true
     }
   },
+  beforeUnmount () {
+    if (this.debouncedUpdateAvatar) {
+      this.debouncedUpdateAvatar.cancel()
+    }
+  },
   methods: {
+    updateAvatar (val) {
+      this.avatar = this.guestAvatarPrefix + MD5(val || '').toString()
+    },
     loadGuestInfo () {
       const guestInfo = localStorage.getItem('guest_info')
       if (guestInfo) {
@@ -112,11 +139,6 @@ export default {
         }
       }
       return true
-    }
-  },
-  computed: {
-    avatar () {
-      return this.guestAvatarPrefix + MD5(this.guest?.email).toString()
     }
   }
 }
