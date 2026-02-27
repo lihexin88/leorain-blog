@@ -44,7 +44,7 @@ export default {
       this.current_node_key = contentObj.id
       const element = document.getElementById(contentObj.id)
       if (element) {
-        const top = element.getBoundingClientRect().top + window.scrollY - 50
+        const top = element.getBoundingClientRect().top + window.scrollY - 60
         window.scrollTo({ top, behavior: 'smooth' })
       }
     },
@@ -73,14 +73,8 @@ export default {
       // 过滤掉没有ID的标题
       const validHeadings = Array.from(headings).filter(heading => heading.id)
 
-      const headingArray = validHeadings
-      const commentArea = document.getElementById('article-comment-area')
-      if (commentArea) {
-        headingArray.push(commentArea)
-      }
-
       // 过滤掉 null 元素
-      this.headings = headingArray.filter(heading => heading !== null)
+      this.headings = validHeadings.filter(heading => heading !== null)
 
       if (this.headings.length === 0) {
         this.toc = [this.comment_area_heading] // 无标题时返回评论区域
@@ -173,6 +167,7 @@ export default {
 <style scoped lang="scss">
 .contents-go-top:hover {
   color: #00F7DE;
+  cursor: pointer;
 }
 .article-contents-title{
   display: flex;

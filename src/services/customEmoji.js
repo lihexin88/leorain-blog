@@ -46,7 +46,7 @@ export const emojiI18n = {
 }
 
 export async function emojiToImage (text) {
-  if (customEmojiMap.length === 0) {
+  if (Object.keys(customEmojiMap).length === 0) {
     await getEmojiData()
   }
   return text.replace(/:([a-z0-9_+-]+):/g, (match, emoji) => {

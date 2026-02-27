@@ -206,7 +206,7 @@ export default {
       autoRefresh: true,
       lineNumbers: false,
       theme: 'mdn-like',
-      previewRender (plainText, preview) {
+      previewRender: (plainText, preview) => {
         preview.className += ' markdown'
         marked.setOptions({
           highlight: (code) => {
@@ -214,7 +214,11 @@ export default {
           },
           sanitize: true
         })
-        return emojione.toImage(marked(plainText))
+        emojiToImage(plainText).then(processedText => {
+          const html = emojione.toImage(marked(processedText))
+          preview.innerHTML = html
+        })
+        return 'Rendering...'
       },
       toolbar: [
         'bold', 'italic', '|',
@@ -234,16 +238,14 @@ export default {
       commentable_id: this.commentableId,
       commentable_type: this.commentableType,
       commentsCount: this.commentsCount
-    }).then((response) => {
-      response.data.data.forEach((data) => {
-        data.content_html = this.parse(data.content_raw)
+    }).then(async (response) => {
+      for (const data of response.data) {
+        data.content_html = await this.parse(data.content_raw)
         if (!data.avatar || data.avatar === '/images/default.png') {
           data.avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + data.user_email_hash
         }
-
-        return data
-      })
-      this.comments = response.data.data
+      }
+      this.comments = response.data
     })
 
     if (this.login_user_avatar === '') {
@@ -278,11 +280,11 @@ export default {
 
       this.isSubmiting = true
 
-      this.$http.post('comments', data)
-        .then((response) => {
+      commentApi.createComment(data)
+        .then(async (response) => {
           let comment = null
-          comment = response.data.data
-          comment.content_html = this.parse(comment.content_raw)
+          comment = response.data
+          comment.content_html = await this.parse(comment.content_raw)
 
           this.comments.push(comment)
           this.content = ''
@@ -290,40 +292,37 @@ export default {
           this.isSubmiting = false
         }).catch(({ response }) => {
           this.isSubmiting = false
-          const errors = response.data.errors
+          const errors = response.errors
           let errorMessage = ''
           for (const key in errors) {
             errors[key].forEach((value) => {
               errorMessage += value + ','
             })
           }
+          this.$message.error(errorMessage)
         })
     },
     reply (name) {
       $('#content').focus()
       this.simplemde.value('@' + name + ' ')
     },
-    commentDelete (index, id) {
+    commentDelete (/* index, id */) {
     },
     commentLoad () {
-      const url = 'commentable/' + this.commentableId + '/comment'
-      this.$http.get(url, {
-        params: {
-          commentable_type: this.commentableType,
-          commentsCount: this.commentsCount + 1
+      commentApi.getComments({
+        commentable_id: this.commentableId,
+        commentable_type: this.commentableType,
+        commentsCount: this.commentsCount + 1
+      }).then(async (response) => {
+        for (const data of response.data) {
+          data.content_html = await this.parse(data.content_raw)
         }
-      }).then((response) => {
-        response.data.data.forEach((data) => {
-          data.content_html = this.parse(data.content_raw)
-          return data
-        })
-        this.comments = response.data.data
+        this.comments = response.data
         this.commentsCount += 1
-      }).then((response) => {
       })
     },
-    parse (html) {
-      html = emojiToImage(html)
+    async parse (html) {
+      html = await emojiToImage(html)
       marked.setOptions({
         highlight: (code) => {
           return hljs.highlightAuto(code).value

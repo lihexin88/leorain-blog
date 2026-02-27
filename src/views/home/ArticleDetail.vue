@@ -70,8 +70,8 @@
         </div>
       </div>
       <div id="article-comment-area">
-        <comment
-            v-if="article.user && false"
+        <comment-area
+          v-if="article.user"
           title="评论"
           :user="article.user"
           :username="article.user?.name"
@@ -81,7 +81,7 @@
           commentable-type="articles"
           :commentable-id="article.id"
           :can-comment="true"
-        ></comment>
+        ></comment-area>
       </div>
     </div>
     <div class="article-page-right">
@@ -108,7 +108,7 @@ export default {
     ArticleContents,
     ImageViewer,
     Parse: MarkdownParse,
-    Comment: CommentArea,
+    CommentArea,
     RecommendArticle
   },
   data () {
@@ -213,7 +213,7 @@ export default {
 }
 
 .article-page-left {
-  min-width: 500px;
+  max-width: 500px;
   margin-right: 20px;
   position: sticky;
   top: 60px;
