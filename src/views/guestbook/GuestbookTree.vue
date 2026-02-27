@@ -5,7 +5,7 @@
         <div>
           <div class="card-title-area">
             <div class="guestbook-heading-tips">
-              <el-link :href="`/user/`+guestbook.user.name">
+              <el-link :href="`/user/profile?uid=`+guestbook.user.name">
                 <el-avatar :src="get_avatar(guestbook)"></el-avatar>&nbsp;{{ guestbook.user.name??'-' }}
               </el-link>
             </div>

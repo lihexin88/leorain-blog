@@ -111,6 +111,7 @@ export default {
   },
   data () {
     return {
+      fetchTimer: null,
       article: {
         id: 0,
         title: '',
@@ -151,7 +152,7 @@ export default {
         await articleApi.getArticleDetail(this.slug).then((response) => {
           this.article = response.data
           // 使用setTimeout确保DOM完全渲染完成
-          setTimeout(() => {
+          this.fetchTimer = setTimeout(() => {
             this.$refs.articleContent?.init()
             // 计算字数和阅读时间
             this.calculateWordCount()
@@ -196,6 +197,11 @@ export default {
     this.fetchArticle()
     this.fetchUser()
     this.configStore.fetchConfigs()
+  },
+  beforeUnmount () {
+    if (this.fetchTimer) {
+      clearTimeout(this.fetchTimer)
+    }
   }
 }
 </script>

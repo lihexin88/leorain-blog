@@ -15,12 +15,13 @@ export async function getEmojiData () {
     // 转换为short name 和 imageUrl 的映射，方便进行表情和地址的替换
     customEmojiMap[item.short_names[0]] = item.image_url
     return {
+      id: item.short_names[0],
       name: item.name,
-      short_names: item.short_names, // 假设接口返回字段为 short_code
+      short_names: item.short_names,
       text: item.text,
       emoticons: item.emoticons,
       keywords: item.keywords,
-      imageUrl: item.image_url
+      skins: [{ src: item.image_url }]
     }
   })
   customEmoji = result
@@ -33,15 +34,24 @@ export const emojiI18n = {
   categories: {
     search: '搜索结果',
     recent: '常用',
-    people: 'Smileys & People',
-    nature: '动物和自然',
-    foods: '食物',
+    people: '表情与人物',
+    nature: '动物与自然',
+    foods: '食物与饮料',
     activity: '活动',
-    places: '旅行和地区',
-    objects: '物体',
+    places: '旅行与地点',
+    objects: '物品',
     symbols: '符号',
     flags: '旗帜',
     custom: '自定义'
+  },
+  skins: {
+    choose: '选择肤色',
+    1: '默认',
+    2: '浅色',
+    3: '中等浅色',
+    4: '中等肤色',
+    5: '中等深色',
+    6: '深色'
   }
 }
 

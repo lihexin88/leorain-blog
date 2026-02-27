@@ -22,7 +22,7 @@
               </div>
               <div style="display: flex;justify-content: flex-start">
                 <div class="recommend-article-tips">
-                  <el-link :href="`/user/` + article.user.name">
+                  <el-link :href="`/user/profile?uid=` + article.user.name">
                     <i class="fa fa-user"></i>{{ article.user.name }}
                   </el-link>
                 </div>

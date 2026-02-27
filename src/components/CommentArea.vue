@@ -78,17 +78,7 @@
             </el-col>
             <el-col :span="22" class="comment-area">
               <div class="comment-editor-wrapper">
-                <Picker v-if="show_emoji_picker && custom_emojis.length > 0"
-                        :per-line="16"
-                        ref="picker"
-                        set="apple"
-                        title="emoji"
-                        :include="['recent','custom','people','food','activity','travel','objects','flags']"
-                        :showSearch="true"
-                        :showPreview="false"
-                        :custom="custom_emojis"
-                        :onItemClick="addEmoji"
-                />
+                <div v-show="show_emoji_picker" ref="emojiPickerContainer" class="emoji-picker-container"></div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
               </div>
             </el-col>
@@ -96,7 +86,7 @@
           <el-row class="mt-2">
             <el-col :span="24" class="text-right">
               <el-button type="success" :loading="isSubmiting" native-type="submit">
-                提交
+                {{ $t ? $t('comment.submit') : '提交' }}
               </el-button>
             </el-col>
           </el-row>
@@ -113,8 +103,8 @@ import { marked } from 'marked'
 import SimpleMDE from 'simplemde'
 import 'simplemde/dist/simplemde.min.css'
 
-import 'vue-emoji-mart-sort/css/emoji-mart.css'
-import { Picker } from 'vue-emoji-mart-sort'
+import data from '@emoji-mart/data'
+import { Picker } from 'emoji-mart'
 
 import { emojiI18n, emojiToImage, getEmojiData } from '@/services/customEmoji'
 import UserForm from './UserForm.vue'
@@ -125,7 +115,7 @@ import { mapState } from 'pinia'
 import MD5 from 'crypto-js/md5'
 
 export default {
-  components: { ChromeFilled, UserForm, VoteButton, Picker, Plus, User, Clock, Location, Delete, Share },
+  components: { ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, Share },
   props: {
     contentWrapperClass: {
       type: String,
@@ -207,6 +197,26 @@ export default {
     } catch (error) {
       this.custom_emojis = []
     }
+
+    // 初始化表情选择器
+    this.emojiPicker = new Picker({
+      data,
+      parent: this.$refs.emojiPickerContainer,
+      onEmojiSelect: (emoji) => {
+        this.addEmoji(emoji)
+      },
+      custom: [
+        {
+          id: 'custom',
+          name: emojiI18n.categories.custom,
+          emojis: this.custom_emojis
+        }
+      ],
+      i18n: emojiI18n,
+      locale: 'zh',
+      set: 'apple'
+    })
+
     this.simplemde = new SimpleMDE({
       element: document.getElementById('comment_textarea_id'),
       placeholder: '# markdown..',
@@ -264,7 +274,9 @@ export default {
   },
   methods: {
     addEmoji (emoji) {
-      this.simplemde.value(this.simplemde.value() + emoji.colons)
+      const emojiContent = emoji.native || `:${emoji.id}:`
+      this.simplemde.value(this.simplemde.value() + emojiContent)
+      this.show_emoji_picker = false
     },
     comment () {
       if (!this.simplemde.value()) {
@@ -314,7 +326,6 @@ export default {
         })
     },
     reply (name, uid) {
-      $('#content').focus()
       this.simplemde.value('@' + uid + ' ')
       this.simplemde.codemirror.focus()
       this.simplemde.codemirror.setCursor(this.simplemde.codemirror.lineCount(), 0)
@@ -445,10 +456,18 @@ export default {
   height: 280px;
 }
 
+.emoji-picker-container {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: 1000;
+}
+
 .comment-editor-wrapper {
   background-color: aliceblue;
   border-radius: 3px;
   border: 1px solid #dcdfe6;
+  position: relative;
 }
 
 .comment-editor-wrapper :deep(.editor-toolbar) {

@@ -139,8 +139,13 @@
 
 "@element-plus/icons-vue@^2.3.2":
   version "2.3.2"
-  resolved "https://registry.npmmirror.com/@element-plus/icons-vue/-/icons-vue-2.3.2.tgz#7e9cb231fb738b2056f33e22c3a29e214b538dcf"
+  resolved "https://registry.npmmirror.com/@element-plus/icons-vue/-/icons-vue-2.3.2.tgz"
   integrity sha512-OzIuTaIfC8QXEPmJvB4Y4kw34rSXdCJzxcD1kFStBvr8bK6X1zQAYDo0CNMjojnfTqRQCJ0I7prlErcoRiET2A==
+
+"@emoji-mart/data@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.npmmirror.com/@emoji-mart/data/-/data-1.2.1.tgz"
+  integrity sha512-no2pQMWiBy6gpBEiqGeU77/bFejDqUTRY7KX+0+iur13op3bqUsXdnwoZs6Xb1zbv0gAj5VvS1PWoUUckSr5Dw==
 
 "@esbuild/aix-ppc64@0.21.5":
   version "0.21.5"
@@ -1403,6 +1408,11 @@ element-plus@^2.4.4:
     memoize-one "^6.0.0"
     normalize-wheel-es "^1.2.0"
 
+emoji-mart@^5.6.0:
+  version "5.6.0"
+  resolved "https://registry.npmmirror.com/emoji-mart/-/emoji-mart-5.6.0.tgz"
+  integrity sha512-eJp3QRe79pjwa+duv+n7+5YsNhRcMl812EcFVwrnRvYKoNPoQb5qxU8DG6Bgwji0akHdp6D4Ln6tYLG58MFSow==
+
 emoji-regex@^8.0.0:
   version "8.0.0"
   resolved "https://registry.npmmirror.com/emoji-regex/-/emoji-regex-8.0.0.tgz"
@@ -2598,11 +2608,6 @@ mdn-data@2.12.2:
   resolved "https://registry.npmmirror.com/mdn-data/-/mdn-data-2.12.2.tgz"
   integrity sha512-IEn+pegP1aManZuckezWCO+XZQDplx1366JoVhTpMpBB1sPey/SbveZQUosKiKiGYjg1wH4pMlNgXbCiYgihQA==
 
-measure-scrollbar@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmmirror.com/measure-scrollbar/-/measure-scrollbar-0.1.0.tgz"
-  integrity sha512-8n7yR0PVrp/YmvWoRuiumlA0l6+joJg6PA5/uFb8frsd7ZV2It1tnNjqCrLNuMtU7yOPqJiYmm7+VwcWQwvqRQ==
-
 memoize-one@^6.0.0:
   version "6.0.0"
   resolved "https://registry.npmmirror.com/memoize-one/-/memoize-one-6.0.0.tgz"
@@ -3562,11 +3567,6 @@ unbox-primitive@^1.1.0:
     has-symbols "^1.1.0"
     which-boxed-primitive "^1.1.1"
 
-unfetch@^3.0.0:
-  version "3.1.2"
-  resolved "https://registry.npmmirror.com/unfetch/-/unfetch-3.1.2.tgz"
-  integrity sha512-L0qrK7ZeAudGiKYw6nzFjnJ2D5WHblUBwmHIqtPS6oKUd+Hcpk7/hKsSmcHsTlpd1TbTNsiRBUKRq3bHLNIqIw==
-
 uri-js@^4.2.2:
   version "4.4.1"
   resolved "https://registry.npmmirror.com/uri-js/-/uri-js-4.4.1.tgz"
@@ -3602,14 +3602,6 @@ vue-demi@>=0.14.8, vue-demi@^0.14.10:
   version "0.14.10"
   resolved "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.10.tgz"
   integrity sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==
-
-vue-emoji-mart-sort@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.npmmirror.com/vue-emoji-mart-sort/-/vue-emoji-mart-sort-1.0.6.tgz"
-  integrity sha512-S5QQLS+5KyUH1z6eAAYu2WwKimatuXXpcfWSdy+TCNKPmUX7mpmwrK1cRY983duzdwAMD9FPKcEi2P8ODdz4zw==
-  dependencies:
-    measure-scrollbar "^0.1.0"
-    unfetch "^3.0.0"
 
 vue-eslint-parser@^9.3.1, vue-eslint-parser@^9.4.3:
   version "9.4.3"
