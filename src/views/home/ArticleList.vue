@@ -113,6 +113,13 @@ import anime from 'animejs'
 import { articleApi } from '@/apis'
 
 export default {
+  tdk () {
+    return {
+      title: '文章列表 - 个人博客',
+      description: '浏览最新的博客文章',
+      keywords: '博客, 文章, 列表'
+    }
+  },
   computed: {
     moment () {
       return moment

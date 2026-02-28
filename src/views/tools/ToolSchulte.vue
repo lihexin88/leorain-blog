@@ -7,6 +7,11 @@ import { useUserStore } from '@/store/user'
 import schulteApi from '@/apis/schulte'
 
 export default {
+  tdk: {
+    title: '舒尔特方格 - 在线训练',
+    description: '在线舒尔特方格训练工具，提升专注力和视觉广度',
+    keywords: '舒尔特方格, 专注力训练, 视觉训练'
+  },
   data () {
     return {
       items: [

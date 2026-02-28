@@ -7,6 +7,7 @@ import 'element-plus/dist/index.css'
 import './assets/styles/main.scss'
 import 'particles.js'
 import VueParticles from 'vue-particles'
+import { tdkMixin } from '@/utils/tdk'
 
 // Fix particles.js strict mode issue
 Object.deepExtend = function (destination, source) {
@@ -32,5 +33,6 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
 app.use(VueParticles)
+app.mixin(tdkMixin)
 
 app.mount('#app')

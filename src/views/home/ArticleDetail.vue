@@ -101,6 +101,13 @@ import { Clock } from '@element-plus/icons-vue'
 
 export default {
   name: 'ArticleDetail',
+  tdk () {
+    return {
+      title: this.article.title ? `${this.article.title} - 个人博客` : '文章详情',
+      description: this.article.subtitle || (this.article.content ? this.article.content.substring(0, 100) : ''),
+      keywords: this.article.tags ? this.article.tags.map(t => t.tag).join(',') : ''
+    }
+  },
   components: {
     Clock,
     ArticleContents,
