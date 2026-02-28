@@ -8,7 +8,83 @@
       @select="handleSelect"
   >
     <el-menu-item index="/">首页</el-menu-item>
-    <el-sub-menu index="/tools">
+
+    <!-- 移动端折叠菜单 -->
+    <el-sub-menu index="more" class="mobile-more-menu">
+      <template #title>更多</template>
+      <el-sub-menu index="/tools-mobile">
+        <template #title>工具箱</template>
+        <el-menu-item index="/tools/timestamp">
+          <img src="https://images.leorain.cn/icons/tools/tool_timestamp.png" class="menu-icon" />
+          <span>时间戳转换</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/radix">
+          <img src="https://images.leorain.cn/icons/tools/tool_radix.png" class="menu-icon" />
+          <span>进制转换</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/json">
+          <img src="https://images.leorain.cn/icons/tools/tool_json_format.png" class="menu-icon" />
+          <span>JSON格式化</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/php">
+          <img src="https://images.leorain.cn/icons/tools/tool_php.png" class="menu-icon" />
+          <span>PHP在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/java">
+          <img src="https://images.leorain.cn/icons/tools/tool_java.png" class="menu-icon" />
+          <span>JAVA在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/python">
+          <img src="https://images.leorain.cn/icons/tools/tool_python.png" class="menu-icon" />
+          <span>PYTHON在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/golang">
+          <img src="https://images.leorain.cn/icons/tools/tool_golang.png" class="menu-icon" />
+          <span>GO在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/clang">
+          <img src="https://images.leorain.cn/icons/tools/tool_clang.png" class="menu-icon" />
+          <span>C在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/cpp">
+          <img src="https://images.leorain.cn/icons/tools/tool_cpp.png" class="menu-icon" />
+          <span>C++在线运行</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/draw">
+          <img src="https://images.leorain.cn/icons/tools/tool_draw.png" class="menu-icon" />
+          <span>在线同步绘画</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/clipboard">
+          <img src="https://images.leorain.cn/icons/tools/tool_clipboard.png" class="menu-icon" />
+          <span>在线剪切板</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/schulte">
+          <img src="https://images.leorain.cn/icons/tools/tool_table_number.png" class="menu-icon" />
+          <span>舒尔特表格测试</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/cpu">
+          <img src="https://images.leorain.cn/icons/tools/tool_cpu.png" class="menu-icon" />
+          <span>CPU运行模拟</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/lottery">
+          <img src="https://images.leorain.cn/icons/tools/tool_lucky.png" class="menu-icon" />
+          <span>我很幸运</span>
+        </el-menu-item>
+        <el-menu-item index="/tools/fish">
+          <img src="https://images.leorain.cn/icons/tools/tool_fish.png" class="menu-icon" />
+          <span>鱼乐一下</span>
+        </el-menu-item>
+      </el-sub-menu>
+      <el-menu-item index="/assets">向量检索</el-menu-item>
+      <el-menu-item index="/quiz">测验</el-menu-item>
+      <el-menu-item index="/guestbook">留言板</el-menu-item>
+      <el-menu-item index="/games">童年游戏</el-menu-item>
+      <el-menu-item index="/links">友情链接</el-menu-item>
+      <el-menu-item index="/categories">所有分类</el-menu-item>
+      <el-menu-item index="/discussion">讨论</el-menu-item>
+    </el-sub-menu>
+
+    <el-sub-menu index="/tools" class="desktop-menu">
       <template #title>工具箱</template>
       <el-menu-item index="/tools/timestamp">
         <img src="https://images.leorain.cn/icons/tools/tool_timestamp.png" class="menu-icon" />
@@ -71,13 +147,13 @@
         <span>鱼乐一下</span>
       </el-menu-item>
     </el-sub-menu>
-    <el-menu-item index="/assets">向量检索</el-menu-item>
-    <el-menu-item index="/quiz">测验</el-menu-item>
-    <el-menu-item index="/guestbook">留言板</el-menu-item>
-    <el-menu-item index="/games">童年游戏</el-menu-item>
-    <el-menu-item index="/links">友情链接</el-menu-item>
-    <el-menu-item index="/categories">所有分类</el-menu-item>
-    <el-menu-item index="/discussion">讨论</el-menu-item>
+    <el-menu-item index="/assets" class="desktop-menu">向量检索</el-menu-item>
+    <el-menu-item index="/quiz" class="desktop-menu">测验</el-menu-item>
+    <el-menu-item index="/guestbook" class="desktop-menu">留言板</el-menu-item>
+    <el-menu-item index="/games" class="desktop-menu">童年游戏</el-menu-item>
+    <el-menu-item index="/links" class="desktop-menu">友情链接</el-menu-item>
+    <el-menu-item index="/categories" class="desktop-menu">所有分类</el-menu-item>
+    <el-menu-item index="/discussion" class="desktop-menu">讨论</el-menu-item>
 
     <div class="flex-grow"></div>
 
@@ -161,6 +237,19 @@ export default {
   backdrop-filter: blur(8px) saturate(180%);
   display: flex;
   align-items: center;
+}
+
+.mobile-more-menu {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .desktop-menu {
+    display: none !important;
+  }
+  .mobile-more-menu {
+    display: block !important;
+  }
 }
 
 .flex-grow {
