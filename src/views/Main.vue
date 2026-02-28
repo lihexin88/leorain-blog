@@ -48,11 +48,6 @@ import { useUserStore } from '@/store/user'
 import FooterBar from '@/components/FooterBar.vue'
 
 export default {
-  tdk: {
-    title: '在线时间工具',
-    description: '分享技术、生活点滴',
-    keywords: '博客, 技术, 生活'
-  },
   name: 'MainPage',
   components: {
     FooterBar,
