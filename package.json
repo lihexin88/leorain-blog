@@ -37,6 +37,10 @@
     "three": "^0.182.0",
     "vue": "^3.3.11",
     "vue-particles": "^1.0.9",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
+    "cropperjs": "^1.3.2",
+
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

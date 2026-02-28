@@ -128,6 +128,11 @@ const routes = [
             path: 'fish',
             name: 'Fish',
             component: () => import('../views/tools/ToolFish.vue')
+          },
+          {
+            path: 'media',
+            name: 'ToolMedia',
+            component: () => import('../views/tools/ToolMedia.vue')
           }
         ]
       },

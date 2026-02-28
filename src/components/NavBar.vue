@@ -74,6 +74,10 @@
           <img src="https://images.leorain.cn/icons/tools/tool_fish.png" class="menu-icon" />
           <span>鱼乐一下</span>
         </el-menu-item>
+        <el-menu-item index="/tools/media">
+          <img src="https://images.leorain.cn/icons/tools/tool_picture.png" class="menu-icon" />
+          <span>媒体处理工具</span>
+        </el-menu-item>
       </el-sub-menu>
       <el-menu-item index="/assets">向量检索</el-menu-item>
       <el-menu-item index="/quiz">测验</el-menu-item>
@@ -145,6 +149,10 @@
       <el-menu-item index="/tools/fish">
         <img src="https://images.leorain.cn/icons/tools/tool_fish.png" class="menu-icon" />
         <span>鱼乐一下</span>
+      </el-menu-item>
+      <el-menu-item index="/tools/media">
+        <img src="https://images.leorain.cn/icons/tools/tool_picture.png" class="menu-icon" />
+        <span>媒体处理工具</span>
       </el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/assets" class="desktop-menu">向量检索</el-menu-item>

@@ -316,4 +316,12 @@ export default {
     display: none;
   }
 }
+//:deep(.markdown){
+//  img{
+//    max-width: 100%;
+//  }
+//  video{
+//    max-width: 100%;
+//  }
+//}
 </style>
