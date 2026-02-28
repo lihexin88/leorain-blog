@@ -11,15 +11,15 @@
 <script>
 export default {
   name: 'ArticleList',
-  data() {
+  data () {
     return {
       // 数据属性
-    };
+    }
   },
   methods: {
     // 方法
   }
-};
+}
 </script>
 
 <style scoped>

@@ -3,11 +3,11 @@
        style="height: 350px;width:100%;border: 1px solid rgba(166,166,166,0.49);border-radius: 4px;z-index: 1"></div>
 </template>
 <script>
-import L from "leaflet";
-import SockJS from "sockjs-client";
-import {Client} from "@stomp/stompjs";
-import "leaflet/dist/leaflet.css";
-import {visitorMapApi} from "@/apis";
+import L from 'leaflet'
+import SockJS from 'sockjs-client'
+import { Client } from '@stomp/stompjs'
+import 'leaflet/dist/leaflet.css'
+import { visitorMapApi } from '@/apis'
 
 // 创建自定义闪烁图标
 const createPulsingIcon = (type = 1) => {
@@ -15,34 +15,34 @@ const createPulsingIcon = (type = 1) => {
     return L.divIcon({
       className: 'pulsing-icon',
       iconSize: [20, 20],
-      html: `<div class="pulse-container"><div class="pulse-circle-blue"></div></div>`
-    });
+      html: '<div class="pulse-container"><div class="pulse-circle-blue"></div></div>'
+    })
   } else if (type === 2) {
     return L.divIcon({
       className: 'pulsing-icon',
       iconSize: [20, 20],
-      html: `<div class="pulse-container"><div class="pulse-circle-red"></div></div>`
-    });
+      html: '<div class="pulse-container"><div class="pulse-circle-red"></div></div>'
+    })
   }
 }
 
 export default {
-  data() {
+  data () {
     return {
       connection_retried: 0,
       stompClient: null,
       chinaBounds: [
         [3.86, 73.66], // 中国最南西（海南南部海域）
-        [53.55, 135.05], // 中国最北东
+        [53.55, 135.05] // 中国最北东
       ],
       map: null,
       markers: new Map(),
-      tiandituToken: "c5429bb758af21ec9e639fb42551136e",
+      tiandituToken: 'c5429bb758af21ec9e639fb42551136e',
       chinaCities: null,
-      geojsonLayer: null, // 存储 GeoJSON 图层
+      geojsonLayer: null // 存储 GeoJSON 图层
     }
   },
-  async mounted() {
+  async mounted () {
     // 延迟初始化确保DOM渲染完成
     this.$nextTick(() => {
       visitorMapApi.getCountryMap().then((response) => {
@@ -50,13 +50,13 @@ export default {
         this.initMap()
         this.connectWebSocket()
         // 初始加载城市 GeoJSON 数据
-        this.addCityBorders();
+        this.addCityBorders()
       })
-    });
+    })
   },
   methods: {
     // 初始化地图
-    initMap() {
+    initMap () {
       // 初始化地图
       this.map = L.map('visitorMap', {
         center: [35.8617, 104.1954], // 中国中心
@@ -65,66 +65,65 @@ export default {
         maxZoom: 6,
         trackResize: true,
         zoomControl: false,
-        maxBounds: this.chinaBounds, // 限制地图范围
-      }); // 初始定位中国
-      this.map.attributionControl.setPrefix('');
+        maxBounds: this.chinaBounds // 限制地图范围
+      }) // 初始定位中国
+      this.map.attributionControl.setPrefix('')
       // 基础图层（不包含文字）
       const baseLayer = L.tileLayer(`https://t{s}.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=${this.tiandituToken}`, {
-        subdomains: "01234567",
+        subdomains: '01234567',
         attribution: '',
-        zIndex: 1,
-      });
+        zIndex: 1
+      })
 
-// 添加到地图
-      baseLayer.addTo(this.map);
+      // 添加到地图
+      baseLayer.addTo(this.map)
       // 监听缩放，添加 GeoJSON
-      this.map.on("zoomend", () => {
-        let zoom = this.map.getZoom();
-        console.log("当前缩放级别:", zoom);
+      this.map.on('zoomend', () => {
+        let zoom = this.map.getZoom()
+        console.log('当前缩放级别:', zoom)
 
         if (zoom <= 3) {
           L.geoJSON(cityBorders, {
             style: {
-              color: "green",
-              weight: .5
+              color: 'green',
+              weight: 0.5
             },
             onEachFeature: (feature, layer) => {
-              layer.bindTooltip(feature.properties.name, {permanent: true});
+              layer.bindTooltip(feature.properties.name, { permanent: true })
             }
-          }).addTo(this.map);
+          }).addTo(this.map)
         }
       })
     },
-    addCityBorders() {
+    addCityBorders () {
       // 移除之前的 GeoJSON 图层（如果存在）
       if (this.geojsonLayer) {
-        this.map.removeLayer(this.geojsonLayer);
+        this.map.removeLayer(this.geojsonLayer)
       }
 
       // 加载城市轮廓
       this.geojsonLayer = L.geoJSON(this.chinaCities, {
         style: {
-          color: "green", // 轮廓颜色
-          weight: .1, // 线宽
-          fillOpacity: 0, // 透明填充
+          color: 'green', // 轮廓颜色
+          weight: 0.1, // 线宽
+          fillOpacity: 0 // 透明填充
         },
         onEachFeature: (feature, layer) => {
-          let cityName = feature.properties.name;
-          let cityCenter = layer.getBounds().getCenter();
+          let cityName = feature.properties.name
+          let cityCenter = layer.getBounds().getCenter()
 
           // 在城市中心点添加名称
           L.marker(cityCenter, {
             icon: L.divIcon({
-              className: "city-label",
+              className: 'city-label',
               html: `<span>${cityName}</span>`,
-              iconSize: [60, 20],
-            }),
-          }).addTo(this.map);
-        },
-      }).addTo(this.map);
+              iconSize: [60, 20]
+            })
+          }).addTo(this.map)
+        }
+      }).addTo(this.map)
     },
-    updateMarker(location) {
-
+    updateMarker (location) {
       // 加强类型转换和错误处理
       const lat = parseFloat(location.lat)
       const lng = parseFloat(location.lng)
@@ -149,60 +148,60 @@ export default {
           zIndexOffset: 999 // 确保显示在最上层
         }).addTo(this.map)
         // 保存标记实例
-        this.markers.set(key, newMarker);
+        this.markers.set(key, newMarker)
         // 10秒后自动移除标记
         setTimeout(() => {
           if (this.markers.has(key)) {
-            this.markers.get(key).remove();
-            this.markers.delete(key);
+            this.markers.get(key).remove()
+            this.markers.delete(key)
           }
-        }, 1000);
+        }, 1000)
       } catch (e) {
         console.error('创建标记失败：', e)
       }
     },
 
-    async connectWebSocket() {
+    async connectWebSocket () {
       // 1. 创建 SockJS 连接
-      const socket = new SockJS(process.env.DRAW_WS_HOST + '/ws'); // WebSocket 端点
+      const socket = new SockJS(process.env.DRAW_WS_HOST + '/ws') // WebSocket 端点
 
       // 2. 创建 STOMP 客户端
       this.stompClient = new Client({
         webSocketFactory: () => socket, // 连接 SockJS
-        reconnectDelay: 1000,           // 断线重连间隔时间
+        reconnectDelay: 1000, // 断线重连间隔时间
         heartbeatIncoming: 1000,
-        heartbeatOutgoing: 1000,
-      });
+        heartbeatOutgoing: 1000
+      })
 
       // 3. 连接 WebSocket
       this.stompClient.onConnect = () => {
         this.connection_retried = 0
         this.stompClient.subscribe('/info/visitors/location', (message) => {
-          const visitor = message.body.split(",")
+          const visitor = message.body.split(',')
           this.updateMarker({
             lat: parseFloat(visitor[0]),
             lng: parseFloat(visitor[1]),
-            type: parseInt(visitor[2]),
+            type: parseInt(visitor[2])
           })
-        });
-      };
+        })
+      }
 
       // 4. 错误处理
       this.stompClient.onStompError = (frame) => {
-        console.log("错误")
-      };
+        console.log('错误')
+      }
       this.stompClient.onWebSocketClose = (frame) => {
         if (frame.code === 2000) {
           this.$accessToken(2)
           this.button_type = 'info'
-          console.error("链接已断开")
-          return;
+          console.error('链接已断开')
+          return
         }
         if (!this.show_visitor) {
           return
         }
         setTimeout(() => {
-          console.error("断线重连中")
+          console.error('断线重连中')
           this.connection_retried++
           if (this.connection_retried > 3) {
             this.connection_retried = 0
@@ -213,12 +212,12 @@ export default {
       }
       this.stompClient.onDisconnect = () => {
         this.button_type = 'info'
-        console.error("链接已断开")
+        console.error('链接已断开')
       }
 
-      this.stompClient.activate(); // 激活连接
-    },
-  },
+      this.stompClient.activate() // 激活连接
+    }
+  }
 }
 </script>
 

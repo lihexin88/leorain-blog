@@ -137,6 +137,16 @@ const routes = [
         ]
       },
       {
+        path: 'games',
+        name: 'GameList',
+        component: () => import('../views/games/GameList.vue')
+      },
+      {
+        path: 'game/:slug',
+        name: 'GamePlay',
+        component: () => import('../views/games/GamePlay.vue')
+      },
+      {
         path: 'guestbook',
         name: 'Guestbook',
         component: () => import('../views/guestbook/Guestbooks.vue')

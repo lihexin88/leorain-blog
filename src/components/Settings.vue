@@ -3,7 +3,7 @@
     <div class="settings-bar">
       <el-button :type="button_type" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
     </div>
-    <el-drawer :visible.sync="show_settings_draw" direction="rtl" :with-header="false" :size="320">
+    <el-drawer v-model:visible="show_settings_draw" direction="rtl" :with-header="false" :size="320">
       <div class="settings-container">
         <div>
           <el-divider>
@@ -70,7 +70,7 @@ export default {
     }
   },
   components: {},
-  data() {
+  data () {
     return {
       show_request_log: false,
       show_settings_draw: false,
@@ -95,10 +95,10 @@ export default {
   },
   methods: {
     getHumanReadableDate,
-    switch_show_settings() {
+    switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
     },
-    async connectWebSocket() {
+    async connectWebSocket () {
       // const accessToken = await this.$accessToken(1)
       // if (accessToken === false) {
       //   this.show_visitor = false
@@ -181,17 +181,17 @@ export default {
       this.stompClient.activate() // 激活连接
     }
   },
-  beforeCreate() {
+  beforeCreate () {
     let showVisitor = localStorage.getItem('visitor_switch')
     this.show_visitor = showVisitor === 'true'
   },
-  beforeMount() {
+  beforeMount () {
     if (this.show_visitor) {
       this.connectWebSocket()
     }
   },
   watch: {
-    show_visitor(newValue) {
+    show_visitor (newValue) {
       if (newValue) {
         this.connectWebSocket()
       } else {

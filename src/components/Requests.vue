@@ -19,9 +19,9 @@
     </el-table>
     <div style="display: flex;justify-content: center;padding-top: 20px">
       <el-pagination
-          :page-size.sync="per_page"
+          v-model:page-size="per_page"
           :page-sizes="[20, 32, 50]"
-          :current-page.sync="page"
+          v-model:current-page="page"
           @current-change="load"
           background
           :small="smallWindowSize"
@@ -33,16 +33,16 @@
 </template>
 
 <script>
-import {paginate_layouts} from "../../../configApi/helper";
-import moment from "moment";
+import { paginate_layouts } from '../../../configApi/helper'
+import moment from 'moment'
 
 export default {
-  components:{
+  components: {
     moment
   },
   methods: {
-    load() {
-      const url = process.env.DRAW_WS_HOST + "/request/log"
+    load () {
+      const url = process.env.DRAW_WS_HOST + '/request/log'
       this.$http.get(url, {
         params: {
           page: this.page,
@@ -51,23 +51,23 @@ export default {
       }).then((response) => {
         this.requestList = response.data.content
         this.requestList.forEach((requestLog) => {
-          requestLog.date_time = moment(requestLog.requestTime).format("HH:mm:ss")
+          requestLog.date_time = moment(requestLog.requestTime).format('HH:mm:ss')
         })
         this.total = response.data.totalElements
       })
     }
   },
-  data() {
+  data () {
     return {
       requestList: [],
       page: 1,
       per_page: 10,
       smallWindowSize: true,
       layout: 'prev, pager, next',
-      total: null,
+      total: null
     }
   },
-  mounted() {
+  mounted () {
     // 如果是竖屏，设置windowSize为6
     const paginateLayouts = paginate_layouts()
     this.load()
