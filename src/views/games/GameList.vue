@@ -4,6 +4,13 @@ import { getFriendlyDate, maxString } from '@/utils/helpers'
 import { VideoPlay, ChatLineRound, Clock } from '@element-plus/icons-vue'
 
 export default {
+  tdk () {
+    return {
+      title: '童年NES游戏模拟器 - 经典红白机游戏在线玩',
+      description: '重温童年回忆，在线免费玩经典NES红白机游戏。收录超级马里奥、魂斗罗、坦克大战等数百款经典游戏，无需下载，即点即玩，支持存档读档，完美还原童年游戏体验。',
+      keywords: 'NES游戏模拟器,红白机游戏,FC游戏,童年游戏,超级马里奥,魂斗罗,坦克大战,在线游戏,怀旧游戏,经典游戏'
+    }
+  },
   name: 'GameList',
   components: {
     VideoPlay,
@@ -63,23 +70,23 @@ export default {
   <div class="game-list-container" v-loading="loading">
     <div class="game-grid">
       <el-card
-        v-for="game in games"
-        :key="game.id"
-        class="game-card"
-        :body-style="{ padding: '0px' }"
-        @click="goToGame(game)"
+          v-for="game in games"
+          :key="game.id"
+          class="game-card"
+          :body-style="{ padding: '0px' }"
+          @click="goToGame(game)"
       >
         <div class="game-cover">
-          <img :src="game.cover_image" :alt="game.name" class="image" />
+          <img :src="game.cover_image" :alt="game.name" class="image"/>
         </div>
         <div class="game-info">
           <div class="game-title" :title="game.name">
             {{ maxString(game.name, 24) }}
           </div>
           <div class="game-meta">
-            <span><el-icon><VideoPlay /></el-icon> {{ game.played }}</span>
-            <span><el-icon><ChatLineRound /></el-icon> {{ game.comments_count || 0 }}</span>
-            <span><el-icon><Clock /></el-icon> {{ getFriendlyDate(game.created_at) }}</span>
+            <span><el-icon><VideoPlay/></el-icon> {{ game.played }}</span>
+            <span><el-icon><ChatLineRound/></el-icon> {{ game.comments_count || 0 }}</span>
+            <span><el-icon><Clock/></el-icon> {{ getFriendlyDate(game.created_at) }}</span>
           </div>
         </div>
       </el-card>
@@ -87,11 +94,11 @@ export default {
 
     <div class="pagination-container">
       <el-pagination
-        v-model:current-page="pagination.currentPage"
-        :page-size="pagination.pageSize"
-        layout="prev, pager, next, total"
-        :total="pagination.total"
-        @current-change="handlePageChange"
+          v-model:current-page="pagination.currentPage"
+          :page-size="pagination.pageSize"
+          layout="prev, pager, next, total"
+          :total="pagination.total"
+          @current-change="handlePageChange"
       />
     </div>
   </div>
