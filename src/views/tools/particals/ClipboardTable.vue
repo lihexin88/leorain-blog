@@ -338,7 +338,7 @@ export default {
         >
           <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
-              <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px" preview-teleport
+              <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px" :preview-teleport="true" :z-index="3000" crossorigin="anonymous"
                         :src="scope.row?.content"></el-image>
             </div>
             <div v-else-if="scope.row?.type === 1">

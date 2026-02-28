@@ -2,7 +2,7 @@
   <div>
     <div class="markdown" @click="handleEvent" ref="markdownContent" v-html="rawHtml"></div>
     <el-dialog show-footer :show="executor.show_exec_result" @cancel="executor.show_exec_result = false">
-      <template v-slot:header>
+      <template v-slot:title>
         <div style="display: flex">
           <div>运行结果</div>
           <div style="display: flex;justify-content: end;align-items: center;font-size: .7em;padding-left: 20px">
@@ -32,15 +32,16 @@
         </div>
       </template>
     </el-dialog>
-    <!-- 图片预览模态框 -->
-    <el-dialog :show="showPreview" @cancel="closePreview">
-      <template v-slot:header>
-        <div>预览图片·点击放大</div>
-      </template>
-      <div class="modal-content" title="点击放大">
-        <image-viewer :show="showPreview" title="点击放大" :image_src="currentImage" alt="Preview"></image-viewer>
-      </div>
-    </el-dialog>
+    <el-image
+        v-if="currentImage"
+        ref="elImage"
+        style="width: 0; height: 0; display: block"
+        :src="currentImage"
+        :preview-src-list="[currentImage]"
+        :preview-teleport="true"
+        @close="closePreview"
+    >
+    </el-image>
   </div>
 </template>
 
@@ -48,13 +49,10 @@
 import emojione from 'emojione'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import ImageViewer from '@/components/ImageViewer.vue'
 import { emojiToImage } from '@/services/customEmoji'
 
 export default {
-  components: {
-    ImageViewer
-  },
+  components: {},
   props: {
     content: {
       type: String,
@@ -74,7 +72,6 @@ export default {
         executor_url: null,
         cost_time: 0
       },
-      showPreview: false,
       currentImage: null
     }
   },
@@ -95,12 +92,19 @@ export default {
   methods: {
     handleEvent (event) {
       if (event.target.tagName === 'IMG') {
-        this.showPreview = true
         this.currentImage = event.target.src
+        this.$nextTick(() => {
+          const elImage = this.$refs.elImage
+          if (elImage) {
+            const img = elImage.$el.querySelector('img')
+            if (img) {
+              img.click()
+            }
+          }
+        })
       }
     },
     closePreview () {
-      this.showPreview = false
       this.currentImage = ''
     },
     go_tool_exec () {
@@ -135,9 +139,7 @@ export default {
 
       // 自定义标题渲染，生成 ID 并存入 toc
       renderer.heading = (text, level) => {
-        // 创建更稳定的ID，基于文本内容而不是随机数
-        const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-')
-        const id = escapedText || this.fn_Guid()
+        const id = this.fn_Guid(text)
         return `<h${level} id="${id}">${text}</h${level}>`
       }
 
