@@ -55,24 +55,33 @@
                   </el-icon>
                   {{ comment.visitor?.user_agent ?? null }}
                 </div>
-                <div class="comment-heading-tips">
-                     <vote-button v-if="user?.uid !== comment.uid" :item="comment"></vote-button>
-                       <el-icon
-                           v-if="user?.uid === comment.uid"
-                           @click="commentDelete(index, comment.id)"
-                       ><Delete/></el-icon>
-                       <el-icon @click="reply(comment.username, comment.uid)"><Share/></el-icon>
+                <div class="comment-heading-tips comment-heading-actions">
+                  <vote-button v-if="user?.uid !== comment.uid" :item="comment"></vote-button>
+                  <el-icon
+                      v-if="user?.uid === comment.uid || user?.is_admin"
+                      @click="commentDelete(index, comment.id)"
+                  >
+                    <Delete/>
+                  </el-icon>
+                  <el-icon @click="reply(comment.username, comment.uid)">
+                    <Share/>
+                  </el-icon>
                 </div>
               </div>
             </div>
-            <markdown-parse v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''" :content="comment.content_html"></markdown-parse>
+            <markdown-parse v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''"
+                            :content="comment.content_html"></markdown-parse>
           </div>
         </div>
         <el-form class="mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
           <el-row :gutter="20" class="comment-submit-area">
             <el-col :span="24" class="comment-area">
               <div class="comment-editor-wrapper" @click="handleCommentAreaClick">
-                <div v-show="show_emoji_picker" ref="emojiPickerContainer" class="emoji-picker-container"></div>
+                <div v-show="show_emoji_picker"
+                     ref="emojiPickerContainer"
+                     class="emoji-picker-container"
+                     :style="{ left: emojiPickerPosition.left + 'px', top: emojiPickerPosition.top + 'px' }">
+                </div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
               </div>
               <div class="user-avatar-in-toolbar">
@@ -182,7 +191,8 @@ export default {
       custom_emojis: [],
       emojiI18n,
       login_user_avatar: this.userAvatar,
-      guestInfo: null
+      guestInfo: null,
+      emojiPickerPosition: { left: 0, top: 0 }
     }
   },
   async mounted () {
@@ -204,6 +214,8 @@ export default {
         data: emojiData,
         onEmojiSelect: (emoji) => {
           this.addEmoji(emoji)
+        },
+        onClickOutside: () => {
         },
         custom: [
           {
@@ -258,6 +270,36 @@ export default {
         'link', 'guide', '|', {
           name: 'emoji',
           action: () => {
+            // 获取点击事件的目标元素
+            const event = window.event
+            if (event) {
+              // 计算点击位置相对于编辑器容器的坐标
+              const editorWrapper = this.$el.querySelector('.comment-editor-wrapper')
+              const toolbarButton = event.target.closest('.fa-smile') || event.target.closest('button')
+
+              if (editorWrapper && toolbarButton) {
+                const wrapperRect = editorWrapper.getBoundingClientRect()
+                const buttonRect = toolbarButton.getBoundingClientRect()
+
+                // 检测是否为移动设备
+                const isMobile = window.innerWidth <= 768
+
+                // 设置 emoji picker 的位置
+                if (isMobile) {
+                  // 在移动设备上，emoji picker 位于中间
+                  this.emojiPickerPosition = {
+                    left: (wrapperRect.width - 300) / 2, // 假设 emoji picker 宽度为 300px
+                    top: buttonRect.top - wrapperRect.top
+                  }
+                } else {
+                  // 在桌面设备上，emoji picker 位于点击位置的正上方
+                  this.emojiPickerPosition = {
+                    left: buttonRect.left - wrapperRect.left,
+                    top: buttonRect.top - wrapperRect.top
+                  }
+                }
+              }
+            }
             this.show_emoji_picker = !this.show_emoji_picker
           },
           className: 'far fa-smile',
@@ -292,7 +334,6 @@ export default {
     addEmoji (emoji) {
       const emojiContent = emoji.native || `:${emoji.id}:`
       this.simplemde.value(this.simplemde.value() + emojiContent)
-      this.show_emoji_picker = false
     },
     handleCommentAreaClick () {
       if (!this.isLoggedIn) {
@@ -411,6 +452,9 @@ export default {
 
 .comment-heading-tips-week {
   font-size: .9em;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .comment-heading-tips-container {
@@ -421,6 +465,11 @@ export default {
   margin-left: 10px;
 }
 
+.comment-heading-actions{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .comment-heading-tips:last-child {
   margin-left: auto;
   padding-right: 0;
@@ -454,8 +503,7 @@ export default {
 
 .emoji-picker-container {
   position: absolute;
-  bottom: 100%;
-  right: 0;
+  transform: translateY(-100%);
   z-index: 1000;
 }
 
@@ -520,8 +568,8 @@ export default {
   }
 }
 
-.emoji-icon{
-  &::before{
+.emoji-icon {
+  &::before {
     content: '11';
   }
 }
