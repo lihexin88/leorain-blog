@@ -71,15 +71,15 @@
         </div>
         <el-form class="mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
           <el-row :gutter="20" class="comment-submit-area">
-            <el-col :span="2" class="own-avatar">
-              <user-form ref="userForm" v-if="!isLoggedIn" @update="onUserFormUpdate"></user-form>
-              <el-avatar v-else alt="user avatar" :size="60" class="avatar rounded-circle"
-                         :src="currentUserAvatar"></el-avatar>
-            </el-col>
-            <el-col :span="22" class="comment-area">
+            <el-col :span="24" class="comment-area">
               <div class="comment-editor-wrapper" @click="handleCommentAreaClick">
                 <div v-show="show_emoji_picker" ref="emojiPickerContainer" class="emoji-picker-container"></div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
+              </div>
+              <div class="user-avatar-in-toolbar">
+                <user-form ref="userForm" v-if="!isLoggedIn" @update="onUserFormUpdate"></user-form>
+                <el-avatar v-else alt="user avatar" :size="40" class="avatar rounded-circle"
+                           :src="currentUserAvatar"></el-avatar>
               </div>
             </el-col>
           </el-row>
@@ -466,12 +466,29 @@ export default {
   position: relative;
 }
 
+.comment-area {
+  position: relative;
+}
+
 .comment-editor-wrapper :deep(.editor-toolbar) {
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
   border: none;
   border-bottom: 1px solid #dcdfe6;
   background-color: #fff;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+
+.user-avatar-in-toolbar {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  z-index: 100;
+  display: flex;
+  padding: 0 5px;
+  align-items: center;
 }
 
 .comment-editor-wrapper :deep(.CodeMirror) {

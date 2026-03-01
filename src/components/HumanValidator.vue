@@ -1,10 +1,10 @@
 <script>
 
 import captchaApi from '@/apis/captcha'
-import { Refresh } from '@element-plus/icons-vue'
+import { ArrowLeft, Refresh } from '@element-plus/icons-vue'
 
 export default {
-  components: { Refresh },
+  components: { ArrowLeft, Refresh },
   setup () {
     return {
       Refresh
@@ -19,7 +19,8 @@ export default {
       validateResult: '',
       validateKey: null,
       timeRemain: null,
-      timer: null
+      timer: null,
+      numberSet: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
     }
   },
   methods: {
@@ -47,6 +48,13 @@ export default {
     },
     concatResult (index) {
       this.validateResult = parseInt(String(this.validateResult) + String(index))
+    },
+    backspace () {
+      if (this.validateResult < 10) {
+        this.validateResult = ''
+      } else {
+        this.validateResult = parseInt(this.validateResult.toString().slice(0, -1))
+      }
     }
 
   },
@@ -81,7 +89,7 @@ export default {
       </div>
       <div class="validator-item">
         <!--      result input area-->
-        <el-input style="width: 60px;font-size: 16px" :disabled="!timeRemain" type="text" v-model="validateResult"
+        <el-input style="width: 100px;font-size: 16px" :disabled="!timeRemain" type="text" v-model="validateResult"
                   name="validate_result"></el-input>
       </div>
       <div class="validator-item" v-if="timer">
@@ -93,8 +101,13 @@ export default {
       </div>
     </div>
     <div style="padding-top: 10px">
-      <div style="display: grid;grid-template-columns: repeat(10, 1fr);grid-gap: 5px;justify-content: center">
-        <el-tag v-for="(i,index) in 10" style="cursor: pointer" @click="concatResult(index)" :key="index">{{ index }}</el-tag>
+      <div style="display: grid;grid-template-columns: repeat(11, 1fr);grid-gap: 5px;justify-content: center">
+        <el-tag v-for="(i,index) in numberSet" style="cursor: pointer" @click="concatResult(i)" :key="index">{{ i }}</el-tag>
+        <el-tag type="info" @click="backspace">
+          <el-icon>
+            <arrow-left/>
+          </el-icon>
+        </el-tag>
       </div>
     </div>
   </div>

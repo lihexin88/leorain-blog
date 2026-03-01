@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import Validator from '@/components/Validator.vue'
+import HumanValidator from '@/components/HumanValidator.vue'
 import authApi from '@/apis/auth'
 import { User, Message, Lock } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
@@ -102,7 +102,7 @@ import { mapActions } from 'pinia'
 export default {
   name: 'UserRegister',
   components: {
-    Validator,
+    Validator: HumanValidator,
     User,
     Message,
     Lock

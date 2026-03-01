@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import Validator from '@/components/Validator.vue'
+import HumanValidator from '@/components/HumanValidator.vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { Message, Lock } from '@element-plus/icons-vue'
@@ -90,7 +90,7 @@ import { Message, Lock } from '@element-plus/icons-vue'
 export default {
   name: 'UserLogin',
   components: {
-    Validator,
+    Validator: HumanValidator,
     Lock,
     Message
   },

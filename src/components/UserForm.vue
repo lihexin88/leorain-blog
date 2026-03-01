@@ -2,7 +2,7 @@
   <div class="guest-input-form">
     <div>
       <div style="padding-right: 5px;cursor: pointer" @click="showDialog = true">
-        <el-avatar shape="circle" :size="60" :src="avatar"></el-avatar>
+        <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
     <el-dialog v-model="showDialog">
