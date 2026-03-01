@@ -65,8 +65,7 @@
                 </div>
               </div>
             </div>
-            <div class="comment-body markdown" :class="comment.is_down_voted ? 'downvoted' : ''"
-                 v-html="comment.content_html"></div>
+            <markdown-parse v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''" :content="comment.content_html"></markdown-parse>
           </div>
         </div>
         <el-form class="mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
@@ -111,9 +110,10 @@ import { Plus, User, Clock, Location, Delete, Share, ChromeFilled } from '@eleme
 import { useUserStore } from '@/store/user'
 import { mapState } from 'pinia'
 import MD5 from 'crypto-js/md5'
+import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
-  components: { ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, Share },
+  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, Share },
   props: {
     contentWrapperClass: {
       type: String,
@@ -260,7 +260,7 @@ export default {
           action: () => {
             this.show_emoji_picker = !this.show_emoji_picker
           },
-          className: 'el-icon-chat-line-round',
+          className: 'far fa-smile',
           title: 'emoji'
         }
       ]
@@ -517,6 +517,12 @@ export default {
     width: 100% !important;
     max-width: 100% !important;
     flex: 0 0 100% !important;
+  }
+}
+
+.emoji-icon{
+  &::before{
+    content: '11';
   }
 }
 
