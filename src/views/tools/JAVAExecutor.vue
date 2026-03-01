@@ -8,6 +8,8 @@ import 'codemirror/mode/clike/clike'
 import Swal from 'sweetalert2'
 import ExecutorHeaders from './ExecutorHeaders.vue'
 import CodeExecutor from './CodeExecutor.vue'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 
 export default {
   components: {
@@ -53,6 +55,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     changes (code) {
       this.code = code
     },
@@ -103,7 +106,7 @@ export default {
             animation: true
           }).then((result) => {
             if (result.isConfirmed) {
-              window.location.href = '/login'
+              this.setShowLoginDialog(true)
             }
           })
         }

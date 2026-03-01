@@ -97,7 +97,7 @@
 
 <script>
 import { useUserStore } from '@/store/user'
-import { mapState } from 'pinia'
+import { mapState, mapActions } from 'pinia'
 import userApi from '@/apis/user'
 import UserItems from '@/components/UserItems.vue'
 
@@ -125,12 +125,14 @@ export default {
   },
   mounted () {
     if (!this.uid) {
-      this.$router.push('/login')
+      this.setShowLoginDialog(true)
+      this.$router.push('/')
       return
     }
     this.fetchData()
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     async fetchData () {
       if (!this.uid) return
       try {

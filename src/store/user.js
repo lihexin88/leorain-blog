@@ -5,7 +5,8 @@ import userApi from '@/apis/user'
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null
+    token: localStorage.getItem('token') || null,
+    showLoginDialog: false
   }),
 
   getters: {
@@ -13,6 +14,9 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
+    setShowLoginDialog (show) {
+      this.showLoginDialog = show
+    },
     async login (params) {
       try {
         const response = await authApi.login(params)

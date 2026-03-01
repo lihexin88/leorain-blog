@@ -37,6 +37,18 @@
       <!-- Footer内容 -->
       <footerBar />
     </footer>
+
+    <!-- 登录弹窗 -->
+    <el-dialog
+      v-model="userStore.showLoginDialog"
+      title=""
+      width="450px"
+      :append-to-body="true"
+      destroy-on-close
+      class="login-dialog"
+    >
+      <UserLogin :is-dialog="true" />
+    </el-dialog>
   </div>
 </template>
 
@@ -46,13 +58,15 @@ import ScrollProgress from '@/components/ScrollProgress.vue'
 import { useConfigStore } from '@/store/config'
 import { useUserStore } from '@/store/user'
 import FooterBar from '@/components/FooterBar.vue'
+import UserLogin from '@/views/user/UserLogin.vue'
 
 export default {
   name: 'MainPage',
   components: {
     FooterBar,
     NavBar,
-    ScrollProgress
+    ScrollProgress,
+    UserLogin
   },
   setup () {
     const configStore = useConfigStore()
@@ -146,5 +160,28 @@ export default {
   backdrop-filter: blur(8px) saturate(180%);
   padding: 1rem;
   text-align: center;
+}
+
+:deep(.login-dialog) {
+  border-radius: 8px;
+  overflow: hidden;
+
+  .el-dialog__header {
+    display: none;
+  }
+
+  .el-dialog__body {
+    padding: 0;
+  }
+
+  .login-container {
+    padding-top: 0;
+  }
+
+  .login-card {
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+  }
 }
 </style>

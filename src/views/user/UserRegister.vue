@@ -1,38 +1,50 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
+  <div class="register-container">
+    <el-card class="register-card">
       <template #header>
-        <div class="login-header">
-          <h2>登录</h2>
+        <div class="register-header">
+          <h2>注册</h2>
         </div>
       </template>
 
       <el-form
-        ref="loginFormRef"
-        :model="loginForm"
-        :rules="loginRules"
+        ref="registerFormRef"
+        :model="registerForm"
+        :rules="registerRules"
         label-position="top"
-        @submit.prevent="handleLogin"
+        @submit.prevent="handleRegister"
       >
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item label="用户名" prop="name">
           <el-input
-            v-model="loginForm.email"
-            placeholder="请输入邮箱"
+            v-model="registerForm.name"
+            placeholder="请输入用户名"
             clearable
             autofocus
+          >
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
+          <div class="form-tip">
+            如果您在本站评论或者留言过，请在登录页面点击忘记密码，重置您的密码即可登录
+          </div>
+        </el-form-item>
+
+        <el-form-item label="邮箱" prop="email">
+          <el-input
+            v-model="registerForm.email"
+            placeholder="请输入邮箱"
+            clearable
           >
             <template #prefix>
               <el-icon><Message /></el-icon>
             </template>
           </el-input>
-          <div class="form-tip">
-            如果您在本站评论或者留言过，请点击下面的忘记密码，重置您的密码即可登录
-          </div>
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
           <el-input
-            v-model="loginForm.password"
+            v-model="registerForm.password"
             type="password"
             placeholder="请输入密码"
             show-password
@@ -43,8 +55,17 @@
           </el-input>
         </el-form-item>
 
-        <el-form-item prop="remember">
-          <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+        <el-form-item label="确认密码" prop="password_confirmation">
+          <el-input
+            v-model="registerForm.password_confirmation"
+            type="password"
+            placeholder="请再次输入密码"
+            show-password
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
 
         <el-form-item label="验证码" required>
@@ -54,27 +75,17 @@
         <el-form-item>
           <el-button
             type="primary"
-            class="login-button"
+            class="register-button"
             :loading="loading"
             native-type="submit"
           >
-            登录
+            注册
           </el-button>
         </el-form-item>
 
-        <div class="divider-container">
-          <el-divider>or</el-divider>
-        </div>
-
-        <el-form-item>
-          <el-button class="github-button" @click="handleGithubLogin">
-            <i class="fab fa-github"></i>&nbsp;GitHub 登录
-          </el-button>
-        </el-form-item>
-
-        <div class="login-footer">
-          <el-link type="info" @click="handleResetPassword">忘记密码</el-link>
-          <el-link type="primary" @click="handleRegister">立即注册</el-link>
+        <div class="register-footer">
+          <span>已有账号？</span>
+          <el-link type="primary" @click="goToLogin">立即登录</el-link>
         </div>
       </el-form>
     </el-card>
@@ -83,37 +94,48 @@
 
 <script>
 import Validator from '@/components/Validator.vue'
+import authApi from '@/apis/auth'
+import { User, Message, Lock } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
-import { Message, Lock } from '@element-plus/icons-vue'
 
 export default {
-  name: 'UserLogin',
+  name: 'UserRegister',
   components: {
     Validator,
-    Lock,
-    Message
-  },
-  props: {
-    isDialog: {
-      type: Boolean,
-      default: false
-    }
+    User,
+    Message,
+    Lock
   },
   setup () {
     return {
+      User,
       Message,
       Lock
     }
   },
   data () {
+    const validateConfirmPassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else if (value !== this.registerForm.password) {
+        callback(new Error('两次输入密码不一致!'))
+      } else {
+        callback()
+      }
+    }
     return {
-      loginForm: {
+      registerForm: {
+        name: '',
         email: '',
         password: '',
-        remember: false
+        password_confirmation: ''
       },
-      loginRules: {
+      registerRules: {
+        name: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, message: '用户名长度不能少于3位', trigger: 'blur' }
+        ],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
           { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] }
@@ -121,16 +143,18 @@ export default {
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+        ],
+        password_confirmation: [
+          { required: true, validator: validateConfirmPassword, trigger: 'blur' }
         ]
       },
       loading: false
     }
   },
   methods: {
-    ...mapActions(useUserStore, ['login', 'setShowLoginDialog']),
-    async handleLogin () {
-      // 表单预验证
-      await this.$refs.loginFormRef.validate(async (valid) => {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
+    async handleRegister () {
+      await this.$refs.registerFormRef.validate(async (valid) => {
         if (!valid) return
 
         const validator = this.$refs.validatorRef
@@ -142,22 +166,18 @@ export default {
         this.loading = true
         try {
           const payload = {
-            ...this.loginForm,
+            ...this.registerForm,
             validate_key: validator.validateKey,
             validate_result: validator.validateResult
           }
-          await this.login(payload)
-          this.$message.success('登录成功')
-          if (this.isDialog) {
-            this.setShowLoginDialog(false)
-          } else {
-            this.$router.push('/')
-          }
+          await authApi.register(payload)
+          this.$message.success('注册成功，请登录')
+          this.$router.push('/')
+          this.setShowLoginDialog(true)
         } catch (error) {
           console.error(error)
-          const msg = error.response?.data?.message || '登录失败，请检查账号密码或验证码'
+          const msg = error.response?.data?.message || '注册失败，请检查填写内容或验证码'
           this.$message.error(msg)
-          // 登录失败通常需要刷新验证码
           if (this.$refs.validatorRef) {
             this.$refs.validatorRef.getImageData()
           }
@@ -166,36 +186,26 @@ export default {
         }
       })
     },
-    handleGithubLogin () {
-      window.location.href = '/api/frontend/auth/github'
-    },
-    handleRegister () {
-      if (this.isDialog) {
-        this.setShowLoginDialog(false)
-      }
-      this.$router.push('/register')
-    },
-    handleResetPassword () {
-      if (this.isDialog) {
-        this.setShowLoginDialog(false)
-      }
-      this.$router.push('/password/reset')
+    goToLogin () {
+      this.$router.push('/')
+      this.setShowLoginDialog(true)
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.login-container {
+.register-container {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding-top: 50px;
+  padding-bottom: 50px;
 }
 
-.login-card {
+.register-card {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -206,7 +216,7 @@ export default {
   }
 }
 
-.login-header {
+.register-header {
   h2 {
     margin: 0;
     font-size: 24px;
@@ -222,44 +232,28 @@ export default {
   margin-top: 4px;
 }
 
-.login-button {
+.register-button {
   width: 100%;
   padding: 12px 0;
   font-size: 16px;
 }
 
-.divider-container {
-  margin: 20px 0;
-}
-
-.github-button {
-  width: 100%;
-  background-color: #24292e;
-  border-color: #24292e;
-  color: #fff;
-
-  &:hover, &:focus {
-    background-color: #444d56;
-    border-color: #444d56;
-    color: #fff;
-  }
-}
-
-.login-footer {
+.register-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-top: 15px;
+  font-size: 14px;
+  color: #606266;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .login-container {
+  .register-container {
     padding: 20px;
-    align-items: center;
   }
 
-  .login-card {
+  .register-card {
     box-shadow: none;
     border: none;
   }

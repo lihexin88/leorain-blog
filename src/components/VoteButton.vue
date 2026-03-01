@@ -11,6 +11,9 @@
 </template>
 
 <script>
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
+
 export default {
   props: {
     item: {
@@ -34,6 +37,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     toggleStatus () {
       let count = this.item.vote_count
 
@@ -66,7 +70,7 @@ export default {
           }
         }).catch((response) => {
           if (response.status == 401) {
-            window.location = '/login'
+            this.setShowLoginDialog(true)
           }
         })
     }

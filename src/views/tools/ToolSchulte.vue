@@ -2,7 +2,7 @@
 
 import anime from 'animejs'
 import * as echarts from 'echarts'
-import { mapState } from 'pinia'
+import { mapState, mapActions } from 'pinia'
 import { useUserStore } from '@/store/user'
 import schulteApi from '@/apis/schulte'
 
@@ -135,6 +135,7 @@ export default {
     ...mapState(useUserStore, ['isLoggedIn'])
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     stop () {
       this.clearCostTimeInterval()
       this.playNext = 1
@@ -232,7 +233,8 @@ export default {
       this.playNext = 1
     },
     gotoLogin () {
-      window.location.href = '/login'
+      this.showUnauthorized = false
+      this.setShowLoginDialog(true)
     },
     getTopic () {
       schulteApi.getTopic().then((data) => {

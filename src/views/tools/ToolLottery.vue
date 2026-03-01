@@ -167,6 +167,8 @@
 import confetti from 'canvas-confetti'
 import lotteryApi from '@/apis/lottery'
 import UserItems from '@/components/UserItems.vue'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 
 export default {
   name: 'ToolLottery',
@@ -201,6 +203,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     onDialogOpened () {
       this.canvasesInitialized = false
       this.$nextTick(() => {
@@ -274,12 +277,12 @@ export default {
       this.selectedCategory = category
     },
     openLogin () {
-      this.$confirm('您需要登录后才能访问，是否跳转到登录页面？', '请登录', {
+      this.$confirm('您需要登录后才能访问，是否弹出登录窗口？', '请登录', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        window.location.href = '/login'
+        this.setShowLoginDialog(true)
       }).catch(() => {
         this.$message({
           type: 'info',

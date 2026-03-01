@@ -6,6 +6,8 @@
 <script>
 import 'codemirror/mode/clike/clike'
 import CodeExecutor from './CodeExecutor.vue'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 import { result } from 'lodash/object'
 import Swal from 'sweetalert2'
 
@@ -49,6 +51,7 @@ int main() {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     changes (code) {
       this.code = code
       try {
@@ -105,7 +108,7 @@ int main() {
             animation: true
           }).then((result) => {
             if (result.isConfirmed) {
-              window.location.href = '/login'
+              this.setShowLoginDialog(true)
             }
           })
         }

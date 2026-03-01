@@ -215,20 +215,22 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useUserStore, ['logout']),
+    ...mapActions(useUserStore, ['logout', 'setShowLoginDialog']),
     handleSelect (key) {
       this.activeIndex = key
     },
     handleCommand (command) {
       if (command === 'logout') {
         this.handleLogout()
+      } else if (command === '/login') {
+        this.setShowLoginDialog(true)
       } else {
         this.$router.push(command)
       }
     },
     handleLogout () {
       this.logout()
-      this.$router.push('/login')
+      this.setShowLoginDialog(true)
     }
   },
   watch: {

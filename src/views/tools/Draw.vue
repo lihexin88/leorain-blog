@@ -131,6 +131,8 @@ import { dataURLToBlob, updateURLParameter } from '@/utils/helpers'
 import debounce from 'lodash/debounce' // 防抖函数
 import Swal from 'sweetalert2'
 import moment from 'moment'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 
 export default {
   components: { },
@@ -214,6 +216,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['setShowLoginDialog']),
     delete_asset (asset_id) {
       this.$http.delete('/draws/' + asset_id).then((response) => {
         console.log(response)
@@ -394,7 +397,7 @@ export default {
             icon: 'warning',
             confirmButtonText: '确定'
           }).then((result) => {
-            window.location.href = '/login'
+            this.setShowLoginDialog(true)
           })
         }
       })
