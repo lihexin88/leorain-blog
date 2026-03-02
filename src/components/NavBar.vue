@@ -84,7 +84,6 @@
       <el-menu-item index="/guestbook">留言板</el-menu-item>
       <el-menu-item index="/games">童年游戏</el-menu-item>
       <el-menu-item index="/links">友情链接</el-menu-item>
-      <el-menu-item index="/categories">所有分类</el-menu-item>
       <el-menu-item index="/discussion">讨论</el-menu-item>
     </el-sub-menu>
 
@@ -160,7 +159,6 @@
     <el-menu-item index="/guestbook" class="desktop-menu">留言板</el-menu-item>
     <el-menu-item index="/games" class="desktop-menu">童年游戏</el-menu-item>
     <el-menu-item index="/links" class="desktop-menu">友情链接</el-menu-item>
-    <el-menu-item index="/categories" class="desktop-menu">所有分类</el-menu-item>
     <el-menu-item index="/discussion" class="desktop-menu">讨论</el-menu-item>
 
     <div class="flex-grow"></div>
@@ -169,7 +167,7 @@
       <el-dropdown trigger="click" @command="handleCommand">
         <div class="el-dropdown-link">
           <template v-if="isLoggedIn">
-            <el-avatar :size="40" :src="userAvatar" class="user-avatar" />
+            <el-avatar shape="square" :size="40" :src="userAvatar" class="user-avatar" />
           </template>
           <template v-else>
             <el-icon :size="24"><User /></el-icon>

@@ -63,7 +63,7 @@
                 <i>以上就是本文的全部内容啦，有什么疑问欢迎在下方评论区留言嗷，收到通知会及时回复~</i>
               </div>
               <div class="content article-tips">
-                <i>本文已被浏览: {{ article.view_count ?? 0 }} (有延迟)</i>
+                <i>本文已被浏览: {{ article.visitors ?? 0 }} (有延迟)</i>
               </div>
             </div>
           </div>

@@ -6,11 +6,8 @@
                  class="media article-item"
                  :key="index"
         >
-          <div
-              class="article-item-rotate"
-          >
             <div>
-              <a v-if="article.page_image" class="media-left mr-3 article-item-link"
+              <a v-if="article.page_image" class="article-item-link"
                  :title="article.slug"
                  @click="openArticle(article.slug)"
               >
@@ -22,7 +19,7 @@
                 <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted
                        :src="article.page_image"></video>
               </a>
-              <a v-else class="media-left mr-3 article-item-link"
+              <a v-else class="article-item-link"
                  @click="openArticle(article.slug)"
               >
                 <img class="article-media" :alt="article.slug"
@@ -61,7 +58,7 @@
                   </el-tag>
                 </div>
 
-                <div class="info" style="color: grey">
+                <div class="info" style="color: grey;font-size: .8em">
                   <i class="fas fa-user" @click="go_user(article.user.uid)" style="cursor: pointer">
                     {{ article.user.name ?? 'null' }}
                   </i>
@@ -82,7 +79,6 @@
                 </div>
               </div>
             </div>
-          </div>
         </el-card>
       </div>
       <div style="width: 100%;display: flex;justify-content: center;align-items: center;padding: 10px">
@@ -393,6 +389,7 @@ export default {
   margin: auto;
   position: relative;
   z-index: 1;
+  cursor: pointer;
   @media screen and (max-aspect-ratio: 1/1) {
     display: block;
     width: 100%;
@@ -432,27 +429,7 @@ export default {
 .article-title {
   position: relative;
   z-index: 1;
-
-  a {
-    background: linear-gradient(135deg, #ff6b9d 0%, #87ceeb 50%, #9370db 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 600;
-    transition: transform 0.3s ease,
-    background 0.3s ease;
-    display: inline-block;
-    transform: scale(1);
-  }
-
-  &:hover a {
-    transform: scale(1.05);
-    background: linear-gradient(135deg, #ff1493 0%, #00bfff 50%, #ba55d3 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
-  }
+  font-size: 1.3em;
 }
 
 .article-body {
@@ -534,37 +511,13 @@ export default {
   }
 }
 
-.article-item-rotate {
-  border-radius: 10px;
-  background: linear-gradient(135deg,
-      rgba(255, 182, 193, 0.08) 0%,
-      rgba(173, 216, 230, 0.08) 50%,
-      rgba(221, 160, 221, 0.08) 100%);
-  padding: 8px;
-  height: 100%;
-  position: relative;
-  z-index: 1;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-  background 0.4s ease;
-  backdrop-filter: blur(5px);
-  transform: scale(1);
-}
-
-.article-item:hover .article-item-rotate {
-  background: linear-gradient(135deg,
-      rgba(255, 182, 193, 0.15) 0%,
-      rgba(173, 216, 230, 0.15) 50%,
-      rgba(221, 160, 221, 0.15) 100%);
-  transform: scale(1.01);
-}
-
 .article-item:hover {
   scale: 1.02;
   transition: scale 0.5s ease-in-out;
 }
 
 :deep(.el-card__body) {
-  padding: 0;
+  padding: 10px;
   width: 100%;
   height: 100%;
   background: transparent;

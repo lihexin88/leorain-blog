@@ -49,50 +49,50 @@
             <el-col :span="4">
               <div>
                 <el-statistic
-                  group-separator=","
-                  :precision="0"
-                  :value="systemInfo.article_count"
-                  title="文章"
+                    group-separator=","
+                    :precision="0"
+                    :value="systemInfo.article_count"
+                    title="文章"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                  group-separator=","
-                  :precision="0"
-                  :value="systemInfo.comment_count"
-                  title="评论"
+                    group-separator=","
+                    :precision="0"
+                    :value="systemInfo.comment_count"
+                    title="评论"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                  group-separator=","
-                  :precision="0"
-                  :value="systemInfo.guestbook_count"
-                  title="留言"
+                    group-separator=","
+                    :precision="0"
+                    :value="systemInfo.guestbook_count"
+                    title="留言"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                  group-separator=","
-                  :precision="0"
-                  :value="systemInfo.game_count"
-                  title="游戏"
+                    group-separator=","
+                    :precision="0"
+                    :value="systemInfo.game_count"
+                    title="游戏"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="5">
               <div>
                 <el-statistic
-                  group-separator=","
-                  :precision="0"
-                  title="访问"
-                  :value="systemInfo.visitor_count"
+                    group-separator=","
+                    :precision="0"
+                    title="访问"
+                    :value="systemInfo.visitor_count"
                 >
                 </el-statistic>
               </div>
@@ -111,12 +111,12 @@
       <el-divider>天气</el-divider>
       <el-card class="info-div-card">
         <div
-          style="width: 100%; background-image: linear-gradient(to right, aliceblue, lightblue, greenyellow, orange, orangered);">
+            style="width: 100%; background-image: linear-gradient(to right, aliceblue, lightblue, greenyellow, orange, orangered);">
           <div id="weather_color_cursor" style="border: 2px solid wheat; width: 1.66%; margin-left: 2.93333%;">
           </div>
         </div>
         <div
-          style="background-image: linear-gradient(to right, rgb(255, 255, 255), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2),
+            style="background-image: linear-gradient(to right, rgb(255, 255, 255), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2),
             rgba(255, 255, 255, 0)), url(https://images.leorain.cn/weather/2021/07/28/gmA6Jw3Jqp1RTKkhb9lZsIsDSrzgpvDgnHbyMvnD.jpg?x-oss-process=style/weather-background-img);">
           当前时间：{{ weather.current_time }}
           <hr class="weather_hr">
@@ -136,30 +136,12 @@
     </div>
     <div class="info-div">
       <el-divider>
-        标签云
+        词云
       </el-divider>
       <el-card class="info-div-card">
-        <el-tag class="el-tag pointer-style" @click="go_tag(tag.tag.id)" :key="index" type="success"
-                v-for="(tag,index) in tags?.data">{{
-            tag.tag.tag
-          }}
+        <el-tag class="el-tag pointer-style" :key="index" type="success"
+                v-for="(tag,index) in tags">{{ tag }}
         </el-tag>
-        <a class="fas fa-chevron-right info-category pointer-style" v-if="tags?.total > 15" @click="go_tags">
-          更多 </a>
-      </el-card>
-    </div>
-    <div class="info-div">
-      <el-divider>
-        文章分类
-      </el-divider>
-      <el-card class="info-div-card">
-        <a class="fas info-category pointer-style" @click="go_category(category.name)"
-           v-for="(category,index) in categories?.data" :key="index">
-          {{ category.name }}
-        </a>
-        <a class="fas fa-chevron-right info-category pointer-style" v-if="categories?.total > 15"
-           @click="go_categories">
-          更多 </a>
       </el-card>
     </div>
     <div v-if="false" class="info-div">
@@ -192,17 +174,17 @@ import moment from 'moment'
 import GitLogs from '@/components/GitLogs.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
-import Quotes from '@/components/Quotes.vue'
+import QuotesArea from '@/components/QuotesArea.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
-import { categoryApi, systemInfoApi, tagApi } from '@/apis'
+import { systemInfoApi, tagApi } from '@/apis'
 import { useConfigStore } from '@/store/config'
 
 export default {
   components: {
     VisitorMap,
     GitLogs,
-    Quotes,
+    Quotes: QuotesArea,
     Parse: MarkdownParse
   },
   setup () {
@@ -224,7 +206,6 @@ export default {
         features: []
       },
       tags: [],
-      categories: [],
       wechat: {
         logo: 'https://images.leorain.cn/files/wechat.png',
         qr_code: 'https://images.leorain.cn/files/wechar_qr_code.png'
@@ -246,18 +227,6 @@ export default {
     }
   },
   methods: {
-    go_categories () {
-      window.location.href = '/category'
-    },
-    go_tags () {
-      window.location.href = '/tagApi'
-    },
-    go_tag (tag) {
-      window.location.href = '/tagApi/' + tag
-    },
-    go_category (category) {
-      window.location.href = '/category/' + category
-    },
     async get_config () {
       try {
         this.$nextTick(() => {
@@ -288,13 +257,6 @@ export default {
         this.tags = response
       })
     },
-    get_category () {
-      categoryApi.getCategories().then((response) => {
-        this.categories = response
-      })
-    },
-    get_archive () {
-    },
     get_system_info () {
       systemInfoApi.getSystemInfo().then((response) => {
         this.systemInfo = response
@@ -320,7 +282,6 @@ export default {
   mounted () {
     // this.get_weather()
     this.get_tag_cloud()
-    this.get_category()
     this.get_archive()
     this.get_config()
     this.get_system_info()
@@ -364,10 +325,12 @@ export default {
       scale: 1.00;
     }
   }
+
   .info-avatar {
     display: flex;
     justify-content: center;
     align-items: center;
+
     :deep(span > img:hover) {
       animation: infoAvatarRotate 2s infinite;
     }

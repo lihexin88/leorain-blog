@@ -2,11 +2,13 @@
   <div style="width: 100%">
     <el-tooltip placement="top">
       <template v-slot:content>
-<div class="quota-popup" >{{ text_tips }}</div>
-</template>
+        <div class="quota-popup">{{ text_tips }}</div>
+      </template>
       <div @dblclick="get_quotes" style="cursor: pointer;color: grey">
         <div style="color: #2c3e50;font-size: 13px;">
-          <div style="display: flex;justify-content: center;align-items:flex-end;height: 70px;overflow-y: hidden">{{ quote_comment }}</div>
+          <div style="display: flex;justify-content: center;align-items:flex-end;height: 70px;overflow-y: hidden">
+            {{ quote_comment }}
+          </div>
           <div style="display: flex;justify-content: flex-end">{{ quote_author }}</div>
           <div style="display: flex;justify-content: flex-end">{{ quote_song_name }}</div>
         </div>
@@ -95,7 +97,7 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.quota-popup{
+.quota-popup {
   max-width: 500px;
 }
 </style>
