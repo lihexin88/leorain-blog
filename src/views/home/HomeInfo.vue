@@ -139,9 +139,7 @@
         词云
       </el-divider>
       <el-card class="info-div-card">
-        <el-tag class="el-tag pointer-style" :key="index" type="success"
-                v-for="(tag,index) in tags">{{ tag }}
-        </el-tag>
+        <tag-cloud :tags="tags"></tag-cloud>
       </el-card>
     </div>
     <div v-if="false" class="info-div">
@@ -175,6 +173,7 @@ import GitLogs from '@/components/GitLogs.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
 import QuotesArea from '@/components/QuotesArea.vue'
+import TagCloud from '@/components/TagCloud.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
 import { systemInfoApi, tagApi } from '@/apis'
@@ -184,6 +183,7 @@ export default {
   components: {
     VisitorMap,
     GitLogs,
+    TagCloud,
     Quotes: QuotesArea,
     Parse: MarkdownParse
   },
@@ -210,7 +210,6 @@ export default {
         logo: 'https://images.leorain.cn/files/wechat.png',
         qr_code: 'https://images.leorain.cn/files/wechar_qr_code.png'
       },
-      archive: null,
       systemInfo: {
         served_at: 0,
         technologies: null,
@@ -282,7 +281,6 @@ export default {
   mounted () {
     // this.get_weather()
     this.get_tag_cloud()
-    this.get_archive()
     this.get_config()
     this.get_system_info()
   }
@@ -292,15 +290,6 @@ export default {
 .info-container {
   padding: 10px 15px 0 15px;
   height: 100%;
-}
-
-.el-tag {
-  margin: 2px;
-}
-
-.el-tag:hover {
-  scale: 1.05;
-  background-color: #d7f6f3;
 }
 
 .info-category {
