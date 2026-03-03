@@ -50,6 +50,8 @@ import emojione from 'emojione'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { emojiToImage } from '@/services/customEmoji'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 export default {
   components: {},
@@ -315,9 +317,7 @@ export default {
           this.$message.error('运行失败')
         }
         this.executor.show_exec_result = true
-      }).catch((e) => {
-        if (e.status === 401) {
-        }
+      }).catch(() => {
         this.result = ''
         this.$message.error('运行失败')
       })

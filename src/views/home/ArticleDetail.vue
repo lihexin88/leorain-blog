@@ -107,7 +107,6 @@
 
 <script>
 import ArticleContents from '@/components/ArticleContents.vue'
-import ImageViewer from '@/components/ImageViewer.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 import CommentArea from '@/components/CommentArea.vue'
 import RecommendArticle from '@/components/RecommendArticle.vue'
@@ -128,7 +127,6 @@ export default {
   components: {
     Clock,
     ArticleContents,
-    ImageViewer,
     Parse: MarkdownParse,
     CommentArea,
     RecommendArticle

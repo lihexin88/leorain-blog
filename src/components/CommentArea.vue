@@ -109,6 +109,8 @@ import emojione from 'emojione'
 import VoteButton from '@/components/VoteButton.vue'
 import { marked } from 'marked'
 import SimpleMDE from 'simplemde'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 import 'simplemde/dist/simplemde.min.css'
 
 import { Picker } from 'emoji-mart'

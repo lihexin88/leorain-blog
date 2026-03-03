@@ -37,6 +37,8 @@
 import SimpleMDE from 'simplemde/dist/simplemde.min'
 import { marked } from 'marked'
 import emojione from 'emojione'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 import 'simplemde/dist/simplemde.min.css'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/mdn-like.css'
@@ -124,7 +126,7 @@ export default {
         this.$emit('replay', null)
         this.simplemde.value('')
         this.$message.success('提交成功')
-      }).catch((res) => {
+      }).catch(() => {
         this.$message.error('提交失败')
       })
     },
@@ -143,7 +145,7 @@ export default {
           nickname: guestInfo.name,
           email: guestInfo.email,
           parent_id: this.guestbook?.id
-        }).then((res) => {
+        }).then(() => {
 
         })
       }
