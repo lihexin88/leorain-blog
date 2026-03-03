@@ -6,6 +6,10 @@
     <div class="article-container">
       <!-- 文章顶部 -->
       <div class="article-header-container">
+        <div class="text-center" id="page-image" v-if="article.page_image">
+          <el-image :preview-src-list="[article.page_image]" :close-on-press-escape="true" :hideOnClickModal="true"
+                    style="width: 200px" :src="article.page_image"></el-image>
+        </div>
         <div class="article-title-box">
           <div>
             <h4>{{ article.title }}</h4>
@@ -17,10 +21,10 @@
               <template v-if="article.tags && article.tags.length">
                 <i class="fas fa-tags"></i>
                 <router-link
-                  v-for="(tag, index) in article.tags"
-                  :key="index"
-                  :to="`/tag/${tag.tag}`"
-                  class="tag-link"
+                    v-for="(tag, index) in article.tags"
+                    :key="index"
+                    :to="`/tag/${tag.tag}`"
+                    class="tag-link"
                 >
                   {{ tag.tag }}
                 </router-link>
@@ -30,14 +34,14 @@
           <div>
             <div>
               <el-icon>
-                <Clock />
+                <Clock/>
               </el-icon>
               {{ formatDate(article.published_at) }}
               <el-link :href="`#article-comment-area`" class="comment-link">
                 <el-icon>
-                  <Clock />
+                  <Clock/>
                 </el-icon>
-                {{ article.comments_count ?? 0 }}
+                {{ article.comment_count ?? 0 }}
               </el-link>
             </div>
           </div>
@@ -45,9 +49,6 @@
             本文 <b>{{ wordCount }}</b> 个字，阅读需要大约
             <b>{{ readingTime }}</b> 分钟
           </div>
-        </div>
-        <div class="text-center" id="page-image">
-          <image-viewer :image_src="article.page_image"></image-viewer>
         </div>
       </div>
       <div class="article container">
@@ -71,14 +72,14 @@
       </div>
       <div id="article-comment-area">
         <comment-area
-          title="评论"
-          :uid="article.user?.uid"
-          :email-hash="article.user?.email_hash"
-          :user-id="article.user?.uid"
-          commentable-type="articles"
-          :commentable-id="article.id"
-          :can-comment="true"
-          v-if="article.id"
+            title="评论"
+            :uid="article.user?.uid"
+            :email-hash="article.user?.email_hash"
+            :user-id="article.user?.uid"
+            commentable-type="articles"
+            :commentable-id="article.id"
+            :can-comment="true"
+            v-if="article.id"
         ></comment-area>
       </div>
     </div>
@@ -250,6 +251,7 @@ export default {
   display: flex;
   justify-content: center;
   padding-top: 10px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -323,11 +325,13 @@ export default {
     display: none;
   }
 }
-:deep(.markdown){
-  img{
+
+:deep(.markdown) {
+  img {
     max-width: 100%;
   }
-  video{
+
+  video {
     max-width: 100%;
   }
 }
