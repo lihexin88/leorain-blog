@@ -7,8 +7,24 @@
       <!-- 文章顶部 -->
       <div class="article-header-container">
         <div class="text-center" id="page-image" v-if="article.page_image">
-          <el-image :preview-src-list="[article.page_image]" :close-on-press-escape="true" :hideOnClickModal="true"
-                    style="width: 200px" :src="article.page_image"></el-image>
+          <video
+              v-if="isVideo(article.page_image)"
+              class="article-page-video"
+              loop
+              style="max-width: 200px; max-height: 200px"
+          >
+            <source :src="article.page_image" type="video/mp4">
+            您的浏览器不支持视频标签。
+          </video>
+          <el-image
+              v-else
+              fit="contain"
+              :preview-src-list="[article.page_image]"
+              :close-on-press-escape="true"
+              :hideOnClickModal="true"
+              style="max-width: 200px; max-height: 200px"
+              :src="article.page_image"
+          ></el-image>
         </div>
         <div class="article-title-box">
           <div>
@@ -146,8 +162,17 @@ export default {
   },
   setup () {
     const configStore = useConfigStore()
+
+    const isVideo = (url) => {
+      if (!url) return false
+      const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov']
+      const extension = url.split('.').pop().toLowerCase()
+      return videoExtensions.includes(extension)
+    }
+
     return {
-      configStore
+      configStore,
+      isVideo
     }
   },
   methods: {
@@ -245,6 +270,11 @@ export default {
 .article-page-right {
   max-width: 500px;
   margin-left: 20px;
+}
+
+.article-page-video {
+  border-radius: 4px;
+  object-fit: contain;
 }
 
 .article-header-container {
