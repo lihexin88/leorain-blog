@@ -1,6 +1,6 @@
 <script>
 import api from '@/apis/base'
-import { getFriendlyDate, maxString } from '@/utils/helpers'
+import { getFriendlyDate, maxString, syncUrlPaginate } from '@/utils/helpers'
 import { VideoPlay, ChatLineRound, Clock } from '@element-plus/icons-vue'
 
 export default {
@@ -22,8 +22,8 @@ export default {
       games: [],
       loading: false,
       pagination: {
-        currentPage: 1,
-        pageSize: 12,
+        current_page: 1,
+        per_page: 12,
         total: 0
       }
     }
@@ -40,15 +40,25 @@ export default {
         const response = await api.get('/games', {
           params: {
             page,
-            page_size: this.pagination.pageSize
+            page_size: this.pagination.per_page
           }
         })
         if (response.data) {
           this.games = response.data
-          this.pagination.currentPage = response.current_page
-          this.pagination.total = response.total
+          this.pagination = response.meta.pagination
+          if (this.pagination.current_page === 1) {
+            syncUrlPaginate({
+              current_page: null,
+              per_page: null
+            })
+          } else {
+            syncUrlPaginate({
+              current_page: this.pagination.current_page,
+              per_page: this.pagination.per_page
+            })
+          }
         } else {
-          this.games = response
+          this.games = response.data
         }
       } catch (error) {
         console.error('Failed to fetch games:', error)
@@ -85,7 +95,7 @@ export default {
           </div>
           <div class="game-meta">
             <span><el-icon><VideoPlay/></el-icon> {{ game.played }}</span>
-            <span><el-icon><ChatLineRound/></el-icon> {{ game.comments_count || 0 }}</span>
+            <span><el-icon><ChatLineRound/></el-icon> {{ game.comment_count || 0 }}</span>
             <span><el-icon><Clock/></el-icon> {{ getFriendlyDate(game.created_at) }}</span>
           </div>
         </div>
@@ -94,8 +104,8 @@ export default {
 
     <div class="pagination-container">
       <el-pagination
-          v-model:current-page="pagination.currentPage"
-          :page-size="pagination.pageSize"
+          v-model:current-page="pagination.current_page"
+          :page-size="pagination.per_page"
           layout="prev, pager, next, total"
           :total="pagination.total"
           @current-change="handlePageChange"
@@ -107,7 +117,6 @@ export default {
 <style scoped lang="scss">
 .game-list-container {
   padding: 20px;
-  max-width: 1200px;
   margin: 0 auto;
 
   .game-grid {
