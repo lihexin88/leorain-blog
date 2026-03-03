@@ -41,7 +41,7 @@
     <!-- 登录弹窗 -->
     <el-dialog
       v-model="userStore.showLoginDialog"
-      title=""
+      title="登录"
       width="450px"
       :append-to-body="true"
       destroy-on-close
@@ -167,11 +167,20 @@ export default {
   overflow: hidden;
 
   .el-dialog__header {
-    display: none;
+    margin-right: 0;
+    padding: 20px;
+    border-bottom: 1px solid #ebeef5;
+    text-align: center;
+
+    .el-dialog__title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+    }
   }
 
   .el-dialog__body {
-    padding: 0;
+    padding: 20px;
   }
 
   .login-container {
@@ -182,6 +191,10 @@ export default {
     border: none;
     box-shadow: none;
     max-width: 100%;
+
+    .el-card__body {
+      padding: 0;
+    }
   }
 }
 </style>

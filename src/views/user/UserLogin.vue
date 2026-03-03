@@ -1,7 +1,7 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
-      <template #header>
+  <div class="login-container" :class="{ 'is-dialog': isDialog }">
+    <el-card class="login-card" :class="{ 'is-dialog': isDialog }">
+      <template #header v-if="!isDialog">
         <div class="login-header">
           <h2>登录</h2>
         </div>
@@ -191,6 +191,10 @@ export default {
   justify-content: center;
   align-items: flex-start;
   padding-top: 50px;
+
+  &.is-dialog {
+    padding-top: 0;
+  }
 }
 
 .login-card {
@@ -198,6 +202,12 @@ export default {
   max-width: 450px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  &.is-dialog {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
 
   :deep(.el-card__header) {
     padding: 20px;
