@@ -16,7 +16,7 @@
                      :src="article.is_zoom ? article.page_image+'?x-oss-process=style/page-image':article.page_image"
                      data-holder-rendered="true">
                 <!--            视频-->
-                <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted
+                <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted autoplay
                        :src="article.page_image"></video>
               </a>
               <a v-else class="article-item-link"

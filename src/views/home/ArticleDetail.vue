@@ -11,6 +11,8 @@
               v-if="isVideo(article.page_image)"
               class="article-page-video"
               loop
+              muted
+              autoplay
               style="max-width: 200px; max-height: 200px"
           >
             <source :src="article.page_image" type="video/mp4">
