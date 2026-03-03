@@ -5,41 +5,46 @@
         <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
-    <el-dialog v-model="showDialog">
+    <el-dialog v-model="showDialog"
+               class="guest-dialog"
+               width="400px"
+               :align-center="true"
+               :append-to-body="true"
+               @mousemove="handleMouseMove"
+               @mouseleave="handleMouseLeave">
       <template v-slot:header>
-        <div style="font-size: .9em;"><i>访客信息</i></div>
+        <div class="guest-dialog-header">
+          <span class="header-title">访客信息</span>
+          <span class="header-subtitle">Guest Info</span>
+        </div>
       </template>
-      <div
-          style="display: flex;justify-content:center;cursor: pointer;padding-bottom: 5px;padding-top: 5px;align-items: center">
-        <el-avatar shape="circle" :size="60" :src="avatar"></el-avatar>
-      </div>
-      <div class="guest-input-box">
-        <div class="guest-input">
-          <div class="guest-input-tip">
-            *昵称：
-          </div>
-          <el-input class="guest-input-item" v-model="guest.name" :clearable="true"
-                    resize="horizontal" placeholder="用户名"></el-input>
+      <div class="guest-dialog-body" :style="tiltStyle">
+        <div class="avatar-wrapper">
+          <el-avatar shape="circle" :size="80" :src="avatar" class="guest-avatar"></el-avatar>
+          <div class="avatar-decoration"></div>
         </div>
-        <div class="guest-input">
-          <div class="guest-input-tip">
-            *邮箱：
+        <div class="guest-input-box">
+          <div class="guest-input">
+            <div class="guest-input-tip">昵称</div>
+            <el-input class="guest-input-item" v-model="guest.name" :clearable="true"
+                      placeholder="如何称呼您？"></el-input>
           </div>
-          <el-input class="guest-input-item" type="email" v-model="guest.email" :clearable="true"
-                    placeholder="邮箱">
-          </el-input>
-        </div>
-        <div class="guest-input">
-          <div class="guest-input-tip">
-            网址：
+          <div class="guest-input">
+            <div class="guest-input-tip">邮箱</div>
+            <el-input class="guest-input-item" type="email" v-model="guest.email" :clearable="true"
+                      placeholder="用于接收回复通知">
+            </el-input>
           </div>
-          <el-input class="guest-input-item" v-model="guest.website" :clearable="true"
-                    placeholder="网址(选填)"></el-input>
+          <div class="guest-input">
+            <div class="guest-input-tip">网址</div>
+            <el-input class="guest-input-item" v-model="guest.website" :clearable="true"
+                      placeholder="您的博客或个人主页 (选填)"></el-input>
+          </div>
         </div>
       </div>
       <template v-slot:footer>
-        <div>
-          <el-button @click="saveGuestInfo">确认</el-button>
+        <div class="guest-dialog-footer">
+          <el-button class="confirm-btn" @click="saveGuestInfo">开启交流</el-button>
         </div>
       </template>
     </el-dialog>
@@ -63,7 +68,10 @@ export default {
       avatar: '',
       guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
       showDialog: false,
-      debouncedUpdateAvatar: null
+      debouncedUpdateAvatar: null,
+      tiltStyle: {
+        transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
+      }
     }
   },
   watch: {
@@ -97,6 +105,25 @@ export default {
   methods: {
     updateAvatar (val) {
       this.avatar = this.guestAvatarPrefix + MD5(val || '').toString()
+    },
+    handleMouseMove (e) {
+      const dialog = e.currentTarget.querySelector('.el-dialog')
+      if (!dialog) return
+      const rect = dialog.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const centerX = rect.width / 2
+      const centerY = rect.height / 2
+      const rotateX = ((y - centerY) / centerY) * -10 // Max 10 degrees
+      const rotateY = ((x - centerX) / centerX) * 10 // Max 10 degrees
+      this.tiltStyle = {
+        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+      }
+    },
+    handleMouseLeave () {
+      this.tiltStyle = {
+        transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
+      }
     },
     loadGuestInfo () {
       const guestInfo = localStorage.getItem('guest_info')
@@ -145,6 +172,94 @@ export default {
 </script>
 <style scoped lang="scss">
 
+:deep(.guest-dialog) {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+
+  .el-dialog__header {
+    margin-right: 0;
+    padding: 25px 25px 10px;
+  }
+
+  .el-dialog__body {
+    padding: 10px 25px 20px;
+    perspective: 1000px;
+  }
+
+  .el-dialog__footer {
+    padding: 10px 25px 25px;
+    text-align: center;
+  }
+}
+
+.guest-dialog-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #409EFF, #67C23A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
+    color: #909399;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+}
+
+.guest-dialog-body {
+  transition: transform 0.1s ease-out;
+  transform-style: preserve-3d;
+}
+
+.avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 25px;
+
+  .guest-avatar {
+    border: 4px solid #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    z-index: 2;
+
+    &:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+  }
+
+  .avatar-decoration {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(64, 158, 255, 0.2) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+}
+
 .guest-input-form {
   display: flex;
   justify-content: flex-end;
@@ -154,24 +269,63 @@ export default {
 
 .guest-input-box {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: wrap
+  flex-direction: column;
+  gap: 15px;
 }
 
 .guest-input {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
-  align-items: center;
-  padding-bottom: 10px;
 }
 
 .guest-input-tip {
-  width: 15%;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #606266;
+  padding-left: 5px;
 }
 
 .guest-input-item {
-  width: 100%;
-  padding: 5px;
+  :deep(.el-input__wrapper) {
+    border-radius: 12px;
+    background-color: #f5f7fa;
+    box-shadow: none;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    padding: 5px 15px;
+
+    &.is-focus {
+      background-color: #fff;
+      border-color: #409EFF;
+      box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.1);
+    }
+  }
+}
+
+.guest-dialog-footer {
+  .confirm-btn {
+    width: 100%;
+    height: 45px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(45deg, #409EFF, #007aff);
+    border: none;
+    box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
+    transition: all 0.3s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(64, 158, 255, 0.4);
+      background: linear-gradient(45deg, #66b1ff, #409EFF);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
 </style>
