@@ -231,6 +231,17 @@ export default {
     this.fetchUser()
     this.configStore.fetchConfigs()
   },
+  watch: {
+    '$route.params.slug': {
+      handler (newSlug) {
+        if (newSlug) {
+          this.article.id = null
+          this.slug = newSlug
+          this.fetchArticle()
+        }
+      }
+    }
+  },
   beforeUnmount () {
     if (this.fetchTimer) {
       clearTimeout(this.fetchTimer)

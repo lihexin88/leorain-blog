@@ -76,7 +76,7 @@ export default {
       })
     },
     open_article (slug) {
-      this.$router.push({ name: 'article', params: { slug } })
+      this.$router.push({ name: 'ArticleDetail', params: { slug } })
     }
   },
   mounted () {
