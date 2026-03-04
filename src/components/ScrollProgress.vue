@@ -61,7 +61,7 @@ export default {
 }
 :deep(.el-progress-bar__outer) {
   background-color: transparent !important;
-  height: 5px !important;
+  height: 3px !important;
 }
 </style>
 <style lang="scss">
