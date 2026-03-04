@@ -6,7 +6,9 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
-    showLoginDialog: false
+    showLoginDialog: false,
+    // 确保全局仅有一个登录/访客信息弹窗渲染实例
+    loginDialogOwnerId: null
   }),
 
   getters: {
@@ -16,6 +18,18 @@ export const useUserStore = defineStore('user', {
   actions: {
     setShowLoginDialog (show) {
       this.showLoginDialog = show
+    },
+    // 注册弹窗的拥有者，只有拥有者实例才渲染弹窗
+    registerLoginDialogOwner (id) {
+      if (!this.loginDialogOwnerId) {
+        this.loginDialogOwnerId = id
+      }
+    },
+    // 释放拥有者（例如弹窗关闭或组件卸载时）
+    unregisterLoginDialogOwner (id) {
+      if (this.loginDialogOwnerId === id) {
+        this.loginDialogOwnerId = null
+      }
     },
     async login (params) {
       try {

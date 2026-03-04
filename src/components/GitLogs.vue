@@ -13,16 +13,20 @@
       </el-card>
     </div>
     <div>
-      <el-dialog :show="show" large @cancel="show = false">
-        <template #title>git提交日志</template>
+      <!-- Element Plus 兼容：使用 v-model 绑定可见性，使用 header 槽替代已废弃的 title 槽 -->
+      <el-dialog v-model="show" width="60%" @close="show = false">
+        <template #header>
+          <span>git提交日志</span>
+        </template>
         <div style="border-radius: 5px;">
           <el-table :data="git_logs" style="width: 100%;border-radius: 5px;height: 600px;overflow-y: auto"
-                    v-infinite-scroll="loadMore" :v-infinite-scroll-disabled="!loading" infinite-scroll-distance="50">
+                    v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading" :infinite-scroll-distance="50">
             <el-table-column prop="comment" label="提交记录"></el-table-column>
           </el-table>
         </div>
-        <div style="text-align: center;background-color: #efefef;padding: 5px" v-if="page === this.last_page">到底啦 ~.~
-        </div>
+        <template #footer>
+          <div style="text-align: center;background-color: #efefef;padding: 5px" v-if="page === last_page">到底啦 ~.~</div>
+        </template>
       </el-dialog>
     </div>
   </div>

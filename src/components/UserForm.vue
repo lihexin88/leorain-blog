@@ -1,11 +1,11 @@
 <template>
   <div class="guest-input-form">
     <div>
-      <div style="padding-right: 5px;cursor: pointer" @click="showDialog = true">
+      <div style="padding-right: 5px;cursor: pointer" @click="openDialog">
         <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
-    <el-dialog v-model="showDialog"
+    <el-dialog v-if="isDialogOwner" v-model="dialogVisible"
                class="guest-dialog"
                width="400px"
                :align-center="true"
@@ -54,6 +54,7 @@
 <script>
 import MD5 from 'crypto-js/md5'
 import debounce from 'lodash/debounce'
+import { useUserStore } from '@/store/user'
 
 export default {
   components: {},
@@ -67,7 +68,10 @@ export default {
       },
       avatar: '',
       guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
-      showDialog: false,
+      // pinia
+      userStore: null,
+      // 唯一实例标识，用于确保全局仅渲染一个弹窗
+      instanceId: Math.random().toString(36).slice(2),
       debouncedUpdateAvatar: null,
       tiltStyle: {
         transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
@@ -84,6 +88,28 @@ export default {
         }
       },
       immediate: true
+    },
+    // 监听对话框显隐，关闭时释放拥有者
+    dialogVisible (val) {
+      if (!val && this.userStore && this.isDialogOwner) {
+        this.userStore.unregisterLoginDialogOwner(this.instanceId)
+      }
+    }
+  },
+  computed: {
+    // 和 el-dialog v-model 双向绑定，映射到 pinia store
+    dialogVisible: {
+      get () {
+        return this.userStore ? this.userStore.showLoginDialog : false
+      },
+      set (val) {
+        if (!this.userStore) this.userStore = useUserStore()
+        this.userStore.setShowLoginDialog(val)
+      }
+    },
+    // 仅拥有者实例才渲染弹窗
+    isDialogOwner () {
+      return this.userStore && this.userStore.loginDialogOwnerId === this.instanceId
     }
   },
   created () {
@@ -92,17 +118,40 @@ export default {
     }, 1000)
   },
   mounted () {
+    // 绑定 store
+    this.userStore = useUserStore()
     this.loadGuestInfo()
     if (!this.guest.name || !this.guest.email) {
-      this.showDialog = true
+      // 需要展示弹窗时，走全局开关
+      this.userStore.setShowLoginDialog(true)
+    }
+    // 注册全局弹窗拥有者（仅首次注册）
+    if (!this.userStore.loginDialogOwnerId) {
+      if (this.userStore && typeof this.userStore.registerLoginDialogOwner === 'function') {
+        this.userStore.registerLoginDialogOwner(this.instanceId)
+      }
     }
   },
   beforeUnmount () {
     if (this.debouncedUpdateAvatar) {
       this.debouncedUpdateAvatar.cancel()
     }
+    // 卸载时若为拥有者则释放
+    if (this.userStore && this.userStore.loginDialogOwnerId === this.instanceId) {
+      this.userStore.unregisterLoginDialogOwner(this.instanceId)
+    }
   },
   methods: {
+    openDialog () {
+      if (!this.userStore) this.userStore = useUserStore()
+      // 若当前无拥有者，抢占拥有者
+      if (!this.userStore.loginDialogOwnerId) {
+        if (this.userStore && typeof this.userStore.registerLoginDialogOwner === 'function') {
+          this.userStore.registerLoginDialogOwner(this.instanceId)
+        }
+      }
+      this.userStore.setShowLoginDialog(true)
+    },
     updateAvatar (val) {
       this.avatar = this.guestAvatarPrefix + MD5(val || '').toString()
     },
@@ -147,7 +196,9 @@ export default {
         email: this.guest.email,
         website: this.guest.website
       }))
-      this.showDialog = false
+      if (this.userStore) {
+        this.userStore.setShowLoginDialog(false)
+      }
       this.$emit('update')
     },
     validateData () {
