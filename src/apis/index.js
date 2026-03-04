@@ -9,6 +9,7 @@ import customEmojiApi from './customEmoji'
 import commentApi from './comment'
 import linkApi from './link'
 import guestbookApi from './guestbook'
+import topicApi from './topic'
 
 export default {
   articleApi,
@@ -21,7 +22,8 @@ export default {
   customEmojiApi,
   commentApi,
   linkApi,
-  guestbookApi
+  guestbookApi,
+  topicApi
 }
 
 // 也可以单独导出各个模块
@@ -36,5 +38,6 @@ export {
   customEmojiApi,
   commentApi,
   linkApi,
-  guestbookApi
+  guestbookApi,
+  topicApi
 }

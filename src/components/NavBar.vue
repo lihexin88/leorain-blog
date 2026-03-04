@@ -80,7 +80,7 @@
         </el-menu-item>
       </el-sub-menu>
       <el-menu-item index="/assets">向量检索</el-menu-item>
-      <el-menu-item index="/quiz">测验</el-menu-item>
+      <el-menu-item index="/topics">测验</el-menu-item>
       <el-menu-item index="/guestbook">留言板</el-menu-item>
       <el-menu-item index="/games">童年游戏</el-menu-item>
       <el-menu-item index="/links">友情链接</el-menu-item>
@@ -155,7 +155,7 @@
       </el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/assets" class="desktop-menu">向量检索</el-menu-item>
-    <el-menu-item index="/quiz" class="desktop-menu">测验</el-menu-item>
+    <el-menu-item index="/topics" class="desktop-menu">测验</el-menu-item>
     <el-menu-item index="/guestbook" class="desktop-menu">留言板</el-menu-item>
     <el-menu-item index="/games" class="desktop-menu">童年游戏</el-menu-item>
     <el-menu-item index="/links" class="desktop-menu">友情链接</el-menu-item>

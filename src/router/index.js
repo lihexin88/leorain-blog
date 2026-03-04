@@ -165,6 +165,17 @@ const routes = [
         path: 'assets',
         name: 'AssetList',
         component: () => import('../views/assets/AssetList.vue')
+      },
+      // Topic routes
+      {
+        path: 'topics',
+        name: 'TopicList',
+        component: () => import('../views/topic/TopicList.vue')
+      },
+      {
+        path: 'topic/:slug',
+        name: 'TopicDetail',
+        component: () => import('../views/topic/Topic.vue')
       }
     ]
   }
