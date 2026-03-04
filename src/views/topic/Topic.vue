@@ -44,10 +44,11 @@
     <div class="topic-submit">
       <button class="btn btn-success topic-submit-button" type="button" @click="submitForm">提交</button>
     </div>
-    <modal :show="showMbtiResult" @cancel="closeResult">
-      <template v-slot:title>
-        <div>测试结果</div>
-      </template>
+    <el-dialog
+        v-model="showMbtiResult"
+        title="测试结果"
+        width="500px"
+    >
       <div>
         <div style="display: flex;justify-content: center;align-items: center">
           <div>你的MBTI人格为</div>
@@ -65,17 +66,9 @@
           </div>
         </div>
       </div>
-    </modal>
-    <el-dialog
-        v-model="unauthorized"
-        title="确认登录？"
-        width="30%"
-    >
-      <span>当前未登录，确认跳转登录？</span>
-      <template v-slot:footer>
+      <template #footer>
         <span class="dialog-footer">
-          <el-button @click="unauthorized = false">取 消</el-button>
-          <el-button type="primary" @click="gotoLogin">确 定</el-button>
+          <el-button type="primary" @click="closeResult">我知道了</el-button>
         </span>
       </template>
     </el-dialog>
@@ -85,12 +78,12 @@
 <script>
 import { nextTick } from 'vue'
 import Swal from 'sweetalert2'
-import Modal from '../../../dashboard/components/Modal.vue'
-import { topicApi, userApi } from '@/apis'
+import { topicApi } from '@/apis'
+import { useUserStore } from '@/store/user'
 
 export default {
   name: 'TopicDetail',
-  components: { Modal },
+  components: {},
   props: {
     questions: {
       type: String,
@@ -127,12 +120,47 @@ export default {
     if (this.topic) {
       this.topicObject = JSON.parse(this.topic)
     }
-    this.getUserInfo()
+    // 使用 Pinia 的 user store 判断是否登录，不再调用接口
+    const userStore = useUserStore()
+    this.unauthorized = !(userStore && userStore.user)
+    if (this.unauthorized) {
+      userStore.setShowLoginDialog(true)
+    }
+
+    // 若通过路由进入（无 props 提供），在挂载时根据 slug 获取话题详情
+    const slug = this.$route && this.$route.params ? this.$route.params.slug : null
+    if (slug && (!this.topic || !this.questions)) {
+      topicApi.getTopicDetail(slug)
+        .then((res) => {
+          const data = res && res.data ? res.data : res
+          // 兼容返回结构：可能为 { data: {...} } 或直接为对象
+          const topicData = data && data.data ? data.data : data
+          // 题目列表字段可能为 questions 或 topicData.questions
+          const questions = topicData && topicData.questions ? topicData.questions : (data && data.questions ? data.questions : [])
+
+          if (topicData) {
+            // 避免把 questions 放入 topicObject，单独存放
+            const restTopic = { ...topicData }
+            if (Object.prototype.hasOwnProperty.call(restTopic, 'questions')) {
+              delete restTopic.questions
+            }
+            this.topicObject = restTopic
+          }
+          if (questions && Array.isArray(questions)) {
+            this.questionsObject = questions.map(q => ({
+              ...q,
+              parsedOptions: typeof q.options === 'string' ? JSON.parse(q.options || '[]') : (q.options || []),
+              selectedOptions: [],
+              selectedOption: ''
+            }))
+          }
+        })
+        .catch((error) => {
+          console.error('加载话题详情失败:', error)
+        })
+    }
   },
   methods: {
-    gotoLogin () {
-      window.location.href = '/login'
-    },
     closeResult () {
       this.showMbtiResult = false
     },
@@ -270,16 +298,6 @@ export default {
             icon: 'error',
             confirmButtonText: '确定'
           })
-        }
-      }
-    },
-    async getUserInfo () {
-      try {
-        await userApi.getUserInfo()
-        this.unauthorized = false
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          this.unauthorized = true
         }
       }
     }
