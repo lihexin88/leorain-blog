@@ -306,201 +306,199 @@ export default {
 </script>
 
 <style>
-/* 样式保持不变 */
+/* 隐藏原生复选框和单选框 */
 .custom-checkbox, .custom-radio {
   display: none;
 }
 
+/* 主容器样式 */
 .topic-container {
   background-color: white;
-  padding: 10px;
-  border-radius: 2px;
+  padding: 24px 20px;
+  border-radius: 12px;
   margin-bottom: 30px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
+/* 标题样式 */
+.topic-title {
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+  text-align: center;
+}
+
+/* 描述文字样式 */
+.topic-container > div:first-child > div:nth-child(2) {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 0 10px;
+  color: #606266;
+  line-height: 1.6;
+}
+
+/* 问题样式 */
+.topic-container > div[id^="question_id_"] {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.topic-container > div[id^="question_id_"]:hover {
+  background-color: #f9fafb;
+}
+
+/* 问题文字样式 */
+.topic-container > div[id^="question_id_"] > div:first-child {
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+}
+
+/* 选项容器样式 */
+.question-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-left: 20px;
+  margin-top: 12px;
+}
+
+/* 选项样式 */
+.question-input {
+  position: relative;
+}
+
+/* 自定义标签样式 */
 .custom-label {
   position: relative;
-  padding-left: 30px;
+  padding-left: 32px;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 30px;
-  color: #333;
+  font-size: 15px;
+  line-height: 24px;
+  color: #606266;
   width: 100%;
-  transition: box-shadow .1s ease-in-out;
+  transition: all 0.2s ease;
+  display: block;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .custom-label:hover {
-  box-shadow: 0 0 8px 4px rgba(99, 149, 218, 0.5);
-  border-radius: 4px;
+  color: #409EFF;
 }
 
+/* 自定义复选框/单选框样式 */
 .custom-label::before {
   content: "";
   position: absolute;
-  left: 5px;
-  top: 5px;
+  left: 0;
+  top: 6px;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  border: 2px solid #007BFF;
+  border: 2px solid #DCDFE6;
   background-color: #fff;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
-.question-input-container {
-  margin-left: 20px;
-  margin-top: 10px;
+/* 复选框方形，单选框圆形 */
+.custom-checkbox + .custom-label::before {
+  border-radius: 4px;
 }
 
+.custom-radio + .custom-label::before {
+  border-radius: 50%;
+}
+
+/* 选中状态 */
 .custom-checkbox:checked + .custom-label::before,
 .custom-radio:checked + .custom-label::before {
-  background-color: #007BFF;
+  background-color: #409EFF;
+  border-color: #409EFF;
 }
 
-.custom-checkbox:checked + .custom-label::after,
+/* 选中时的对勾/圆点 */
+.custom-checkbox:checked + .custom-label::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
 .custom-radio:checked + .custom-label::after {
   content: "";
   position: absolute;
-  left: 5px;
-  top: 0;
-  color: white;
-  font-size: 14px;
+  left: 6px;
+  top: 11px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
 }
 
-.topic-submit-button {
-  width: 50%;
-  z-index: 10;
-}
-
-@media screen and (max-aspect-ratio: 1/1) {
-  .topic-submit-button {
-    width: 100%;
-  }
-}
-
-.topic-title {
-  margin-bottom: 20px;
-}
-
+/* 提交按钮容器 */
 .topic-submit {
   position: fixed;
-  width: 20%;
-  bottom: 12%;
-  right: 40%;
+  bottom: 30px;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-@keyframes flash-border-box {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-  }
-}
-
-.flash-border-box {
-  animation: flash-border-box 1s ease-in-out 0.5s 3;
-  border: 2px solid transparent;
-  border-radius: 4px;
-}
-</style>
-
-<style>
-/* 样式适用于复选框和单选框 */
-.custom-checkbox, .custom-radio {
-  display: none;
-}
-
-.topic-container {
-  background-color: white;
-  padding: 10px;
-  border-radius: 2px;
-  margin-bottom: 30px;
-}
-
-/* 定义复选框和单选框的标签样式 */
-.custom-label {
-  position: relative;
-  padding-left: 30px;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 30px;
-  color: #333;
-  width: 100%;
-  transition: box-shadow .1s ease-in-out;
-}
-
-.custom-label:hover {
-  box-shadow: 0 0 8px 4px rgba(99, 149, 218, 0.5); /* 发光边框效果 */
-  border-radius: 4px; /* 圆角边框 */
-}
-
-/* 圆形复选框或单选框 */
-.custom-label::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid #007BFF;
-  background-color: #fff;
-  transition: background-color 0.2s;
-}
-
-.question-input-container {
-  margin-left: 20px;
-  margin-top: 10px;
-}
-
-.question-input {
-}
-
-/* 选中时的样式 */
-.custom-checkbox:checked + .custom-label::before,
-.custom-radio:checked + .custom-label::before {
-  background-color: #007BFF;
-}
-
-.custom-checkbox:checked + .custom-label::after,
-.custom-radio:checked + .custom-label::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 0;
-  color: white;
-  font-size: 14px;
+  z-index: 100;
 }
 
 /* 提交按钮样式 */
 .topic-submit-button {
-  width: 50%;
-  z-index: 10;
+  width: 200px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+  transition: all 0.3s ease;
 }
 
-@media screen and (max-aspect-ratio: 1/1) {
-  .topic-submit-button {
-    width: 100%;
+.topic-submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(64, 158, 255, 0.4);
+}
+
+.topic-submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+  .topic-container {
+    padding: 20px 16px;
+    border-radius: 8px;
   }
-}
 
-.topic-title {
-  margin-bottom: 20px;
-}
+  .topic-title {
+    font-size: 20px;
+  }
 
-.topic-submit {
-  position: fixed;
-  width: 20%;
-  bottom: 12%;
-  right: 40%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  .topic-submit-button {
+    width: 80%;
+    max-width: 300px;
+  }
 
+  .question-input-container {
+    margin-left: 10px;
+  }
 }
 
 /* 闪烁边框动画 */
@@ -514,8 +512,16 @@ export default {
 }
 
 .flash-border-box {
-  animation: flash-border-box 1s ease-in-out 0.5s 3; /* 1秒动画, 延迟0.5秒, 重复3次 */
+  animation: flash-border-box 1s ease-in-out 0.5s 3;
   border: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 8px;
+}
+
+/* 分隔线样式 */
+hr {
+  border: 0;
+  height: 1px;
+  background-color: #EBEEF5;
+  margin: 24px 0;
 }
 </style>

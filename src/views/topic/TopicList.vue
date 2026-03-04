@@ -1,13 +1,16 @@
 <template>
-  <div>
+  <div class="topic-list-container">
     <el-card v-for="(topic, index) in topicList" :key="index" class="topic-list-item">
       <div @click="goTopicDetail(topic.slug, topic.type)">
-        <div>{{ topic.title }}</div>
+        <div class="topic-list-item-title">{{ topic.title }}</div>
         <div class="topic-list-item-description">{{ topic.description }}</div>
-        <div><i class="fa fa-clock"></i>{{ moment(topic.created_at).format("YYYY-MM-DD") }}</div>
+        <div class="topic-list-item-date">
+          <i class="fa fa-clock"></i>
+          {{ moment(topic.created_at).format("YYYY-MM-DD") }}
+        </div>
       </div>
     </el-card>
-    <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px; color: #0C0C0C">
+    <div class="pagination-container">
       <el-pagination
           v-model:page-size="perPage"
           :page-sizes="[10, 20, 30, 50]"
@@ -99,17 +102,94 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.topic-list-item {
-  cursor: pointer;
-  margin-top: 10px;
+.topic-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.topic-list-item:hover {
-  transform: scale(1.05);
+.topic-list-item {
+  cursor: pointer;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  :deep(.el-card__body) {
+    padding: 20px;
+  }
+}
+
+.topic-list-item-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 10px;
 }
 
 .topic-list-item-description {
-  font-size: .9em;
-  color: grey;
+  font-size: 15px;
+  color: #606266;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topic-list-item-date {
+  font-size: 13px;
+  color: #909399;
+  display: flex;
+  align-items: center;
+
+  .fa-clock {
+    margin-right: 5px;
+  }
+}
+
+.pagination-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  margin-top: 10px;
+}
+
+// 响应式设计
+@media screen and (max-width: 768px) {
+  .topic-list-container {
+    padding: 15px;
+  }
+
+  .topic-list-item {
+    margin-bottom: 15px;
+    border-radius: 8px;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+
+    :deep(.el-card__body) {
+      padding: 15px;
+    }
+  }
+
+  .topic-list-item-title {
+    font-size: 16px;
+  }
+
+  .topic-list-item-description {
+    font-size: 14px;
+  }
 }
 </style>
