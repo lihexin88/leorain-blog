@@ -167,28 +167,30 @@ export default {
 
 .links-container {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
+  margin: 0 100px;
   padding-bottom: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  // 响应式列数控制：最多5列，最少2列
+  @media screen and (max-width: 1400px) {
+    margin: 0 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  @media screen and (max-width: 1100px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  @media screen and (max-width: 760px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .links-item-div {
   position: relative;
+  width: 100%;
   font-size: .85em;
   background-image: url("https://images.leorain.cn/icons/assets/links-item-background-image.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  @media screen and (max-width: 1280px) {
-    width: 32%;
-  }
-  @media screen and (max-width: 960px) {
-    width: 45%;
-  }
-  @media screen and (max-width: 640px) {
-    width: 95%;
-  }
 }
 
 .links-item-div-tips {

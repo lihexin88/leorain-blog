@@ -151,7 +151,7 @@ export default {
 
 .body {
   flex: 1;
-  margin-top: 60px; /* 为固定头部留出空间 */
+  margin-top: 40px; /* 为固定头部留出空间 */
   height: 100%;
 }
 
