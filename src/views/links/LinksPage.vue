@@ -18,7 +18,7 @@
     <div style="display: flex;justify-content: center;padding-top: 10px">
       <div class="links-container">
         <div class="links-item-div" v-for="(link,index) in links" :key="index">
-          <div style="position: relative" @click="open_link(link.link,link.id)">
+          <div style="position: relative" @click="openLink(link.link,link.id)">
             <el-card body-style="padding-left: 5px;" class="links-item">
               <div class="links-item-container">
                 <div class="links-item-left">
@@ -35,13 +35,13 @@
                     <b>
                       链接：
                     </b>
-                    <el-link :title="link.link" type="primary">{{ max_string(link.link, 30) }}</el-link>
+                    <el-link :title="link.link" type="primary">{{ maxString(link.link, 30) }}</el-link>
                   </div>
                   <div :title="link.description">
                     <b>
                       描述：
                     </b>
-                    {{ max_string(link.description, 32) }}
+                    {{ maxString(link.description, 32) }}
                   </div>
                   <div>
                     <b>
@@ -80,11 +80,16 @@
         </div>
       </div>
     </div>
-    <el-dialog :show="show_preview" large @cancel="show_preview = false">
+    <el-dialog
+      v-model="show_preview"
+      class="preview-dialog"
+      style="width: 70%;height: 60%"
+      @cancel="show_preview = false"
+    >
       <template v-slot:header>
         <div style="position: relative;display: flex;justify-content: center;width: 100%">
-          <div slot="title" title="新窗口打开" style="position: absolute;left: 10px;cursor: pointer"
-               @click="open_link(preview_link.link,preview_link.id)">
+          <div title="新窗口打开" style="position: absolute;left: 10px;cursor: pointer"
+               @click="openLink(preview_link.link,preview_link.id)">
             <el-link>新窗口打开<i class="fa fa-external-link-alt"></i></el-link>
           </div>
           <div style="position: absolute;top: 0">
@@ -108,8 +113,15 @@
 import moment from 'moment'
 import parse from '@/components/MarkdownParse.vue'
 import { linkApi } from '@/apis'
+import { maxString } from '@/utils/helpers'
 
 export default {
+  tdk () {
+    return {
+      title: 'leorain-友情链接',
+      description: 'leorain 友链'
+    }
+  },
   components: { parse },
   computed: {
     moment () {
@@ -132,25 +144,21 @@ export default {
     this.load()
   },
   methods: {
+    maxString,
     preview (link) {
-      this.$http('frontend/link/' + link.id)
+      // 迁移到 apis/link.js 统一管理
+      linkApi.visitLink(link.id).catch(() => {})
       this.show_preview = true
       this.preview_link = link
-    },
-    max_string (string, maxLength) {
-      let result = string.slice(0, maxLength)
-      if (string.length > maxLength) {
-        result += '...'
-      }
-      return result
     },
     load () {
       linkApi.getLinks().then((response) => {
         this.links = response
       })
     },
-    open_link (url, id) {
-      this.$http('frontend/link/' + id)
+    openLink (url, id) {
+      // 迁移到 apis/link.js 统一管理
+      linkApi.visitLink(id).catch(() => {})
       window.open(url)
     }
   }
@@ -204,6 +212,7 @@ export default {
   background-color: #dfd1d1;
   border-radius: 3px;
   color: grey;
+  z-index: 10;
 }
 
 .links-item-div-tips:hover {
@@ -239,6 +248,21 @@ export default {
 
 .links-item-right {
   margin: 5px;
+}
+
+/* 让预览弹窗内的 iframe 充满 el-dialog 的 body */
+:deep(.preview-dialog .el-dialog) {
+  display: flex;
+  flex-direction: column;
+  /* 与行内 style 的高度一致，确保可用空间固定 */
+  height: 60vh;
+}
+
+:deep(.preview-dialog .el-dialog__body) {
+  flex: 1 1 auto;
+  padding: 20px;
+  overflow: hidden; /* 防止内部滚动条影响布局 */
+  height: 100%;
 }
 
 ::v-deep .modal-dialog {

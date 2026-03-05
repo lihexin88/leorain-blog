@@ -266,8 +266,7 @@ export default {
     VideoPlay,
     Share,
     Timer,
-    Trophy,
-    Picture
+    Trophy
   },
   data () {
     return {
@@ -313,7 +312,6 @@ export default {
   backdrop-filter: blur(8px) saturate(180%);
   display: flex;
   align-items: center;
-  height: 40px;
 }
 
 .mobile-more-menu {
