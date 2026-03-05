@@ -23,69 +23,9 @@
           <el-icon class="menu-icon"><Operation /></el-icon>
           <span>工具箱</span>
         </template>
-        <el-menu-item index="/tools/timestamp">
-          <el-icon class="menu-icon"><Clock /></el-icon>
-          <span>时间戳转换</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/radix">
-          <el-icon class="menu-icon"><Coin /></el-icon>
-          <span>进制转换</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/json">
-          <el-icon class="menu-icon"><Document /></el-icon>
-          <span>JSON格式化</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/php">
-          <el-icon class="menu-icon"><Notebook /></el-icon>
-          <span>PHP在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/java">
-          <el-icon class="menu-icon"><Grid /></el-icon>
-          <span>JAVA在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/python">
-          <el-icon class="menu-icon"><DataLine /></el-icon>
-          <span>PYTHON在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/golang">
-          <el-icon class="menu-icon"><Crop /></el-icon>
-          <span>GO在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/clang">
-          <el-icon class="menu-icon"><VideoPlay /></el-icon>
-          <span>C在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/cpp">
-          <el-icon class="menu-icon"><Share /></el-icon>
-          <span>C++在线运行</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/draw">
-          <el-icon class="menu-icon"><EditPen /></el-icon>
-          <span>在线同步绘画</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/clipboard">
-          <el-icon class="menu-icon"><Timer /></el-icon>
-          <span>在线剪切板</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/schulte">
-          <el-icon class="menu-icon"><Grid /></el-icon>
-          <span>舒尔特表格测试</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/cpu">
-          <el-icon class="menu-icon"><DataLine /></el-icon>
-          <span>CPU运行模拟</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/lottery">
-          <el-icon class="menu-icon"><Trophy /></el-icon>
-          <span>我很幸运</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/fish">
-          <el-icon class="menu-icon"><Trophy /></el-icon>
-          <span>鱼乐一下</span>
-        </el-menu-item>
-        <el-menu-item index="/tools/media">
-          <el-icon class="menu-icon"><Picture /></el-icon>
-          <span>媒体处理工具</span>
+        <el-menu-item v-for="(tool,index) in tools" :key="index" :index="tool.href">
+          <img :src="tool.image" class="menu-icon" />
+          <span>{{ tool.text }}</span>
         </el-menu-item>
       </el-sub-menu>
       <el-menu-item index="/assets">

@@ -1,6 +1,7 @@
 <script>
 import moment from 'moment'
 import { maxString, paginateLayouts } from '@/utils/helpers'
+import { clipboardApi } from '@/apis'
 
 export default {
   data () {
@@ -57,38 +58,31 @@ export default {
     },
     getList () {
       this.loading = true
-      let listUrl = ''
-      switch (this.data_source_type) {
-        case 'public':
-          listUrl = '/frontend/clipboard'
-          break
-        case 'private':
-          listUrl = '/frontend/clipboard-authorized'
-          break
+      const params = {
+        page: this.page,
+        page_size: this.page_size,
+        search_text: this.search_text,
+        data_source_type: this.getDateSourceInfo().id
       }
-      this.$http.get(listUrl, {
-        params: {
-          page: this.page,
-          page_size: this.page_size,
-          search_text: this.search_text,
-          data_source_type: this.getDateSourceInfo().id
-        }
-      }).then((response) => {
-        this.clipboardData = []
-        this.clipboardData = response.data.data
-        this.clipboardData.forEach(item => {
-          item.created_at = moment(item.created_at).format('MM-DD HH:mm')
+      clipboardApi.getList(this.data_source_type, params)
+        .then((res) => {
+          // base.js 已将 axios 的 response.data 直接返回，这里的 res 即为后端响应体
+          this.clipboardData = (res && res.data) ? res.data : []
+          this.clipboardData.forEach(item => {
+            item.created_at = moment(item.created_at).format('MM-DD HH:mm')
+          })
+          this.total = res?.meta?.pagination?.total || 0
+          this.page = res?.meta?.pagination?.current_page || this.page
         })
-        this.total = response.data.meta.pagination.total
-        this.page = response.data.meta.pagination.current_page
-      }).catch(err => {
-        this.$message({
-          type: 'error',
-          message: err.response.message
+        .catch(err => {
+          this.$message({
+            type: 'error',
+            message: err?.message || '加载失败'
+          })
         })
-      }).finally(() => {
-        this.loading = false
-      })
+        .finally(() => {
+          this.loading = false
+        })
     },
     async copyImageToClipboard (base64Data) {
       try {
@@ -108,23 +102,11 @@ export default {
       }
     },
     submit () {
-      let url = ''
-      switch (this.data_source_type) {
-        case 'public':
-          url = '/frontend/clipboard'
-          break
-        case 'private':
-          url = '/frontend/clipboard-authorized'
-          break
-      }
-      let method = 'post'
       let postData = {
         data_source_type: this.getDateSourceInfo().id
       }
-      if (this.currentClipboard.id) {
-        url += '/' + this.currentClipboard.id
-        method = 'patch'
-      } else {
+      if (!this.currentClipboard.id) {
+        // 创建时需要传 type
         postData.type = this.currentClipboard.type
       }
       if (this.currentClipboard.content !== null) {
@@ -140,7 +122,12 @@ export default {
       if (this.currentClipboard.star !== null) {
         postData.star = this.currentClipboard.star
       }
-      this.$http[method](url, postData).then(() => {
+
+      const req = this.currentClipboard.id
+        ? clipboardApi.update(this.data_source_type, this.currentClipboard.id, postData)
+        : clipboardApi.create(this.data_source_type, postData)
+
+      req.then(() => {
         this.$message({
           type: 'success',
           message: 'success'
@@ -150,7 +137,7 @@ export default {
       }).catch(err => {
         this.$message({
           type: 'error',
-          message: err.message
+          message: err?.message || '操作失败'
         })
       })
     },
@@ -192,16 +179,7 @@ export default {
     },
     deleteClipboard (row) {
       this.$confirm('确认删除吗？').then(() => {
-        let url = ''
-        switch (this.data_source_type) {
-          case 'public':
-            url = '/frontend/clipboard/' + row.id
-            break
-          case 'private':
-            url = '/frontend/clipboard-authorized/' + row.id
-            break
-        }
-        this.$http.delete(url).then(() => {
+        clipboardApi.remove(this.data_source_type, row.id).then(() => {
           this.$message({
             type: 'success',
             message: '删除成功'
@@ -282,13 +260,13 @@ export default {
       <el-button @click="getList">搜索</el-button>
       <el-button @click="showCreate">新增</el-button>
     </div>
-    <el-dialog :show="show_popup"
-           show-footer
-           large
-           force
-           @confirm="submit"
-           @cancel="show_popup = false"
-           :title="'新增-'+this.getDateSourceInfo().name"
+    <el-dialog v-model="show_popup"
+               show-footer
+               large
+               force
+               @confirm="submit"
+               @cancel="show_popup = false"
+               :title="'新增-'+this.getDateSourceInfo().name"
     >
       <div>
         <div v-if="currentClipboard.type === 1">
@@ -309,6 +287,12 @@ export default {
           </div>
         </div>
       </div>
+      <template v-slot:footer>
+        <div>
+          <el-button @click="show_popup = false">取消</el-button>
+          <el-button type="primary" @click="submit">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
     <!--      表格-->
     <div>
@@ -328,9 +312,9 @@ export default {
           </template>
         </el-table-column>
         <el-table-column
-          prop="id"
-          label="id"
-          width="50px"
+            prop="id"
+            label="id"
+            width="50px"
         >
         </el-table-column>
         <el-table-column
@@ -338,21 +322,22 @@ export default {
         >
           <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
-              <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px" :preview-teleport="true" :z-index="3000" crossorigin="anonymous"
+              <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px" :preview-teleport="true"
+                        :z-index="3000" crossorigin="anonymous"
                         :src="scope.row?.content"></el-image>
             </div>
             <div v-else-if="scope.row?.type === 1">
-              <el-popover trigger="click" :content="scope.row?.content" >
+              <el-popover trigger="click" :content="scope.row?.content">
                 <pre>{{ scope.row?.content }}</pre>
                 <template v-slot:reference>
-<div  style="cursor: pointer;display: inline-block">
+                  <div style="cursor: pointer;display: inline-block">
                   <pre class="clipboard-table-column-content"
                        v-if="countLineBreaks(scope.row?.content) > 5">{{ truncateLines(scope.row?.content, 5) }}</pre>
-                  <pre class="clipboard-table-column-content"
-                       v-else-if="scope.row?.content.length > 300">{{ max_string(scope.row?.content, 300) }}</pre>
-                  <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
-                </div>
-</template>
+                    <pre class="clipboard-table-column-content"
+                         v-else-if="scope.row?.content.length > 300">{{ maxString(scope.row?.content, 300) }}</pre>
+                    <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
+                  </div>
+                </template>
               </el-popover>
             </div>
           </template>
@@ -370,13 +355,13 @@ export default {
           <template v-slot="scope">
             <div class="clipboard-table-options">
               <div class="clipboard-table-options-button">
-                <el-button @click="handleCopy(scope.row)" size="mini">复制</el-button>
+                <el-button @click="handleCopy(scope.row)">复制</el-button>
               </div>
               <div v-if="scope.row.type === 1" class="clipboard-table-options-button">
-                <el-button size="mini" @click="showUpdate(scope.row)">编辑</el-button>
+                <el-button @click="showUpdate(scope.row)">编辑</el-button>
               </div>
               <div class="clipboard-table-options-button">
-                <el-button @click="deleteClipboard(scope.row)" type="warning" size="mini">删除</el-button>
+                <el-button @click="deleteClipboard(scope.row)" type="warning">删除</el-button>
               </div>
             </div>
           </template>

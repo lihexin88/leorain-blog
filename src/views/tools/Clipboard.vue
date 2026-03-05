@@ -27,14 +27,14 @@
       </div>
       <div>
         <el-divider>功能介绍</el-divider>
-        <parse content="
+        <markdown-parse content="
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
 4. 每个版块最多支持 50 个剪切板内容
 5. 重复新增的剪切板内容，会删除之前相同内容的条目
 6. 内容支持文字、图片
-"></parse>
+"></markdown-parse>
       </div>
       <div>
         <el-divider>tips</el-divider>
@@ -42,11 +42,11 @@
       </div>
       <div>
         <el-divider>开发相关</el-divider>
-        <parse content="
+        <markdown-parse content="
 - 开发耗时:第一版迭代约5小时
 - 期待开发内容:
     - 各平台可直接运行的命令行工具
-"></parse>
+"></markdown-parse>
       </div>
     </div>
   </div>
@@ -54,9 +54,10 @@
 <script>
 
 import ClipboardTable from './particals/ClipboardTable.vue'
+import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
-  components: { ClipboardTable },
+  components: { MarkdownParse, ClipboardTable },
   data () {
     return {
       data_source_type: 'public'

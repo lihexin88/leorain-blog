@@ -10,6 +10,7 @@ import commentApi from './comment'
 import linkApi from './link'
 import guestbookApi from './guestbook'
 import topicApi from './topic'
+import clipboardApi from './clipboard'
 
 export default {
   articleApi,
@@ -23,7 +24,8 @@ export default {
   commentApi,
   linkApi,
   guestbookApi,
-  topicApi
+  topicApi,
+  clipboardApi
 }
 
 // 也可以单独导出各个模块
@@ -39,5 +41,6 @@ export {
   commentApi,
   linkApi,
   guestbookApi,
-  topicApi
+  topicApi,
+  clipboardApi
 }
