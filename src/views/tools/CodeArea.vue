@@ -1,7 +1,7 @@
 <template>
   <div class="code">
     <div class="code-area">
-      <textarea id="code-area"></textarea>
+      <textarea ref="code-area"></textarea>
       <div class="code-opt">
         <el-button class="code-copy" @click="copy" type="primary">复制</el-button>
         <el-button class="code-run" v-if="showRun" @click="submit" type="primary">运行</el-button>
@@ -32,12 +32,6 @@ export default {
     value: {
       type: String,
       default: ''
-    },
-    id: {
-      type: String,
-      default () {
-        return 'editor'
-      }
     },
     showRun: {
       type: Boolean,
@@ -70,7 +64,7 @@ export default {
     }
   },
   mounted () {
-    const editorEm = document.getElementById(this.id)
+    const editorEm = this.$refs['code-area']
     this.editor = CodeMirror.fromTextArea(editorEm, {
       lineNumbers: true,
       lineWrapping: true,
@@ -133,6 +127,7 @@ export default {
 <style scoped lang="scss">
 .code-area{
   display: flex;
+  height: 100%;
 }
 .command-area{
   position: absolute;
@@ -154,6 +149,11 @@ export default {
   opacity: .5;
   right: 10px;
   top: 10px;
+  z-index: 1;
+}
+:deep(.CodeMirror){
+  height: 100%;
+  flex: 1;
 }
 .code-copy {
 }

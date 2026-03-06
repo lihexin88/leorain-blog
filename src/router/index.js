@@ -65,6 +65,11 @@ const routes = [
             component: () => import('../views/tools/Timestamp.vue')
           },
           {
+            path: 'code',
+            name: 'CodeExecutor',
+            component: () => import('../views/tools/UniversalExecutor.vue')
+          },
+          {
             path: 'radix',
             name: 'Radix',
             component: () => import('../views/tools/Radix.vue')

@@ -1,26 +1,24 @@
 <template>
   <div>
-    <!-- 多语言切换区域（仅在 multi 模式显示） -->
-    <div v-if="multi" class="ue-toolbar">
+    <div class="ue-toolbar">
       <label class="ue-label">语言：</label>
-      <select v-model="selectedLangKey" @change="onLangChange" class="ue-select">
-        <option v-for="(cfg, key) in effectiveLanguages" :key="key" :value="key">
+      <el-select v-model="selectedLangKey" @change="onLangChange" class="ue-select">
+        <el-option v-for="(cfg, key) in effectiveLanguages" :key="key" :value="key">
           {{ cfg.label }}
-        </option>
-      </select>
+        </el-option>
+      </el-select>
 
       <label class="ue-label">版本：</label>
-      <select v-model="currentVersion" class="ue-select">
-        <option v-for="v in versions" :key="v.version" :value="v">{{ v.name }}</option>
-      </select>
+      <el-select v-model="currentVersion" class="ue-select">
+        <el-option v-for="v in versions" :key="v.version" :value="v.version">{{ v.name }}</el-option>
+      </el-select>
     </div>
 
     <executor
       :code="code"
       :language="language"
-      :versions="versions"
-      :show_version="currentVersion"
       :result="result"
+      ref="executor"
       @exec="exec"
       @changes="changes"
     />
@@ -32,6 +30,7 @@ import CodeExecutor from './CodeExecutor.vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import Swal from 'sweetalert2'
+import { executeCode, getExecuteResult } from '@/apis/code-executor'
 // 为多语言模式预加载常见语言的 CodeMirror 语法
 import 'codemirror/mode/php/php'
 import 'codemirror/mode/python/python'
@@ -42,35 +41,9 @@ export default {
   name: 'UniversalExecutor',
   components: { Executor: CodeExecutor },
   props: {
-    language: {
-      type: String,
-      default: 'text'
-    },
-    endpoint: {
-      // endpoint suffix, e.g. 'php', 'golang', 'java'
-      type: String,
-      required: false
-    },
-    versions: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    defaultVersion: {
-      type: Object,
-      default () {
-        return null
-      }
-    },
     initialCode: {
       type: String,
       default: ''
-    },
-    // 开启多语言模式：内部选择语言与版本
-    multi: {
-      type: Boolean,
-      default: false
     },
     // 可自定义语言配置映射：{ key: { label, endpoint, mime, versions:[], defaultVersion:{}, sample:'' } }
     languagesConfig: {
@@ -83,7 +56,9 @@ export default {
       code: this.initialCode,
       result: '',
       recordId: null,
-      currentVersion: this.defaultVersion,
+      language: '',
+      versions: [],
+      currentVersion: null,
       // 多语言模式内部状态
       selectedLangKey: 'php',
       internalLanguages: {
@@ -198,32 +173,28 @@ print(python_version())`
     if (code !== null && code !== undefined && code !== '') {
       this.code = code
     }
-    if (this.multi) {
-      this.bootstrapMulti()
-    }
+    this.bootstrapMulti()
   },
   methods: {
+    show_it (event) {
+      console.log(event)
+    },
     ...mapActions(useUserStore, ['setShowLoginDialog']),
     changes (code) {
       this.code = code
     },
-    exec (version) {
+    exec (executorObj) {
       // normalize selected version
-      const ver = version && (version.version !== undefined ? version.version : version)
-      const ep = this.multi ? this.effectiveLanguages[this.selectedLangKey].endpoint : this.endpoint
-      this.$http.post(`exec/${ep}`, {
-        code: this.code,
-        version: ver
-      }).then((response) => {
-        if (response.status === 200) {
+      const ver = this.currentVersion.version
+      const ep = this.effectiveLanguages[this.selectedLangKey].endpoint
+      executeCode(ep, executorObj.code, ver).then((response) => {
+        if (response.record_id) {
           this.result = '运行中...'
-          this.recordId = response.data.record_id
+          this.recordId = response.record_id
           let time = 1
           const intervalId = setInterval(async () => {
-            await this.$http.post('exec/get_result', {
-              record_id: this.recordId
-            }).then((intervalResponse) => {
-              const data = intervalResponse && intervalResponse.data && intervalResponse.data.data
+            await getExecuteResult(this.recordId).then((intervalResponse) => {
+              const data = intervalResponse && intervalResponse.data && intervalResponse.data
               const status = data && data.status
               if (status === 3) {
                 this.$message.success('执行成功')
@@ -274,10 +245,7 @@ print(python_version())`
       this.language = cfg.mime
       this.versions = cfg.versions
       this.currentVersion = cfg.defaultVersion
-      // 仅当用户未通过 URL 指定 code 时，切换语言时写入示例
-      if (!new URLSearchParams(window.location.search).get('code')) {
-        this.code = cfg.sample || ''
-      }
+      this.code = cfg.sample || ''
     },
     bootstrapMulti () {
       // 应用自定义配置（如传入）
@@ -285,8 +253,8 @@ print(python_version())`
         this.internalLanguages = this.languagesConfig
       }
       // 默认选择第一个 key
-      const firstKey = Object.keys(this.internalLanguages)[0]
-      this.selectedLangKey = firstKey
+      const defaultLanguage = this.internalLanguages[Object.keys(this.internalLanguages)[0]]
+      this.selectedLangKey = defaultLanguage.mime
       this.onLangChange()
     }
   }
@@ -298,12 +266,14 @@ print(python_version())`
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  background: white;
+  padding: 0 10px;
 }
 .ue-label {
   color: #666;
 }
 .ue-select {
+  width: 200px;
   padding: 4px 6px;
 }
 </style>
