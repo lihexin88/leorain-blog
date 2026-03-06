@@ -196,20 +196,18 @@ print(python_version())`
             await getExecuteResult(this.recordId).then((intervalResponse) => {
               const data = intervalResponse && intervalResponse.data && intervalResponse.data
               const status = data && data.status
+              this.result = data.output || ''
               if (status === 3) {
                 this.$message.success('执行成功')
-                this.result = data.output
                 clearInterval(intervalId)
               } else if (status === 4) {
                 this.$message.error('运行失败')
-                this.result = ''
                 clearInterval(intervalId)
               } else {
                 time++
               }
               if (time > 30) {
                 this.$message.error('运行超时')
-                this.result = ''
                 clearInterval(intervalId)
               }
             }).catch(() => {
