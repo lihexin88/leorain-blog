@@ -82,7 +82,8 @@
                 <!--                拾色器-->
 
                 <div class="color-selector-demo-container">
-                  <div v-for="color in  demo_colors" class="color-selector-demo" :style="{background: color.color}"
+                  <div v-for="(color,index) in  demo_colors" :key="index" class="color-selector-demo"
+                       :style="{background: color.color}"
                        :title="color.title" @click="printerColor = color.color">
                   </div>
                 </div>
@@ -112,8 +113,9 @@
     <div class="draw-setting-tips">
       <el-button class="tips-button" @click="switchDrawerSetting">展开</el-button>
     </div>
-    <el-dialog :show="show_new_modal" @close="show_new_modal = false" :show-footer="true" @cancel="show_new_modal = false"
-           @confirm="create_new_draw">
+    <el-dialog :show="show_new_modal" @close="show_new_modal = false" :show-footer="true"
+               @cancel="show_new_modal = false"
+               @confirm="create_new_draw">
       <template v-slot:header>
         <div>创建新画布ฅ˙-˙ฅ</div>
       </template>
@@ -135,7 +137,7 @@ import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 
 export default {
-  components: { },
+  components: {},
   data () {
     return {
       asset_list_meta: null,

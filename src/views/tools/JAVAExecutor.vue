@@ -1,39 +1,31 @@
 <template>
-  <executor :code="code" language="text/x-java" :versions="versions" :show_version="version" :result="result"
-                      @exec="exec" @changes="changes"></executor>
+  <universal-executor
+    language="text/x-java"
+    endpoint="java"
+    :versions="versions"
+    :defaultVersion="version"
+    :initialCode="code"
+  />
 </template>
 
 <script>
 import 'codemirror/mode/clike/clike'
-import Swal from 'sweetalert2'
-import ExecutorHeaders from './ExecutorHeaders.vue'
-import CodeExecutor from './CodeExecutor.vue'
-import { useUserStore } from '@/store/user'
-import { mapActions } from 'pinia'
+import UniversalExecutor from './UniversalExecutor.vue'
 
 export default {
+  name: 'JAVAExecutor',
   components: {
-    Executor: CodeExecutor,
-    ExecutorHeaders
+    UniversalExecutor
   },
   props: {},
-  beforeMount () {
-    const params = new URLSearchParams(window.location.search)
-    const code = params.get('code')
-    if (code) {
-      this.code = code
-    }
-  },
   data () {
     return {
-      result: '',
       code: `public class Main {
     public static void main(String[] args) {
         String jdkVersion = System.getProperty("java.version");
         System.out.println("jdk version: " + jdkVersion);
     }
 }`,
-      recordId: null,
       versions: [
         {
           version: 8,
@@ -54,67 +46,7 @@ export default {
       }
     }
   },
-  methods: {
-    ...mapActions(useUserStore, ['setShowLoginDialog']),
-    changes (code) {
-      this.code = code
-    },
-    exec (version) {
-      this.$http.post('exec/java', {
-        code: this.code,
-        version: version.version
-      }).then((response) => {
-        if (response.status === 200) {
-          this.result = '运行中...'
-          this.recordId = response.data.record_id
-          let time = 1
-          const intervalId = setInterval(async () => {
-            await this.$http.post('exec/get_result', {
-              record_id: this.recordId
-            }).then((intervalResponse) => {
-              let status = intervalResponse.data.data.status
-              if (status === 3) {
-                this.$message.success('执行成功')
-                this.result = intervalResponse.data.data.output
-                clearInterval(intervalId)
-              } else if (status === 4) {
-                this.$message.error('运行失败')
-                this.result = ''
-                clearInterval(intervalId)
-              } else {
-                time++
-              }
-              if (time > 30) {
-                this.$message.error('运行超时')
-                this.result = ''
-                clearInterval(intervalId)
-              }
-            })
-          }, 1000)
-        } else {
-          this.result = ''
-          this.$message.error('运行失败')
-        }
-      }).catch((e) => {
-        if (e.status === 401) {
-          Swal.fire({
-            title: 'auth.unauthorized',
-            text: 'auth.unauthorized',
-            icon: 'error',
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            animation: true
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.setShowLoginDialog(true)
-            }
-          })
-        }
-        this.result = ''
-        this.$message.error('运行失败')
-      })
-    }
-  }
+  methods: {}
 }
 </script>
 <style scoped lang="scss">
