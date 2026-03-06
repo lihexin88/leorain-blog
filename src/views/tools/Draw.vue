@@ -7,11 +7,11 @@
       <div class="draw-list-container">
         <el-drawer
             :before-close="checkIfShowDrawer"
-            v-model:visible="show_draw_list"
+            v-model="show_draw_list"
             direction="ltr"
             :size=560
         >
-          <template v-slot:title>
+          <template v-slot:header>
             <div>
               <div>画布列表</div>
               <div style="margin-bottom: 10px;width: 100%">
@@ -21,7 +21,7 @@
             </div>
           </template>
           <div class="drawer-list-content" ref="drawerList" v-infinite-scroll="handleScroll">
-            <div v-for="i in draw_list" class="drawer-list-item">
+            <div v-for="(i,index) in draw_list" :key="index" class="drawer-list-item">
               <div class="drawer-list-title">
                 <div>
                   {{ i.name }}
@@ -70,7 +70,7 @@
         <canvas id="drawCanvas"></canvas>
       </div>
       <div class="draw-setting-container">
-        <el-drawer v-model:visible="show_draw_setting" direction="rtl">
+        <el-drawer v-model="show_draw_setting" direction="rtl">
           <div class="draw-setting-content">
             <div>
               <div>
@@ -113,7 +113,7 @@
     <div class="draw-setting-tips">
       <el-button class="tips-button" @click="switchDrawerSetting">展开</el-button>
     </div>
-    <el-dialog :show="show_new_modal" @close="show_new_modal = false" :show-footer="true"
+    <el-dialog v-model="show_new_modal"  :show-footer="true"
                @cancel="show_new_modal = false"
                @confirm="create_new_draw">
       <template v-slot:header>
@@ -122,6 +122,10 @@
       <div>
         <el-input v-model="new_asset_name" placeholder="请输入画布名称">名称</el-input>
       </div>
+      <template v-slot:footer>
+        <el-button >取消</el-button>
+        <el-button >确定</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -135,6 +139,17 @@ import Swal from 'sweetalert2'
 import moment from 'moment'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
+import {
+  createDraw,
+  deleteDraw,
+  getDraw,
+  getDrawInitData,
+  getDrawLock,
+  getDraws,
+  saveDraw,
+  updateDraw
+} from '@/apis/draw'
+import assetsApi from '@/apis/assets'
 
 export default {
   components: {},
@@ -219,15 +234,15 @@ export default {
   },
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
-    delete_asset (asset_id) {
-      this.$http.delete('/draws/' + asset_id).then((response) => {
+    delete_asset (assetId) {
+      deleteDraw(assetId).then((response) => {
         console.log(response)
-        this.draw_list = this.draw_list.filter(item => item.asset_id !== asset_id)
+        this.draw_list = this.draw_list.filter(item => item.asset_id !== assetId)
         this.$message.warning('已删除')
       })
     },
-    check_current (asset_id) {
-      return asset_id === this.asset_id ?? false
+    check_current (assetId) {
+      return assetId === this.asset_id ?? false
     },
     reload_draw_list () {
       this.draw_list = []
@@ -245,10 +260,8 @@ export default {
         this.$message.error('名称不能为空')
         return
       }
-      this.$http.post('/draws', {
-        name: this.new_asset_name
-      }).then((response) => {
-        this.asset_id = response.data.data.asset_id
+      createDraw(this.new_asset_name).then((response) => {
+        this.asset_id = response.data.asset_id
         this.show_new_modal = false
         this.show_draw_list = true
         this.new_asset_name = null
@@ -263,9 +276,7 @@ export default {
      * 保存
      */
     save () {
-      this.$http.post(process.env.DRAW_WS_HOST + '/draw/paint/save', {
-        draw_id: this.asset_id
-      }).then((response) => {
+      saveDraw(this.asset_id).then((response) => {
         this.$message.success('保存成功')
       })
     },
@@ -280,7 +291,7 @@ export default {
       this.show_draw_setting = false
       this.asset_id = asset_id
       // 加载当前数据
-      this.$http.get('/draws/' + this.asset_id).then((response) => {
+      getDraw(this.asset_id).then((response) => {
         this.asset_name = response.data.data.name
       })
       this.load()
@@ -290,7 +301,7 @@ export default {
      * 获取默认文件夹
      */
     get_default_dir () {
-      this.$http.get('/assets/info/default').then((response) => {
+      assetsApi.getDefaultDir().then((response) => {
         this.default_dir_asset_id = response.data.data.asset_id
       })
     },
@@ -303,11 +314,7 @@ export default {
         this.get_default_dir()
       }
       // 获取预创建文件信息
-      this.$http.get('/assets/upload', {
-        params: {
-          file_name: this.asset_id + '.png'
-        }
-      }).then((response) => {
+      assetsApi.getUploadUrl(this.asset_id + '.png').then((response) => {
         // canvas 截图
         const fileObject = response.data.url.object
         const fileUrl = response.data.url.url
@@ -329,8 +336,7 @@ export default {
         xhr.setRequestHeader('Content-Type', '')
         xhr.send(file)
         // 文件数据入库
-        const asset_create_url = 'assets'
-        this.$http.post(asset_create_url, {
+        assetsApi.createAsset({
           type: this.getFileType(file),
           name: this.asset_name + '_' + this.asset_id + '.png',
           url: fileObject,
@@ -338,7 +344,7 @@ export default {
           use_vector: false
         }).then((response) => {
           // 更新封面
-          this.$http.patch('/draws/' + this.asset_id, {
+          updateDraw(this.asset_id, {
             cover_image_asset_id: response.data.data.asset_id
           }).then((response) => {
             this.draw_list.forEach(item => {
@@ -372,12 +378,10 @@ export default {
     get_draw_list () {
       if (this.loading_draw_list) return
       this.loading_draw_list = true
-      this.$http.get('/draws', {
-        params: {
-          page: this.page,
-          per_page: this.per_page,
-          include: 'cover_image,user'
-        }
+      getDraws({
+        page: this.page,
+        per_page: this.per_page,
+        include: 'cover_image,user'
       }).then((response) => {
         if (response?.data?.data?.length > 0) {
           response.data.data.forEach(item => {
@@ -398,7 +402,7 @@ export default {
             text: '点击确认跳转到登录页面...',
             icon: 'warning',
             confirmButtonText: '确定'
-          }).then((result) => {
+          }).then(() => {
             this.setShowLoginDialog(true)
           })
         }
@@ -453,12 +457,13 @@ export default {
       this.show_draw_setting = !this.show_draw_setting
     },
     async connectWebSocket () {
-      const accessToken = await this.$accessToken(1)
-      if (accessToken === false) {
+      const userStore = useUserStore()
+      if (!userStore.isLoggedIn) {
         this.$message.error('获取Access token失败')
+        userStore.setShowLoginDialog(true)
         return false
       }
-      this.tool_access_token = accessToken
+      this.tool_access_token = userStore.token
       // 1. 创建 SockJS 连接
       const socket = new SockJS(process.env.DRAW_WS_HOST + '/draw?access_token=' + this.tool_access_token) // WebSocket 端点
 
@@ -548,15 +553,11 @@ export default {
     load () {
       this.canvasTx.clearRect(0, 0, this.canvas.width, this.canvas.height) // 清空画布
       // 加载当前数据
-      this.$http.get('/draws/' + this.asset_id).then((response) => {
+      getDraw(this.asset_id).then((response) => {
         this.asset_name = response.data.data.name
       })
       // 从服务端获取已存在的数据
-      this.$http.get(process.env.DRAW_WS_HOST + '/draw/paint/init', {
-        params: {
-          draw_id: this.asset_id
-        }
-      }).then((response) => {
+      getDrawInitData(this.asset_id).then((response) => {
         this.lines = response.data ?? []
 
         const data = this.lines
@@ -624,10 +625,7 @@ export default {
     // 绑定鼠标按下事件
     this.canvas.addEventListener('mousedown', (event) => {
       // 关闭已存在的画布
-      this.$http.post(process.env.DRAW_WS_HOST + '/draw/lock/get', {
-        type: 0,
-        draw_id: this.asset_id
-      }).then((response) => {
+      getDrawLock(this.asset_id).then((response) => {
         if (response.data === true) {
           this.drawing = true
           this.currentLine = [] // 清空当前线段

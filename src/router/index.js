@@ -62,7 +62,7 @@ const routes = [
           {
             path: 'timestamp',
             name: 'Timestamp',
-            component: () => import('../views/tools/Timestamp.vue')
+            component: () => import('../views/tools/ToolTimestamp.vue')
           },
           {
             path: 'code',

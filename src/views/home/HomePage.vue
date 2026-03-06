@@ -40,6 +40,7 @@ export default {
 .sidebar {
   width: 30%;
   padding-left: 20px;
+  padding-right: 100px;
 
   @media screen and (max-width: 992px) {
     width: 100%;
