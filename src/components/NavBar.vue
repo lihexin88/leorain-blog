@@ -156,22 +156,11 @@ export default {
     User,
     MoreFilled,
     Operation,
-    House,
     Search,
     EditPen,
     ChatLineRound,
     LinkIcon,
     ChatDotRound,
-    Clock,
-    Coin,
-    Document,
-    Notebook,
-    Grid,
-    DataLine,
-    Crop,
-    VideoPlay,
-    Share,
-    Timer,
     Trophy
   },
   data () {
@@ -196,45 +185,9 @@ export default {
         image: 'https://images.leorain.cn/icons/tools/tool_json_format.png'
       },
       {
-        text: 'PHP在线运行',
-        description: 'PHP在线运行工具',
-        href: '/tools/php',
-        image: 'https://images.leorain.cn/icons/tools/tool_php.png'
-      },
-      {
-        text: 'HTML在线运行',
-        description: 'HTML在线运行工具',
-        href: '/tools/html',
-        image: 'https://images.leorain.cn/icons/tools/tool_html.png'
-      },
-      {
-        text: 'JAVA在线运行',
-        description: 'JAVA在线运行工具',
-        href: '/tools/java',
-        image: 'https://images.leorain.cn/icons/tools/tool_java.png'
-      },
-      {
-        text: 'PYTHON在线运行',
-        description: 'PYTHON在线运行工具',
-        href: '/tools/python',
-        image: 'https://images.leorain.cn/icons/tools/tool_python.png'
-      },
-      {
-        text: 'GO在线运行',
-        description: 'GOLANG在线运行工具',
-        href: '/tools/golang',
-        image: 'https://images.leorain.cn/icons/tools/tool_golang.png'
-      },
-      {
-        text: 'C在线运行',
-        description: 'c语言在线运行工具',
-        href: '/tools/clang',
-        image: 'https://images.leorain.cn/icons/tools/tool_clang.png'
-      },
-      {
-        text: 'C++在线运行',
-        description: 'c++在线运行工具',
-        href: '/tools/cpp',
+        text: '代码在线运行',
+        description: '代码在线运行工具',
+        href: '/tools/code',
         image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
       },
       {
