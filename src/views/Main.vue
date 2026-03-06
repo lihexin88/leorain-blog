@@ -29,6 +29,7 @@
     </header>
 
     <main class="body">
+      <site-info/>
       <!-- 子组件将在这里渲染 -->
       <router-view></router-view>
     </main>
@@ -58,6 +59,7 @@ import ScrollProgress from '@/components/ScrollProgress.vue'
 import { useConfigStore } from '@/store/config'
 import { useUserStore } from '@/store/user'
 import FooterBar from '@/components/FooterBar.vue'
+import SiteInfo from '@/components/SiteInfo.vue'
 import UserLogin from '@/views/user/UserLogin.vue'
 
 export default {
@@ -66,7 +68,8 @@ export default {
     FooterBar,
     NavBar,
     ScrollProgress,
-    UserLogin
+    UserLogin,
+    SiteInfo
   },
   setup () {
     const configStore = useConfigStore()

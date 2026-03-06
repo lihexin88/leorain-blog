@@ -11,6 +11,7 @@ import linkApi from './link'
 import guestbookApi from './guestbook'
 import topicApi from './topic'
 import clipboardApi from './clipboard'
+import requestLogApi from './request-log'
 
 export default {
   articleApi,
@@ -43,4 +44,5 @@ export {
   guestbookApi,
   topicApi,
   clipboardApi
+  , requestLogApi
 }

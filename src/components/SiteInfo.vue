@@ -3,7 +3,7 @@
     <div class="settings-bar">
       <el-button :type="button_type" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
     </div>
-    <el-drawer v-model:visible="show_settings_draw" direction="rtl" :with-header="false" :size="320">
+    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="320">
       <div class="settings-container">
         <div>
           <el-divider>
@@ -18,7 +18,7 @@
           <el-divider></el-divider>
         </div>
         <div v-if="show_request_log">
-          <request-log></request-log>
+          <request-logs></request-logs>
           <el-divider></el-divider>
         </div>
         <div>
@@ -60,7 +60,8 @@
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import moment from 'moment'
-import { getHumanReadableDate } from '../../../configApi/helper'
+import { getHumanReadableDate } from '@/utils/helpers'
+import RequestLogs from '@/components/RequestLogs.vue'
 
 export default {
   props: {
@@ -69,7 +70,7 @@ export default {
       default: 500
     }
   },
-  components: {},
+  components: { RequestLogs },
   data () {
     return {
       show_request_log: false,
@@ -223,6 +224,6 @@ export default {
   top: 50px;
   right: 10px;
   position: fixed;
-  z-index: 2;
+  z-index: 1000;
 }
 </style>
