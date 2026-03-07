@@ -3,9 +3,17 @@ import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
+import { Crop, Edit, RefreshLeft, ZoomIn, ZoomOut } from '@element-plus/icons-vue'
 
 export default {
   name: 'ToolMedia',
+  components: {
+    Crop,
+    Edit,
+    RefreshLeft,
+    ZoomIn,
+    ZoomOut
+  },
   data () {
     return {
       loaded: false,
@@ -53,6 +61,21 @@ export default {
     }
   },
   computed: {
+    RefreshLeft () {
+      return RefreshLeft
+    },
+    Edit () {
+      return Edit
+    },
+    Crop () {
+      return Crop
+    },
+    ZoomOut () {
+      return ZoomOut
+    },
+    ZoomIn () {
+      return ZoomIn
+    },
     isImage () {
       return this.fileType === 'image'
     },
@@ -526,13 +549,13 @@ export default {
               </el-tag>
             </div>
             <div class="preview-container">
-              <img v-if="isImage" :src="previewUrl" class="preview-media">
+              <el-image v-if="isImage" :src="previewUrl" class="preview-media"/>
               <video v-if="isVideo" :src="previewUrl" controls class="preview-media"></video>
             </div>
             <div v-if="isImage" class="image-actions">
-              <el-button size="small" icon="el-icon-crop" @click="openEditDialog('crop')">裁切</el-button>
-              <el-button size="small" icon="el-icon-edit" @click="openEditDialog('draw')">画笔</el-button>
-              <el-button v-if="isModified" size="small" icon="el-icon-refresh-left" @click="restoreOriginal">恢复原图
+              <el-button size="small" :icon="Crop" @click="openEditDialog('crop')">裁切</el-button>
+              <el-button size="small" :icon="Edit" @click="openEditDialog('draw')">画笔</el-button>
+              <el-button v-if="isModified" size="small" :icon="RefreshLeft" @click="restoreOriginal">恢复原图
               </el-button>
             </div>
           </div>
@@ -628,38 +651,38 @@ export default {
     <!-- Edit Dialog -->
     <el-dialog
         :title="editDialogTitle"
-        v-model:visible="editDialogVisible"
+        v-model="editDialogVisible"
         width="90%"
         :before-close="closeEditDialog"
         custom-class="edit-dialog"
         append-to-body
     >
-      <div class="edit-dialog-content">
+      <div v-if="editDialogVisible" class="edit-dialog-content">
         <div class="edit-image-container">
           <img v-if="editMode === 'crop'" ref="editImage" :src="previewUrl" style="max-width: 100%;">
           <canvas v-if="editMode === 'draw'" ref="drawingCanvas" class="edit-canvas"></canvas>
         </div>
       </div>
       <template v-slot:footer>
-<span class="dialog-footer">
-        <div v-if="editMode === 'crop'" class="crop-actions-dialog">
-          <el-button size="small" icon="el-icon-zoom-in" @click="cropper && cropper.zoom(0.1)">放大</el-button>
-          <el-button size="small" icon="el-icon-zoom-out" @click="cropper && cropper.zoom(-0.1)">缩小</el-button>
-          <el-button size="small" @click="cropper && cropper.reset()">重置</el-button>
-          <el-button type="primary" size="small" @click="confirmCrop">确认裁切</el-button>
-          <el-button size="small" @click="closeEditDialog">取消</el-button>
-        </div>
-        <div v-if="editMode === 'draw'" class="drawing-actions-dialog">
-          <div class="drawing-toolbar">
-            <el-color-picker v-model="drawingPencil.color" size="mini"></el-color-picker>
-            <el-slider v-model="drawingPencil.size" :min="1" :max="10" :step="0.01"
-                       style="width: 150px; margin: 0 15px;"></el-slider>
+        <div class="dialog-footer">
+          <div v-if="editMode === 'crop'" class="crop-actions-dialog">
+            <el-button size="small" :icon="ZoomIn" @click="cropper && cropper.zoom(0.1)">放大</el-button>
+            <el-button size="small" :icon="ZoomOut" @click="cropper && cropper.zoom(-0.1)">缩小</el-button>
+            <el-button size="small" @click="cropper && cropper.reset()">重置</el-button>
+            <el-button type="primary" size="small" @click="confirmCrop">确认裁切</el-button>
+            <el-button size="small" @click="closeEditDialog">取消</el-button>
           </div>
-          <el-button type="primary" size="small" @click="confirmDrawing">确认绘画</el-button>
-          <el-button size="small" @click="clearCanvas">清空</el-button>
-          <el-button size="small" @click="closeEditDialog">取消</el-button>
+          <div v-if="editMode === 'draw'" class="drawing-actions-dialog">
+            <div class="drawing-toolbar">
+              <el-color-picker v-model="drawingPencil.color"></el-color-picker>
+              <el-slider v-model="drawingPencil.size" :min="1" :max="10" :step="0.01"
+                         style="width: 150px; margin: 0 15px;"></el-slider>
+            </div>
+            <el-button type="primary" size="small" @click="confirmDrawing">确认绘画</el-button>
+            <el-button size="small" @click="clearCanvas">清空</el-button>
+            <el-button size="small" @click="closeEditDialog">取消</el-button>
+          </div>
         </div>
-      </span>
       </template>
     </el-dialog>
   </div>
