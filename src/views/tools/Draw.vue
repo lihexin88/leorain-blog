@@ -115,7 +115,7 @@
     </div>
     <el-dialog v-model="show_new_modal"  :show-footer="true"
                @cancel="show_new_modal = false"
-               @confirm="create_new_draw">
+    >
       <template v-slot:header>
         <div>创建新画布ฅ˙-˙ฅ</div>
       </template>
@@ -124,7 +124,7 @@
       </div>
       <template v-slot:footer>
         <el-button >取消</el-button>
-        <el-button >确定</el-button>
+        <el-button @click="create_new_draw" >确定</el-button>
       </template>
     </el-dialog>
   </div>

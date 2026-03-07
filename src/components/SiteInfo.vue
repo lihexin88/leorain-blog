@@ -3,7 +3,7 @@
     <div class="settings-bar">
       <el-button :type="button_type" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
     </div>
-    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="320">
+    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
       <div class="settings-container">
         <div>
           <el-divider>

@@ -15,7 +15,7 @@ export function deleteDraw (assetId) {
  * @returns {Promise}
  */
 export function createDraw (name) {
-  return http.post('/draws', { name })
+  return http.post('/api/draws', { name })
 }
 
 /**
@@ -35,7 +35,7 @@ export function saveDraw (drawId) {
  * @returns {Promise}
  */
 export function getDraw (assetId) {
-  return http.get(`/draws/${assetId}`)
+  return http.get(`/api/draws/${assetId}`)
 }
 
 /**
