@@ -48,10 +48,6 @@
         <el-icon class="menu-icon"><LinkIcon /></el-icon>
         <span>友情链接</span>
       </el-menu-item>
-      <el-menu-item index="/discussion">
-        <el-icon class="menu-icon"><ChatDotRound /></el-icon>
-        <span>讨论</span>
-      </el-menu-item>
       </el-sub-menu>
 
     <el-sub-menu index="/tools" class="desktop-menu">
@@ -83,10 +79,6 @@
     <el-menu-item index="/links" class="desktop-menu">
       <el-icon class="menu-icon"><LinkIcon /></el-icon>
       <span>友情链接</span>
-    </el-menu-item>
-    <el-menu-item index="/discussion" class="desktop-menu">
-      <el-icon class="menu-icon"><ChatDotRound /></el-icon>
-      <span>讨论</span>
     </el-menu-item>
 
     <div class="flex-grow"></div>
@@ -126,33 +118,19 @@ import {
   User,
   MoreFilled,
   Operation,
-  House,
   Search,
   EditPen,
   ChatLineRound,
   Link as LinkIcon,
   ChatDotRound,
-  Clock,
-  Coin,
-  Document,
-  Notebook,
-  Grid,
-  DataLine,
-  Crop,
-  VideoPlay,
-  Share,
-  Timer,
   Trophy,
-  Picture,
   Sugar
 } from '@element-plus/icons-vue'
-import GamePlay from '@/views/games/GamePlay.vue'
 
 export default {
   name: 'NavBar',
   components: {
     Sugar,
-    GamePlay,
     User,
     MoreFilled,
     Operation,

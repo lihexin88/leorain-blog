@@ -373,6 +373,7 @@ export default {
             <el-button v-else disabled>
               -
             </el-button>
+            <el-button>{{ playNext }}</el-button>
             <el-button @click="reset"> 重新开始</el-button>
           </div>
         </el-card>
@@ -442,6 +443,11 @@ export default {
             width: 20%;
             aspect-ratio: 1/1;
             border-radius: 3px;
+            transition: transform 0.1s ease-out;
+
+            &:active {
+              transform: scale(0.95);
+            }
 
             .item-button {
               margin: 0;

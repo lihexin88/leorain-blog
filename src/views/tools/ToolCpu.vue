@@ -103,7 +103,7 @@
             <li>输入数据通过总线到达各个全加器的A和B端口</li>
             <li>进位信号从低位向高位依次传递（通过垂直的进位线）</li>
             <li>每个全加器内部进行逻辑运算</li>
-            <li>运算结果S通过输出总线输出，进位Cout传递给下一个全加器</li>
+            <li>运算结果S通过输出总线输出，进位Cout传递给下一个全加-器</li>
           </ol>
         </div>
         <template v-slot:footer>
@@ -545,7 +545,7 @@ export default {
         carry = cout
 
         // 重置当前全加器状态为完成
-        this.$set(this.adders[i], 'dataFlow', 'completed')
+        this.adders[i].dataFlow = 'completed'
       }
 
       // 清除所有输出线路状态
