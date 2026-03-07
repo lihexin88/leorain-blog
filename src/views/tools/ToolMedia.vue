@@ -483,6 +483,18 @@ export default {
         </div>
       </template>
 
+      <div class="feature-section">
+        <el-divider content-position="left">主要功能</el-divider>
+        <ul class="feature-list">
+          <li><strong>格式转换</strong>: 支持图片 (JPG, PNG, WEBP) 和视频 (MP4, AVI, GIF) 等多种格式互转。</li>
+          <li><strong>图片压缩</strong>: 自定义图片质量，有效减小文件体积。</li>
+          <li><strong>视频压缩</strong>: 调整视频分辨率和码率，平衡清晰度与文件大小。</li>
+          <li><strong>图片编辑</strong>: 提供在线裁切和画笔功能，方便快速修改。</li>
+          <li><strong>纯本地处理</strong>: 所有操作均在您的浏览器中完成，无需上传文件，100%保护您的隐私安全。</li>
+          <li><strong>实时预览</strong>: 处理前后效果一目了然，方便对比。</li>
+        </ul>
+      </div>
+
       <div class="upload-section">
         <input type="file" ref="fileInput" @change="handleFileChange" style="display: none" accept="image/*,video/*">
         <el-button type="primary" size="small" @click="$refs.fileInput.click()">选择图片或视频</el-button>
@@ -490,7 +502,8 @@ export default {
           已选择: {{ fileName }} ({{ formatSize(file.size) }})
         </span>
         <div class="note-section">
-          <i class="el-icon-info"></i> 提示：所有处理均在您的浏览器本地完成，不会上传到服务器，保护您的隐私。
+          <i class="el-icon-info"></i>
+          提示：您的所有媒体文件（图片/视频）都直接在浏览器中进行处理，我们不上传任何文件到服务器。这确保了您的数据隐私和安全，同时处理速度也更快。
         </div>
       </div>
 
@@ -682,6 +695,31 @@ export default {
 
 .section-box {
   margin-bottom: 25px;
+}
+
+.feature-section {
+  margin-bottom: 20px;
+
+  .feature-list {
+    list-style-type: none;
+    padding-left: 10px;
+    font-size: 14px;
+    color: #606266;
+    line-height: 1.8;
+
+    li {
+      margin-bottom: 5px;
+      display: flex;
+      align-items: flex-start;
+
+      &::before {
+        content: '✓';
+        color: #67c23a;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+    }
+  }
 }
 
 .upload-section {
