@@ -80,36 +80,6 @@ const routes = [
             component: () => import('../views/tools/JSONExecutor.vue')
           },
           {
-            path: 'php',
-            name: 'Php',
-            component: () => import('../views/tools/PHPExecutor.vue')
-          },
-          {
-            path: 'java',
-            name: 'Java',
-            component: () => import('../views/tools/JAVAExecutor.vue')
-          },
-          {
-            path: 'python',
-            name: 'Python',
-            component: () => import('../views/tools/PYTHONExecutor.vue')
-          },
-          {
-            path: 'golang',
-            name: 'Golang',
-            component: () => import('../views/tools/GOLANGExecutor.vue')
-          },
-          {
-            path: 'clang',
-            name: 'Clang',
-            component: () => import('../views/tools/CLANGExecutor.vue')
-          },
-          {
-            path: 'cpp',
-            name: 'Cpp',
-            component: () => import('../views/tools/CPPExecutor.vue')
-          },
-          {
             path: 'draw',
             name: 'Draw',
             component: () => import('../views/tools/Draw.vue')

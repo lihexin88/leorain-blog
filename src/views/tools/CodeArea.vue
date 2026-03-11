@@ -15,6 +15,7 @@
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/javascript/javascript'
+import 'codemirror/mode/htmlmixed/htmlmixed'
 import 'codemirror/addon/hint/show-hint'
 import 'codemirror/addon/hint/show-hint.css'
 import 'codemirror/addon/hint/javascript-hint'

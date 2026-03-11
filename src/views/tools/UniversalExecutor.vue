@@ -8,8 +8,8 @@
         </el-option>
       </el-select>
 
-      <label class="ue-label">版本：</label>
-      <el-select v-model="currentVersion" class="ue-select">
+      <label class="ue-label" v-if="selectedLangKey !== 'html'">版本：</label>
+      <el-select v-model="currentVersion" class="ue-select" v-if="selectedLangKey !== 'html'">
         <el-option v-for="v in versions" :key="v.version" :value="v.version">{{ v.name }}</el-option>
       </el-select>
     </div>
@@ -19,6 +19,7 @@
       :language="language"
       :result="result"
       ref="executor"
+      :is-html="selectedLangKey === 'html'"
       @exec="exec"
       @changes="changes"
     />
@@ -36,6 +37,7 @@ import 'codemirror/mode/php/php'
 import 'codemirror/mode/python/python'
 import 'codemirror/mode/go/go'
 import 'codemirror/mode/clike/clike'
+import 'codemirror/mode/htmlmixed/htmlmixed'
 
 export default {
   name: 'UniversalExecutor',
@@ -157,6 +159,20 @@ int main() {
           defaultVersion: { version: 38, name: '3.8' },
           sample: `from platform import python_version
 print(python_version())`
+        },
+        html: {
+          label: 'HTML',
+          endpoint: 'html',
+          mime: 'text/html',
+          versions: [],
+          defaultVersion: null,
+          sample: `<!DOCTYPE html>
+<html>
+<body>
+<h1>Hello World</h1>
+<p>This is a paragraph.</p>
+</body>
+</html>`
         }
       }
     }
@@ -182,8 +198,14 @@ print(python_version())`
     ...mapActions(useUserStore, ['setShowLoginDialog']),
     changes (code) {
       this.code = code
+      if (this.selectedLangKey === 'html') {
+        this.result = code
+      }
     },
     exec (executorObj) {
+      if (this.selectedLangKey === 'html') {
+        return
+      }
       // normalize selected version
       const ver = this.currentVersion.version
       const ep = this.effectiveLanguages[this.selectedLangKey].endpoint
@@ -244,6 +266,11 @@ print(python_version())`
       this.versions = cfg.versions
       this.currentVersion = cfg.defaultVersion
       this.code = cfg.sample || ''
+      if (this.selectedLangKey === 'html') {
+        this.result = this.code
+      } else {
+        this.result = ''
+      }
     },
     bootstrapMulti () {
       // 应用自定义配置（如传入）

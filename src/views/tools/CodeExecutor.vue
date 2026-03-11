@@ -5,7 +5,10 @@
         <code-area ref="codeInput" :isVim="isVim" id="code-area" :show-run="true" @executor_submit="executor_submit" type=1 :language="language" @executor_changes="executor_changes" :value="code"></code-area>
       </div>
       <div class="result-area">
-        <code-area id="result-textarea" :show-run="false" type=2 :value="result"></code-area>
+        <code-area v-if="!isHtml" id="result-textarea" :show-run="false" type=2 :value="result"></code-area>
+        <div v-else class="preview-container">
+          <iframe ref="previewIframe" class="preview-iframe"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -34,6 +37,10 @@ export default {
       default () {
         return 'text'
       }
+    },
+    isHtml: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -41,7 +48,30 @@ export default {
       isVim: false
     }
   },
+  watch: {
+    result (newVal) {
+      if (this.isHtml) {
+        this.updatePreview(newVal)
+      }
+    },
+    isHtml (newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.updatePreview(this.result)
+        })
+      }
+    }
+  },
   methods: {
+    updatePreview (code) {
+      const iframe = this.$refs.previewIframe
+      if (iframe) {
+        const doc = iframe.contentDocument || iframe.contentWindow.document
+        doc.open()
+        doc.write(code)
+        doc.close()
+      }
+    },
     executor_submit () {
       this.$emit('exec', {
         code: this.code
@@ -90,6 +120,18 @@ export default {
 .executor-tips {
   width: 20%;
 }
+.preview-container {
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 :deep(.CodeMirror-scroll){
   padding-bottom: 0;
 }
