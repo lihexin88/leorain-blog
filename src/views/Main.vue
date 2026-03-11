@@ -159,7 +159,6 @@ export default {
 }
 
 .footer {
-  background-color: rgba(248, 249, 250, 0.7);
   backdrop-filter: blur(8px) saturate(180%);
   padding: 1rem;
   text-align: center;
