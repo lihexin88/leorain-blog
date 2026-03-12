@@ -9,20 +9,44 @@
         <div class="guide-content">
           <table class="key-table">
             <thead>
-              <tr>
-                <th>功能</th>
-                <th>按键</th>
-              </tr>
+            <tr>
+              <th>功能</th>
+              <th>按键</th>
+            </tr>
             </thead>
             <tbody>
-              <tr><td>开始</td><td>1</td></tr>
-              <tr><td>选择</td><td>2</td></tr>
-              <tr><td>向上</td><td>W</td></tr>
-              <tr><td>向左</td><td>A</td></tr>
-              <tr><td>向下</td><td>S</td></tr>
-              <tr><td>向右</td><td>D</td></tr>
-              <tr><td>A</td><td>J</td></tr>
-              <tr><td>B</td><td>K</td></tr>
+            <tr>
+              <td>开始</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>选择</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>向上</td>
+              <td>W</td>
+            </tr>
+            <tr>
+              <td>向左</td>
+              <td>A</td>
+            </tr>
+            <tr>
+              <td>向下</td>
+              <td>S</td>
+            </tr>
+            <tr>
+              <td>向右</td>
+              <td>D</td>
+            </tr>
+            <tr>
+              <td>A</td>
+              <td>J</td>
+            </tr>
+            <tr>
+              <td>B</td>
+              <td>K</td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -33,18 +57,18 @@
         <div class="game-box">
           <div class="game-viewport">
             <nes-vue
-              v-if="gameUrl"
-              ref="nes"
-              :url="gameUrl"
-              label="Click to Start"
-              :width="width"
-              :height="height"
-              debugger
-              @fps="getFps"
-              @success="onSuccess"
-              @error="onError"
-              @saved="onSaved"
-              @loaded="onLoaded"
+                v-if="gameUrl"
+                ref="nes"
+                :url="gameUrl"
+                label="Click to Start"
+                :width="Math.min(width, height)"
+                :height="Math.min(width, height)"
+                debugger
+                @fps="getFps"
+                @success="onSuccess"
+                @error="onError"
+                @saved="onSaved"
+                @loaded="onLoaded"
             />
             <div class="show-fps" v-if="gameUrl">
               FPS: {{ currentFPS }}
@@ -69,12 +93,12 @@
         </div>
         <div class="comment-container">
           <comment-area
-            v-if="gameId"
-            :commentable-id="gameId"
-            commentable-type="games"
-            :user-avatar="user?.avatar"
-            :can-comment="true"
-            content-wrapper-class="col-12"
+              v-if="gameId"
+              :commentable-id="gameId"
+              commentable-type="games"
+              :user-avatar="user?.avatar"
+              :can-comment="true"
+              content-wrapper-class="col-12"
           />
         </div>
       </el-col>
@@ -101,8 +125,8 @@ export default {
       currentFPS: '0',
       saveable: true,
       gameName: '',
-      width: 600,
-      height: 480
+      width: 0,
+      height: 0
     }
   },
   computed: {
@@ -110,8 +134,29 @@ export default {
   },
   mounted () {
     this.fetchGameDetail()
+    // 等待渲染后测量一次
+    this.$nextTick(() => {
+      this.updateViewportSize()
+    })
+    // 监听窗口尺寸变化
+    window.addEventListener('resize', this.updateViewportSize, { passive: true })
+  },
+  beforeUnmount () {
+    window.removeEventListener('resize', this.updateViewportSize)
   },
   methods: {
+    updateViewportSize () {
+      // 找到视口容器（中间区域可用宽度）
+      const el = this.$el.querySelector('.game-viewport')
+      if (!el) return
+      const w = Math.floor(el.clientWidth || 0)
+      if (!w) return
+      const h = Math.floor(w * 3 / 4) // 4:3 比例
+      if (w !== this.width || h !== this.height) {
+        this.width = w
+        this.height = h
+      }
+    },
     async fetchGameDetail () {
       const slug = this.$route.params.slug
       try {
@@ -129,24 +174,24 @@ export default {
     },
     resetGame () {
       if (this.$refs.nes) {
-        // this.$refs.nes.gameReset()
+        this.$refs.nes.reset()
       }
     },
     stopGame () {
       this.saveable = true
       this.currentFPS = '0'
       if (this.$refs.nes) {
-        // this.$refs.nes.gameStop()
+        this.$refs.nes.stop()
       }
     },
     save () {
       if (this.$refs.nes) {
-        // this.$refs.nes.save(this.gameUrl)
+        this.$refs.nes.save(this.gameUrl)
       }
     },
     load () {
       if (this.$refs.nes) {
-        // this.$refs.nes.load(this.gameUrl)
+        this.$refs.nes.load(this.gameUrl)
       }
     },
     onSuccess () {
@@ -233,21 +278,24 @@ export default {
   padding: 10px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
 
   .game-box {
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
 
   .game-viewport {
     position: relative;
+    width: 100%;
     max-width: 100%;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     background: #000;
     line-height: 0;
+
+    /* 由 :width/:height 明确指定像素尺寸，避免与 100% !important 冲突 */
 
     .show-fps {
       position: absolute;
@@ -295,6 +343,11 @@ export default {
 
   .sidebar {
     min-height: 300px;
+  }
+
+  /* 小屏时维持 4:3 宽度自适应 */
+  .game-viewport {
+    width: 100%;
   }
 }
 </style>
