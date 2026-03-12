@@ -37,7 +37,9 @@ export default {
       // 消息
       message: '',
       // 移动方向，1为向右，-1为向左
-      direction: 1
+      direction: 1,
+      // 移动速度
+      moveSpeed: 0.5
     }
   },
   created () {
@@ -405,6 +407,7 @@ export default {
       this.hits = 0
       this.misses = 0 // 重置未命中次数
       this.message = ''
+      this.moveSpeed = 0.5 // 重置速度
       this.setTargetArea()
       this.moveProgressBar()
     },
@@ -417,11 +420,23 @@ export default {
     moveProgressBar () {
       if (!this.fishing) return
 
+      // 清除之前的速度定时器（如果有）
+      if (this.speedTimer) {
+        clearInterval(this.speedTimer)
+        this.speedTimer = null
+      }
+
+      // 设置定时器，每0.4秒随机改变一次移动速度
+      this.speedTimer = setInterval(() => {
+        // 随机生成速度
+        this.moveSpeed = Math.random() * 2 + 0.5
+      }, 400)
+
       // 使用requestAnimationFrame实现更连续的动画
       const animate = () => {
         if (!this.fishing) return
-        // 根据方向移动进度条
-        this.progress += 0.5 * this.direction
+        // 根据方向和当前速度移动进度条
+        this.progress += this.moveSpeed * this.direction
 
         // 到达右边界时改变方向
         if (this.progress >= 100) {
@@ -506,6 +521,7 @@ export default {
       this.progress = 0
       this.direction = 1
       this.message = ''
+      this.moveSpeed = 0.5 // 重置速度
       this.setTargetArea()
       this.moveProgressBar()
     },

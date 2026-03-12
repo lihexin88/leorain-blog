@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useUserStore } from '@/store/user'
 
 const api = axios.create({
   baseURL: '/api/frontend',
@@ -31,6 +32,10 @@ api.interceptors.response.use(
     return response.data
   },
   error => {
+    if (error.status === 401) {
+      const userStore = useUserStore()
+      userStore.setShowLoginDialog(true)
+    }
     // 对响应错误做点什么
     return Promise.reject(error)
   }
