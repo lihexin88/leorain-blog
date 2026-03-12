@@ -118,7 +118,7 @@ import { maxString } from '@/utils/helpers'
 export default {
   tdk () {
     return {
-      title: 'leorain-友情链接',
+      title: '友情链接',
       description: 'leorain 友链'
     }
   },

@@ -1,4 +1,5 @@
 import { onBeforeUnmount, watchEffect } from 'vue'
+import { useConfigStore } from '@/store/config'
 
 /**
  * 动态更新页面的 TDK (Title, Description, Keywords)
@@ -56,7 +57,9 @@ export const tdkMixin = {
         (newTDK) => {
           if (newTDK) {
             const { title, description, keywords } = newTDK
-            if (title) document.title = title
+            const configStore = useConfigStore()
+            const siteTitle = configStore.config.title || 'leorain'
+            if (title) document.title = title + ' - ' + siteTitle
 
             if (description) {
               let metaDescription = document.querySelector('meta[name="description"]')
