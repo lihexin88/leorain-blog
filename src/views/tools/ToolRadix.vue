@@ -2,25 +2,27 @@
   <div class="radix-converter-container">
     <el-card class="box-card info-card">
       <template v-slot:header>
-<div  class="clearfix">
-        <i class="el-icon-info"></i>
-        <span>进制介绍</span>
-      </div>
-</template>
-      <p>在数学中，进制是一种记数方式，亦称进位制或进位计数法。最常用的的是十进制，它使用10个数字（0-9）。在计算机科学中，二进制（0-1）、八进制（0-7）和十六进制（0-9, A-F）非常重要。</p>
+        <div class="clearfix">
+          <i class="el-icon-info"></i>
+          <span>进制介绍</span>
+        </div>
+      </template>
+      <p>在数学中，进制是一种记数方式，亦称进位制或进位计数法。最常用的的是十进制，它使用10个数字（0-9）。在计算机科学中，二进制（0-1）、八进制（0-7）和十六进制（0-9,
+        A-F）非常重要。</p>
     </el-card>
 
     <el-row :gutter="20">
       <el-col :xs="24" :sm="12" class="card-col">
         <el-card class="box-card">
           <template v-slot:header>
-<div  class="clearfix">
-            <span>常用进制转换</span>
-          </div>
-</template>
+            <div class="clearfix">
+              <span>常用进制转换</span>
+            </div>
+          </template>
           <el-form ref="form" :model="radixData" label-width="100px">
             <el-form-item v-for="radix in commonRadixes" :key="radix.base" :label="radix.label">
-              <el-input v-model="radixData['r' + radix.base]" @input="updateFrom(radix.base)" :placeholder="radix.placeholder"></el-input>
+              <el-input v-model="radixData['r' + radix.base]" @input="updateFrom(radix.base)"
+                        :placeholder="radix.placeholder"></el-input>
             </el-form-item>
           </el-form>
         </el-card>
@@ -28,10 +30,10 @@
       <el-col :xs="24" :sm="12" class="card-col">
         <el-card class="box-card">
           <template v-slot:header>
-<div  class="clearfix">
-            <span>自定义进制转换</span>
-          </div>
-</template>
+            <div class="clearfix">
+              <span>自定义进制转换</span>
+            </div>
+          </template>
           <el-form label-width="100px">
             <el-form-item label="数值">
               <el-input v-model="customRadix.number" placeholder="输入要转换的数值"></el-input>
@@ -139,15 +141,15 @@ export default {
 <style scoped lang="scss">
 .radix-converter-container {
   padding: 20px;
-  background-color: #f5f7fa;
 }
 
 .box-card {
   border-radius: 10px;
   transition: all 0.3s;
   height: 100%;
+
   &:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -162,6 +164,7 @@ export default {
   display: table;
   content: "";
 }
+
 .clearfix:after {
   clear: both
 }

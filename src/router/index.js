@@ -72,7 +72,7 @@ const routes = [
           {
             path: 'radix',
             name: 'Radix',
-            component: () => import('../views/tools/Radix.vue')
+            component: () => import('../views/tools/ToolRadix.vue')
           },
           {
             path: 'json',
@@ -151,6 +151,27 @@ const routes = [
         path: 'topic/:slug',
         name: 'TopicDetail',
         component: () => import('../views/topic/Topic.vue')
+      },
+      // 错误页面路由
+      {
+        path: '404',
+        name: 'NotFound',
+        component: () => import('../views/errors/NotFound.vue')
+      },
+      {
+        path: '500',
+        name: 'ServerError',
+        component: () => import('../views/errors/ServerError.vue')
+      },
+      {
+        path: '403',
+        name: 'Forbidden',
+        component: () => import('../views/errors/Forbidden.vue')
+      },
+      // 捕获所有未匹配的路由
+      {
+        path: '/:pathMatch(.*)*',
+        redirect: '/404'
       }
     ]
   }
