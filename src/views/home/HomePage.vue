@@ -45,7 +45,8 @@ export default {
   @media screen and (max-width: 992px) {
     width: 100%;
     padding-left: 0;
-    margin-top: 20px;
+    padding-right: 0;
+    margin-top: 10px;
   }
 }
 </style>

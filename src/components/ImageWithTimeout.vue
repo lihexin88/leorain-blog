@@ -85,7 +85,6 @@ export default {
   flex-wrap: nowrap;
   max-height: 20px;
   max-width: 150px;
-  background: #f5f7fa;
   color: #909399;
   padding: 3px;
   border-radius: 3px;
