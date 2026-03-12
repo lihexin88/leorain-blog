@@ -5,7 +5,8 @@
         <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
-    <el-dialog v-if="isDialogOwner" v-model="dialogVisible"
+    <el-dialog v-model="dialogVisible"
+               v-if="isDialogOwner"
                class="guest-dialog"
                width="400px"
                :align-center="true"
@@ -100,11 +101,20 @@ export default {
     // 和 el-dialog v-model 双向绑定，映射到 pinia store
     dialogVisible: {
       get () {
-        return this.userStore ? this.userStore.showLoginDialog : false
+        return this.userStore ? this.userStore.showGuestDialog : false
       },
       set (val) {
         if (!this.userStore) this.userStore = useUserStore()
-        this.userStore.setShowLoginDialog(val)
+        this.userStore.setShowGuestDialog(val)
+      }
+    },
+    // 兼容旧版 CommentArea 等组件的调用
+    showDialog: {
+      get () {
+        return this.dialogVisible
+      },
+      set (val) {
+        this.dialogVisible = val
       }
     },
     // 仅拥有者实例才渲染弹窗
@@ -123,7 +133,7 @@ export default {
     this.loadGuestInfo()
     if (!this.guest.name || !this.guest.email) {
       // 需要展示弹窗时，走全局开关
-      this.userStore.setShowLoginDialog(true)
+      this.userStore.setShowGuestDialog(true)
     }
     // 注册全局弹窗拥有者（仅首次注册）
     if (!this.userStore.loginDialogOwnerId) {
@@ -150,7 +160,7 @@ export default {
           this.userStore.registerLoginDialogOwner(this.instanceId)
         }
       }
-      this.userStore.setShowLoginDialog(true)
+      this.userStore.setShowGuestDialog(true)
     },
     updateAvatar (val) {
       this.avatar = this.guestAvatarPrefix + MD5(val || '').toString()
@@ -197,7 +207,7 @@ export default {
         website: this.guest.website
       }))
       if (this.userStore) {
-        this.userStore.setShowLoginDialog(false)
+        this.userStore.setShowGuestDialog(false)
       }
       this.$emit('update')
     },

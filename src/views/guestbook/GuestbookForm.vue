@@ -43,6 +43,7 @@ import 'simplemde/dist/simplemde.min.css'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/mdn-like.css'
 import UserForm from '@/components/UserForm.vue'
+import { guestbookApi } from '@/apis'
 
 export default {
   name: 'GuestbookForm',
@@ -112,8 +113,8 @@ export default {
       this.simplemde.value(this.link_text)
       this.show_replace_tip = false
     },
-    do_submit (url, body) {
-      this.$http.post(url, body).then((response) => {
+    do_submit (apiMethod, body) {
+      apiMethod(body).then((response) => {
         if (this.guestbook) {
           if (this.guestbook.children === undefined) {
             this.guestbook.children = []
@@ -132,21 +133,20 @@ export default {
     },
     submit () {
       if (this.userAuthorized) {
-        this.do_submit('/frontend/guestbooks/authorized', {
+        this.do_submit(guestbookApi.createAuthorizedGuestbook, {
           content: this.simplemde.value(),
           parent_id: this.guestbook?.id
         })
       } else {
         this.$refs.userForm.validateData()
         this.$refs.userForm.saveGuestInfo()
-        const guestInfo = this.$refs.userForm.getGuestInfo()
-        this.do_submit('/frontend/guestbooks', {
+        const guestInfo = this.$refs.userForm.guest
+        this.do_submit(guestbookApi.createGuestbook, {
           content: this.simplemde.value(),
           nickname: guestInfo.name,
           email: guestInfo.email,
+          website: guestInfo.website,
           parent_id: this.guestbook?.id
-        }).then(() => {
-
         })
       }
     }

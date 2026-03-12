@@ -8,5 +8,13 @@ export default {
   },
   getGuestbookDetail (id) {
     return api.get(`/guestbooks/${id}`)
+  },
+  // 提交留言
+  createGuestbook (data) {
+    return api.post('/guestbooks', data)
+  },
+  // 提交已授权留言
+  createAuthorizedGuestbook (data) {
+    return api.post('/guestbooks/authorized', data)
   }
 }

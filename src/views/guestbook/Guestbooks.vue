@@ -32,7 +32,7 @@
           </el-card>
         </div>
       </div>
-      <el-dialog :large="true" :show="isReplayActive" @cancel="activeId = null">
+      <el-dialog :large="true" v-model="isReplayActive" @cancel="activeId = null">
         <template v-slot:header>
           <div>留言板</div>
         </template>
