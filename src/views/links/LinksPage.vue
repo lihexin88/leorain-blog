@@ -12,14 +12,25 @@
   - 头像：https://www.leorain.cn/images/logo.png
   - 网址：https://www.leorain.cn
 "></parse>
-        <div @click="$router.push({'user': '1'})">11</div>
+        <div style="display: flex;justify-content: center;">
+          <el-button @click="$router.push('/guestbook')">点击留言</el-button>
+        </div>
       </el-card>
     </div>
     <div style="display: flex;justify-content: center;padding-top: 10px">
       <div class="links-container">
         <div class="links-item-div" v-for="(link,index) in links" :key="index">
           <div style="position: relative" @click="openLink(link.link,link.id)">
-            <el-card body-style="padding-left: 5px;" class="links-item">
+            <el-card
+              :body-style="{ paddingLeft: '5px' }"
+              class="links-item"
+              :style="{
+                backgroundImage: 'url(' + link.image + ')',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }"
+            >
               <div class="links-item-container">
                 <div class="links-item-left">
                   <!--                  left bar-->
@@ -196,7 +207,8 @@ export default {
   position: relative;
   width: 100%;
   font-size: .85em;
-  background-image: url("https://images.leorain.cn/icons/assets/links-item-background-image.png");
+  background-color: white;
+  border-radius: 5px;
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
@@ -225,6 +237,9 @@ export default {
   cursor: pointer;
   box-shadow: none !important;
   border: none !important;
+}
+:deep(.el-card__body) {
+  background: linear-gradient(to right, var(--el-bg-color), transparent);
 }
 
 @media screen and (max-aspect-ratio: .9/1) {
