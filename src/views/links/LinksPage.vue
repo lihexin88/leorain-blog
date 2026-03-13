@@ -239,7 +239,7 @@ export default {
   border: none !important;
 }
 :deep(.el-card__body) {
-  background: linear-gradient(to right, var(--el-bg-color), transparent);
+  background: linear-gradient(to right, var(--el-bg-color) 20%, rgba(255, 255, 255, 0.4) 100%);
 }
 
 @media screen and (max-aspect-ratio: .9/1) {
