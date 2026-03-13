@@ -17,6 +17,7 @@
                      data-holder-rendered="true">
                 <!--            视频-->
                 <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted autoplay
+                       playsinline="true" webkit-playsinline="true"
                        :src="article.page_image"></video>
               </a>
               <a v-else class="article-item-link"

@@ -11,7 +11,7 @@
       <div class="list asset-item-container" id="container-left" style="padding-top: 15px">
         <div v-for="(asset,index) in assets" :key="index" class="asset-items-box">
           <div style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
-            <el-image class="asset-items-image" fit="contain" preview-teleport
+            <el-image class="asset-items-image" fit="contain" preview-teleported
                       :preview-src-list="[asset.display_url]"
                       :src="asset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
           </div>
