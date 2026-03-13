@@ -84,19 +84,20 @@ export default {
           :key="game.id"
           class="game-card"
           :body-style="{ padding: '0px' }"
-          @click="goToGame(game)"
       >
-        <div class="game-cover">
-          <img :src="game.cover_image" :alt="game.name" class="image"/>
-        </div>
-        <div class="game-info">
-          <div class="game-title" :title="game.name">
-            {{ maxString(game.name, 24) }}
+        <div class="card-clickable" @click="goToGame(game)">
+          <div class="game-cover">
+            <img :src="game.cover_image" :alt="game.name" class="image"/>
           </div>
-          <div class="game-meta">
-            <span><el-icon><VideoPlay/></el-icon> {{ game.played }}</span>
-            <span><el-icon><ChatLineRound/></el-icon> {{ game.comment_count || 0 }}</span>
-            <span><el-icon><Clock/></el-icon> {{ getFriendlyDate(game.created_at) }}</span>
+          <div class="game-info">
+            <div class="game-title" :title="game.name">
+              {{ maxString(game.name, 24) }}
+            </div>
+            <div class="game-meta">
+              <span><el-icon><VideoPlay/></el-icon> {{ game.played }}</span>
+              <span><el-icon><ChatLineRound/></el-icon> {{ game.comment_count || 0 }}</span>
+              <span><el-icon><Clock/></el-icon> {{ getFriendlyDate(game.created_at) }}</span>
+            </div>
           </div>
         </div>
       </el-card>
@@ -131,6 +132,12 @@ export default {
     transition: transform 0.3s;
     border-radius: 8px;
     overflow: hidden;
+
+    .card-clickable {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
 
     &:hover {
       transform: translateY(-5px);
