@@ -31,13 +31,13 @@
             </el-col>
             <el-col :span="8">
               <div class="stat-item">
-                <div class="stat-value">{{ userInfo.discussions_count || 0 }}</div>
+                <div class="stat-value">{{ discussions_count || 0 }}</div>
                 <div class="stat-label">讨论</div>
               </div>
             </el-col>
             <el-col :span="8">
               <div class="stat-item">
-                <div class="stat-value">{{ userInfo.comments_count || 0 }}</div>
+                <div class="stat-value">{{ comments_count || 0 }}</div>
                 <div class="stat-label">评论</div>
               </div>
             </el-col>
@@ -111,6 +111,8 @@ export default {
       userInfo: null,
       comments: [],
       discussions: [],
+      discussions_count: 0,
+      comments_count: 0,
       defaultAvatar: 'https://images.leorain.cn/avatar/default_avatar.png'
     }
   },
@@ -141,6 +143,8 @@ export default {
         this.userInfo = data.user
         this.comments = data.comments || []
         this.discussions = data.discussions || []
+        this.discussions_count = data.discussions_count || 0
+        this.comments_count = data.comments_count || 0
       } catch (error) {
         console.error('Fetch user profile error:', error)
         // 如果是访问自己的 profile 且接口报错，尝试从 store 中读取基本信息

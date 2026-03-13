@@ -5,7 +5,7 @@ const userApi = {
     return api.get('/user/info')
   },
   getUserByUid (uid) {
-    return api.get(`/user/${uid}`)
+    return api.get(`/user/get_info?uid=${uid}`)
   },
   getUserItems (params) {
     return api.get('/user-items', { params })
