@@ -56,21 +56,20 @@
       <el-col :xs="24" :sm="12" class="main-content">
         <div class="game-box">
           <div class="game-viewport">
-            <nes-vue
+            <nes-player
                 v-if="gameUrl"
                 ref="nes"
                 :url="gameUrl"
                 label="Click to Start"
-                :width="Math.min(width, height)"
-                :height="Math.min(width, height)"
-                debugger
+                :width="width"
+                :height="height"
                 @fps="getFps"
                 @success="onSuccess"
                 @error="onError"
                 @saved="onSaved"
                 @loaded="onLoaded"
             />
-            <div class="show-fps" v-if="gameUrl">
+            <div class="show-fps" v-if="gameUrl && currentFPS !== '0'">
               FPS: {{ currentFPS }}
             </div>
           </div>
@@ -107,7 +106,7 @@
 </template>
 <script>
 import api from '@/apis/base'
-import { NesVue } from 'nes-vue'
+import NesPlayer from '@/components/NesPlayer.vue'
 import CommentArea from '@/components/CommentArea.vue'
 import { useUserStore } from '@/store/user'
 import { mapState } from 'pinia'
@@ -115,7 +114,7 @@ import { mapState } from 'pinia'
 export default {
   name: 'GamePlay',
   components: {
-    NesVue,
+    NesPlayer,
     CommentArea
   },
   props: {
@@ -155,7 +154,6 @@ export default {
       if (newVal && newVal !== oldVal) {
         this.currentFPS = '0'
         this.saveable = true
-        // 直接更新 gameUrl，触发 nes-vue 内部的 url watcher 自动 reloadROM
         this.fetchGameDetail()
       }
     }
