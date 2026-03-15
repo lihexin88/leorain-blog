@@ -101,7 +101,7 @@
             </template>
             <template v-else>
               <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
-              <el-dropdown-item command="/dashboard">面板</el-dropdown-item>
+              <el-dropdown-item command="https://frontend.leorain.cn/dashboard">面板</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </template>
           </el-dropdown-menu>
@@ -229,6 +229,9 @@ export default {
         this.handleLogout()
       } else if (command === '/login') {
         this.setShowLoginDialog(true)
+      } else if (command.startsWith('http://') || command.startsWith('https://')) {
+        // 处理外部链接
+        window.open(command, '_blank')
       } else {
         this.$router.push(command)
       }

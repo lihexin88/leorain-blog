@@ -12,6 +12,6 @@ export default {
   },
   // 删除评论
   deleteComment (id) {
-    return api.delete('comments/' + id)
+    return api.delete('/api/comments/' + id)
   }
 }

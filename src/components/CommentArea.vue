@@ -13,7 +13,7 @@
       </div>
       <div :class="contentWrapperClass">
         <div :class="nullClass" v-if="comments.length == 0">{{ nullText }}</div>
-        <div class="media" v-for="(comment, index) in comments" :key="index" v-else>
+        <div class="media" v-for="(comment, index) in comments" :key="comment.id" v-else>
           <div class="media-body box-body">
             <div class="comment-heading">
               <div class="header-avatar" v-if="comment.user_id != null">
@@ -57,12 +57,18 @@
                 </div>
                 <div class="comment-heading-tips comment-heading-actions">
                   <vote-button v-if="user?.uid !== comment.uid" :item="comment"></vote-button>
-                  <el-icon
-                      v-if="user?.uid === comment.uid || user?.is_admin"
-                      @click="commentDelete(index, comment.id)"
+                  <el-popconfirm
+                      title="确认删除这条评论吗？"
+                      confirm-button-text="确定"
+                      cancel-button-text="取消"
+                      @confirm="commentDelete(index, comment.id)"
                   >
-                    <Delete/>
-                  </el-icon>
+                    <template #reference>
+                      <el-icon class="pointer" v-if="user?.uid === comment.uid || user?.is_admin">
+                        <Delete/>
+                      </el-icon>
+                    </template>
+                  </el-popconfirm>
                   <el-icon @click="reply(comment.username, comment.uid)">
                     <Share/>
                   </el-icon>
