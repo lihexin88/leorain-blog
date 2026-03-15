@@ -12,6 +12,7 @@ import guestbookApi from './guestbook'
 import topicApi from './topic'
 import clipboardApi from './clipboard'
 import requestLogApi from './request-log'
+import responseApi from './response'
 
 export default {
   articleApi,
@@ -26,7 +27,8 @@ export default {
   linkApi,
   guestbookApi,
   topicApi,
-  clipboardApi
+  clipboardApi,
+  responseApi
 }
 
 // 也可以单独导出各个模块
@@ -43,6 +45,7 @@ export {
   linkApi,
   guestbookApi,
   topicApi,
-  clipboardApi
-  , requestLogApi
+  clipboardApi,
+  requestLogApi,
+  responseApi
 }

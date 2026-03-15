@@ -102,6 +102,7 @@
             <template v-else>
               <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
               <el-dropdown-item command="https://frontend.leorain.cn/dashboard">面板</el-dropdown-item>
+              <el-dropdown-item command="clear-cache">清除缓存</el-dropdown-item>
               <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
             </template>
           </el-dropdown-menu>
@@ -114,6 +115,7 @@
 <script>
 import { useUserStore } from '@/store/user'
 import { mapState, mapActions } from 'pinia'
+import responseApi from '@/apis/response'
 import {
   User,
   MoreFilled,
@@ -122,7 +124,6 @@ import {
   EditPen,
   ChatLineRound,
   Link as LinkIcon,
-  ChatDotRound,
   Trophy,
   Sugar
 } from '@element-plus/icons-vue'
@@ -138,7 +139,6 @@ export default {
     EditPen,
     ChatLineRound,
     LinkIcon,
-    ChatDotRound,
     Trophy
   },
   data () {
@@ -227,6 +227,17 @@ export default {
     handleCommand (command) {
       if (command === 'logout') {
         this.handleLogout()
+      } else if (command === 'clear-cache') {
+        // 调用清除缓存接口（迁移到 apis/response.js）
+        responseApi.clearCache()
+          .then(() => {
+            this.$message.success('缓存已清除')
+            this.$router.go(0)
+          })
+          .catch((err) => {
+            const msg = err?.message || err?.response?.data?.message || '未知错误'
+            this.$message.error('清除失败：' + msg)
+          })
       } else if (command === '/login') {
         this.setShowLoginDialog(true)
       } else if (command.startsWith('http://') || command.startsWith('https://')) {
