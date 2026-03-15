@@ -122,9 +122,10 @@ const routes = [
         component: () => import('../views/games/GameList.vue')
       },
       {
-        path: 'game/:slug',
+        path: 'games/play',
         name: 'GamePlay',
-        component: () => import('../views/games/GamePlay.vue')
+        component: () => import('../views/games/GamePlay.vue'),
+        props: (route) => ({ slug: route.query.slug })
       },
       {
         path: 'guestbook',

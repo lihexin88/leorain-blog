@@ -2,7 +2,7 @@
   <div>
     <div class="markdown" @click="handleEvent" ref="markdownContent" v-html="rawHtml"></div>
     <el-dialog show-footer :show="executor.show_exec_result" @cancel="executor.show_exec_result = false">
-      <template v-slot:title>
+      <template v-slot:header>
         <div style="display: flex">
           <div>运行结果</div>
           <div style="display: flex;justify-content: end;align-items: center;font-size: .7em;padding-left: 20px">

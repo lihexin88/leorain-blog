@@ -15,7 +15,7 @@
     <div>
       <!-- Element Plus 兼容：使用 v-model 绑定可见性，使用 header 槽替代已废弃的 title 槽 -->
       <el-dialog v-model="show" width="60%" @close="show = false">
-        <template #header>
+        <template v-slot:header>
           <span>git提交日志</span>
         </template>
         <div style="border-radius: 5px;">

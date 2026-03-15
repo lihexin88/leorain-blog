@@ -59,7 +59,6 @@
             <nes-vue
                 v-if="gameUrl"
                 ref="nes"
-                :key="nesKey"
                 :url="gameUrl"
                 label="Click to Start"
                 :width="Math.min(width, height)"
@@ -119,6 +118,12 @@ export default {
     NesVue,
     CommentArea
   },
+  props: {
+    slug: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       gameId: 0,
@@ -127,9 +132,7 @@ export default {
       saveable: true,
       gameName: '',
       width: 0,
-      height: 0,
-      // 用于强制重新挂载 nes 组件的 key
-      nesKey: ''
+      height: 0
     }
   },
   computed: {
@@ -148,32 +151,16 @@ export default {
     window.removeEventListener('resize', this.updateViewportSize)
   },
   watch: {
-    // 当路由的 slug 变化时，重新加载游戏并强制刷新 nes 组件
-    '$route.params.slug': {
-      immediate: false,
-      handler () {
-        this.reloadGame()
+    slug (newVal, oldVal) {
+      if (newVal && newVal !== oldVal) {
+        this.currentFPS = '0'
+        this.saveable = true
+        // 直接更新 gameUrl，触发 nes-vue 内部的 url watcher 自动 reloadROM
+        this.fetchGameDetail()
       }
     }
   },
   methods: {
-    // 先销毁再重建，确保 nes-vue 能在相同页面或刷新后重新初始化
-    async reloadGame () {
-      try {
-        // 停止当前游戏（若存在）
-        if (this.$refs.nes && this.$refs.nes.stop) {
-          this.$refs.nes.stop()
-        }
-      } catch (e) {
-        // 忽略停止异常
-      }
-      // 清空 url 以触发 v-if 卸载
-      this.gameUrl = ''
-      this.currentFPS = '0'
-      this.saveable = true
-      // 重新拉取并设置数据
-      await this.fetchGameDetail()
-    },
     updateViewportSize () {
       // 找到视口容器（中间区域可用宽度）
       const el = this.$el.querySelector('.game-viewport')
@@ -187,13 +174,12 @@ export default {
       }
     },
     async fetchGameDetail () {
-      const slug = this.$route.params.slug
+      const slug = this.slug
+      this.gameUrl = ''
       try {
         const response = await api.get(`/games/${slug}`)
         const data = response.data
         this.gameId = data.id
-        // 先更新 key，再设置 url，确保组件以新 key 重新挂载
-        this.nesKey = `${data.id || ''}-${Date.now()}`
         this.gameUrl = data.url || data.rom_url
         this.gameName = data.name
       } catch (error) {

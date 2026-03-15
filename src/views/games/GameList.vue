@@ -70,7 +70,7 @@ export default {
       this.fetchGames(page)
     },
     goToGame (game) {
-      this.$router.push({ name: 'GamePlay', params: { slug: game.slug } })
+      this.$router.push({ name: 'GamePlay', query: { slug: game.slug } })
     }
   }
 }
