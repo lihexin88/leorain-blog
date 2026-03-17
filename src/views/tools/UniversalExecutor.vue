@@ -189,7 +189,8 @@ print(python_version())`
     if (code !== null && code !== undefined && code !== '') {
       this.code = code
     }
-    this.bootstrapMulti()
+    const lang = params.get('language')
+    this.bootstrapMulti(lang)
   },
   methods: {
     show_it (event) {
@@ -271,15 +272,25 @@ print(python_version())`
       } else {
         this.result = ''
       }
+
+      // Update URL with language parameter
+      const url = new URL(window.location)
+      url.searchParams.set('language', this.selectedLangKey)
+      window.history.pushState({}, '', url)
     },
-    bootstrapMulti () {
+    bootstrapMulti (langFromUrl) {
       // 应用自定义配置（如传入）
       if (this.languagesConfig) {
         this.internalLanguages = this.languagesConfig
       }
-      // 默认选择第一个 key
-      const defaultLanguage = this.internalLanguages[Object.keys(this.internalLanguages)[0]]
-      this.selectedLangKey = defaultLanguage.mime
+
+      const keys = Object.keys(this.effectiveLanguages)
+      if (langFromUrl && keys.includes(langFromUrl)) {
+        this.selectedLangKey = langFromUrl
+      } else {
+        // 默认选择第一个 key
+        this.selectedLangKey = keys[0]
+      }
       this.onLangChange()
     }
   }
