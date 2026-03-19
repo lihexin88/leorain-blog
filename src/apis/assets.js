@@ -5,17 +5,27 @@ const assetsApi = {
     return api.get('/asset', { params })
   },
   getDefaultDir () {
-    return api.get('/assets/info/default')
+    return api.get('/api/assets/info/default')
   },
   getUploadUrl (fileName) {
-    return api.get('/assets/upload', {
+    return api.get('/api/assets/upload', {
       params: {
         file_name: fileName
       }
     })
   },
   createAsset (data) {
-    return api.post('assets', data)
+    return api.post('/api/assets', data)
+  },
+  assetAsr (data) {
+    return api.post('asr', data)
+  },
+  getAsrDetail (recordId) {
+    return api.get('/api/frontend/asr/detail', {
+      params: {
+        record_id: recordId
+      }
+    })
   }
 }
 
