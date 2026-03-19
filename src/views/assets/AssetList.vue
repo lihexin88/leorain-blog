@@ -14,7 +14,7 @@
         <div class="list asset-item-container" id="container-left">
           <div v-for="(asset,index) in assets" :key="index" class="asset-items-box">
             <el-button
-              v-if="isVideoAsset(asset) && Number(asset.has_asr) === 0"
+              v-if="isVideoAsset(asset)"
               class="asset-asr-btn"
               size="small"
               type="primary"
