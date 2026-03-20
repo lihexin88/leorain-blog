@@ -5,10 +5,10 @@ const assetsApi = {
     return api.get('/asset', { params })
   },
   getDefaultDir () {
-    return api.get('/api/assets/info/default')
+    return api.get('/api/assets_dir/default')
   },
   getUploadUrl (fileName) {
-    return api.get('/api/assets/upload', {
+    return api.get('/api/assets_upload/upload', {
       params: {
         file_name: fileName
       }

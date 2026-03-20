@@ -14,7 +14,7 @@
         <div class="list asset-item-container" id="container-left">
           <div v-for="(asset,index) in assets" :key="index" class="asset-items-box">
             <el-button
-              v-if="isVideoAsset(asset)"
+              v-if="isVideoAsset(asset) && user?.id === asset.uid"
               class="asset-asr-btn"
               size="small"
               type="primary"
@@ -168,6 +168,8 @@
 
 <script>
 
+import { mapState } from 'pinia'
+import { useUserStore } from '@/store/user'
 import { getUrlParams, maxString, paginateLayouts, syncUrlPaginate } from '@/utils/helpers'
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
@@ -189,6 +191,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(useUserStore, ['user']),
     moment () {
       return moment
     }
