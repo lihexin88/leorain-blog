@@ -5,7 +5,8 @@ export const useConfigStore = defineStore('config', {
   state: () => ({
     config: {},
     loading: false,
-    error: null
+    error: null,
+    showSiteInfo: true
   }),
 
   getters: {

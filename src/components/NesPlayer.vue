@@ -10,8 +10,9 @@
 <script>
 import { NES, Controller } from 'jsnes'
 
-const AUDIO_BUF_LEN = 8192
-const SCRIPT_BUF_SIZE = 512
+const AUDIO_BUF_LEN = 16384
+const SCRIPT_BUF_SIZE = 2048
+const AUDIO_MIN_SAMPLES = SCRIPT_BUF_SIZE * 2
 const FRAME_MS = 1000 / 60.098 // NES 原生帧率
 
 const KEY_MAP = {
@@ -148,27 +149,43 @@ export default {
       this._audioR = new Float32Array(AUDIO_BUF_LEN)
       this._audioWritePos = 0
       this._audioReadPos = 0
+      this._audioReady = false
 
       this._nes = new NES({
         onFrame: (buf) => this._drawFrame(buf),
         onAudioSample: (l, r) => {
-          const pos = this._audioWritePos++ % AUDIO_BUF_LEN
+          if (this._audioWritePos - this._audioReadPos >= AUDIO_BUF_LEN) {
+            this._audioReadPos = this._audioWritePos - AUDIO_BUF_LEN + 1
+          }
+          const pos = this._audioWritePos % AUDIO_BUF_LEN
           this._audioL[pos] = l
           this._audioR[pos] = r
+          this._audioWritePos++
+          if (!this._audioReady && this._audioWritePos - this._audioReadPos >= AUDIO_MIN_SAMPLES) {
+            this._audioReady = true
+          }
         }
       })
 
       // Web Audio —— 在用户点击时才 resume（浏览器自动播放策略）
-      this._audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+      this._audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' })
       const sp = this._audioCtx.createScriptProcessor(SCRIPT_BUF_SIZE, 0, 2)
       sp.onaudioprocess = (e) => {
         const l = e.outputBuffer.getChannelData(0)
         const r = e.outputBuffer.getChannelData(1)
+        const available = this._audioWritePos - this._audioReadPos
+
+        if (!this._audioReady || available < SCRIPT_BUF_SIZE) {
+          l.fill(0)
+          r.fill(0)
+          return
+        }
+
         for (let i = 0; i < SCRIPT_BUF_SIZE; i++) {
           const rp = this._audioReadPos % AUDIO_BUF_LEN
           l[i] = this._audioL[rp]
           r[i] = this._audioR[rp]
-          if (this._audioReadPos < this._audioWritePos) this._audioReadPos++
+          this._audioReadPos++
         }
       }
       sp.connect(this._audioCtx.destination)

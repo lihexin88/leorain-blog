@@ -62,6 +62,7 @@ import { Client } from '@stomp/stompjs'
 import moment from 'moment'
 import { getHumanReadableDate } from '@/utils/helpers'
 import RequestLogs from '@/components/RequestLogs.vue'
+import { useConfigStore } from '@/store/config'
 
 export default {
   props: {
@@ -108,6 +109,7 @@ export default {
       // }
       // this.tool_access_token = accessToken
       this.tool_access_token = 'null'
+      const configStore = useConfigStore()
       // 1. 创建 SockJS 连接
       const socket = new SockJS(process.env.DRAW_WS_HOST + '/ws?access_token=' + this.tool_access_token) // WebSocket 端点
 
@@ -121,6 +123,7 @@ export default {
 
       // 3. 连接 WebSocket
       this.stompClient.onConnect = () => {
+        configStore.showSiteInfo = true
         this.connection_retried = 0
         this.button_type = 'success'
         this.stompClient.subscribe('/info/visitors', (message) => {
@@ -155,6 +158,7 @@ export default {
         console.log('错误')
       }
       this.stompClient.onWebSocketClose = (frame) => {
+        configStore.showSiteInfo = false
         if (frame.code === 2000) {
           this.$accessToken(2)
           this.button_type = 'info'

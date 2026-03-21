@@ -29,7 +29,7 @@
     </header>
 
     <main class="body">
-      <site-info/>
+      <site-info v-if="configStore.showSiteInfo"/>
       <!-- 子组件将在这里渲染 -->
       <router-view></router-view>
     </main>
