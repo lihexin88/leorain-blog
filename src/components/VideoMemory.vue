@@ -16,10 +16,12 @@
           </div>
           <div class="video-memory-player">
             <video
+              ref="videoRef"
               :src="videoInfo.m3u8_url"
               controls
               playsinline
               class="video-memory-media"
+              @loadedmetadata="seekToDefaultPosition"
             ></video>
           </div>
         </div>
@@ -37,6 +39,8 @@ const defaultVideoInfo = () => ({
   num: null,
   m3u8_url: ''
 })
+
+const DEFAULT_SEEK_TIME = 90
 
 export default {
   name: 'VideoMemory',
@@ -78,6 +82,13 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    seekToDefaultPosition () {
+      const video = this.$refs.videoRef
+      if (!video) {
+        return
+      }
+      video.currentTime = Math.min(DEFAULT_SEEK_TIME, Number(video.duration) || DEFAULT_SEEK_TIME)
     },
     playNextEpisode () {
       if (!this.hasNext) {
