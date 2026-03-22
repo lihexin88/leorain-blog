@@ -139,7 +139,7 @@
         词云
       </el-divider>
       <el-card class="info-div-card">
-        <tag-cloud :tags="tags"></tag-cloud>
+        <tag-cloud :tags="tags" />
       </el-card>
     </div>
     <div v-if="false" class="info-div">
@@ -151,11 +151,15 @@
       <el-divider>
         git log
       </el-divider>
-      <git-logs></git-logs>
+      <git-logs />
+    </div>
+    <div class="info-div">
+      <el-divider>Video Memory</el-divider>
+      <video-memory />
     </div>
     <div class="info-div">
       <el-divider>访客地图</el-divider>
-      <visitor-map></visitor-map>
+      <visitor-map />
     </div>
     <div class="info-div">
       <el-card class="travel-div">
@@ -174,6 +178,7 @@ import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
 import QuotesArea from '@/components/QuotesArea.vue'
 import TagCloud from '@/components/TagCloud.vue'
+import VideoMemory from '@/components/VideoMemory.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
 import { systemInfoApi, tagApi } from '@/apis'
@@ -184,6 +189,7 @@ export default {
     VisitorMap,
     GitLogs,
     TagCloud,
+    VideoMemory,
     Quotes: QuotesArea,
     Parse: MarkdownParse
   },
