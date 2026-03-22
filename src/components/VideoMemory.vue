@@ -5,14 +5,19 @@
         <div v-if="hasVideo" class="video-memory-content">
           <div class="video-memory-header">
             <div class="video-memory-title">第 {{ videoInfo.num }} 集</div>
-            <el-button
-              type="primary"
-              size="small"
-              :disabled="!hasNext || loading"
-              @click="playNextEpisode"
-            >
-              下一集
-            </el-button>
+            <div class="video-memory-actions">
+              <el-button size="small" :disabled="loading" @click="episodeDialogVisible = true">
+                选集
+              </el-button>
+              <el-button
+                type="primary"
+                size="small"
+                :disabled="!hasNext || loading"
+                @click="playNextEpisode"
+              >
+                下一集
+              </el-button>
+            </div>
           </div>
           <div class="video-memory-player">
             <video
@@ -28,6 +33,20 @@
         <el-empty v-else :description="errorMessage || '暂无视频'"></el-empty>
       </div>
     </el-card>
+
+    <el-dialog v-model="episodeDialogVisible" title="选集" width="640px">
+      <div class="episode-grid">
+        <el-button
+          v-for="episode in episodeOptions"
+          :key="episode"
+          size="small"
+          :type="videoInfo.num === episode ? 'primary' : 'default'"
+          @click="selectEpisode(episode)"
+        >
+          第 {{ episode }} 集
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -41,6 +60,7 @@ const defaultVideoInfo = () => ({
 })
 
 const DEFAULT_SEEK_TIME = 90
+const TOTAL_EPISODES = 81
 
 export default {
   name: 'VideoMemory',
@@ -48,6 +68,7 @@ export default {
     return {
       loading: false,
       errorMessage: '',
+      episodeDialogVisible: false,
       videoInfo: defaultVideoInfo()
     }
   },
@@ -57,6 +78,9 @@ export default {
     },
     hasNext () {
       return this.videoInfo.next !== null && this.videoInfo.next !== undefined
+    },
+    episodeOptions () {
+      return Array.from({ length: TOTAL_EPISODES }, (_, index) => index + 1)
     }
   },
   methods: {
@@ -96,6 +120,10 @@ export default {
         return
       }
       this.getVideoMemory(this.videoInfo.next)
+    },
+    selectEpisode (episode) {
+      this.episodeDialogVisible = false
+      this.getVideoMemory(episode)
     }
   },
   mounted () {
@@ -128,6 +156,12 @@ export default {
   flex-wrap: wrap;
 }
 
+.video-memory-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .video-memory-title {
   font-size: 14px;
   font-weight: 600;
@@ -145,4 +179,11 @@ export default {
   max-height: 420px;
   display: block;
 }
+
+.episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
+}
 </style>
+
