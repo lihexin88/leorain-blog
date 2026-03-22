@@ -61,6 +61,7 @@ export default {
   },
   methods: {
     async getVideoMemory (num) {
+      localStorage.setItem('wlwz_video_memory_num', num)
       this.loading = true
       this.errorMessage = ''
       try {
@@ -98,7 +99,8 @@ export default {
     }
   },
   mounted () {
-    this.getVideoMemory()
+    const num = localStorage.getItem('wlwz_video_memory_num') || 1
+    this.getVideoMemory(num)
   }
 }
 </script>
