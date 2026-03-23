@@ -34,7 +34,7 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="episodeDialogVisible" title="选集" width="640px">
+    <el-dialog v-model="episodeDialogVisible" title="选集" width="640px" append-to-body>
       <div class="episode-grid">
         <el-button
           v-for="episode in episodeOptions"
@@ -186,4 +186,3 @@ export default {
   gap: 12px;
 }
 </style>
-
