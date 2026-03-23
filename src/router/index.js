@@ -12,18 +12,6 @@ const routes = [
         component: () => import('../views/home/HomePage.vue')
       },
       {
-        path: 'articles',
-        name: 'ArticleList',
-        component: () => import('../views/articles/ArticleList.vue'),
-        children: [
-          {
-            path: 'articles/{slug}',
-            name: 'ArticleDetail',
-            component: () => import('../views/home/ArticleDetail.vue')
-          }
-        ]
-      },
-      {
         path: 'tags',
         name: 'TagList',
         component: () => import('../views/tags/TagList.vue')
