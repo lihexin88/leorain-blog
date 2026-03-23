@@ -4,8 +4,14 @@
       <div class="article-list">
         <el-card v-for="(article,index) in articles"
                  class="media article-item"
+                 :style="getCardStyle(index)"
                  :key="index"
+                 @mousemove="handleCardMove($event, index)"
+                 @mouseleave="resetCardTransform(index)"
         >
+            <div class="article-card-glow"></div>
+            <div class="article-card-grid"></div>
+            <div class="article-card-shine"></div>
             <div>
               <a v-if="article.page_image" class="article-item-link"
                  :title="article.slug"
@@ -120,16 +126,12 @@ export default {
     return {
       page: 1,
       activeIndex: -1,
-      rotations: [], // 用于存储每个元素的偏移量
-      maxOffset: 15,
       total: null,
       per_page: 21,
       smallWindowSize: false,
       layout: null,
       articles: [],
-      resetTimers: {},
-      currentRotations: [],
-      animationFrame: {} // 存储 requestAnimationFrame 句柄
+      currentRotations: []
     }
   },
   methods: {
@@ -163,6 +165,29 @@ export default {
       }
       return transform
     },
+    getCardStyle (index) {
+      const rotation = this.currentRotations[index] || { x: 0, y: 0 }
+      return {
+        transform: `perspective(1200px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) translateY(0)`
+      }
+    },
+    handleCardMove (event, index) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return
+      }
+      const rect = event.currentTarget.getBoundingClientRect()
+      const offsetX = (event.clientX - rect.left) / rect.width
+      const offsetY = (event.clientY - rect.top) / rect.height
+      const rotateY = (offsetX - 0.5) * 8
+      const rotateX = (0.5 - offsetY) * 8
+      this.currentRotations.splice(index, 1, {
+        x: Number(rotateX.toFixed(2)),
+        y: Number(rotateY.toFixed(2))
+      })
+    },
+    resetCardTransform (index) {
+      this.currentRotations.splice(index, 1, { x: 0, y: 0 })
+    },
     go_user (uid) {
       this.$router.push({
         name: 'UserProfile',
@@ -184,6 +209,7 @@ export default {
         per_page: this.per_page
       }).then((response) => {
         this.articles = response.data
+        this.currentRotations = response.data.map(() => ({ x: 0, y: 0 }))
         this.total = response.total
         if (this.page === 1) {
           this.syncUrlPaginate({
@@ -198,25 +224,33 @@ export default {
         }
         window.scrollTo({ top: 0 })
         this.$nextTick(() => {
-          // 增加动画 - 更年轻化的动画效果
+          anime.remove('.article-item, .article-item-link, .article-body, .article-tag, .info i, .info a')
           anime({
             targets: '.article-item',
-            scale: [0.8, 1],
+            scale: [0.94, 1],
             opacity: [0, 1],
-            translateY: [30, 0],
-            rotateZ: [5, 0],
-            delay: anime.stagger(80, { easing: 'easeOutElastic(1, .6)' }),
-            duration: 600,
-            easing: 'easeOutElastic(1, .8)'
+            translateY: [46, 0],
+            rotateX: [10, 0],
+            rotateZ: [2, 0],
+            delay: anime.stagger(90),
+            duration: 900,
+            easing: 'easeOutCubic'
           })
-          // 为内部元素添加延迟动画
           anime({
-            targets: '.article-item-rotate',
-            scale: [0.9, 1],
+            targets: '.article-item-link, .article-body',
             opacity: [0, 1],
-            delay: anime.stagger(80, { start: 200 }),
-            duration: 400,
-            easing: 'easeOutBack'
+            translateY: [18, 0],
+            delay: anime.stagger(70, { start: 180 }),
+            duration: 650,
+            easing: 'easeOutQuad'
+          })
+          anime({
+            targets: '.article-tag, .info i, .info a',
+            opacity: [0, 1],
+            translateY: [10, 0],
+            delay: anime.stagger(40, { start: 320 }),
+            duration: 420,
+            easing: 'easeOutQuad'
           })
         })
       })
@@ -290,35 +324,41 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
-  backdrop-filter: blur(10px);
-  background: linear-gradient(135deg,
-      rgba(217, 214, 217, 0.55) 0%,
-      rgba(173, 216, 230, 0.55) 50%,
-      rgba(242, 214, 218, 0.55) 100%,
+  backdrop-filter: blur(16px);
+  background: linear-gradient(145deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(228, 240, 255, 0.58) 42%,
+      rgba(247, 225, 239, 0.6) 100%,
   );
   position: relative;
   overflow: hidden;
+  isolation: isolate;
+  transform-style: preserve-3d;
 
-  // 添加动态渐变背景
   &::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
+    inset: -35%;
     background: linear-gradient(
-            45deg,
-            rgba(255, 105, 180, 0.1) 0%,
-            rgba(135, 206, 250, 0.1) 25%,
-            rgba(147, 112, 219, 0.1) 50%,
-            rgba(255, 182, 193, 0.1) 75%,
-            rgba(255, 105, 180, 0.1) 100%
+            120deg,
+            rgba(255, 255, 255, 0) 28%,
+            rgba(255, 255, 255, 0.3) 48%,
+            rgba(255, 255, 255, 0) 68%
     );
-    background-size: 400% 400%;
-    animation: gradientShift 8s ease infinite;
+    transform: translateX(-120%) skewX(-20deg);
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: transform 0.8s ease, opacity 0.8s ease;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 36%),
+      radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 34%);
+    opacity: 0.85;
     z-index: 0;
   }
 
@@ -330,20 +370,55 @@ export default {
     margin-right: 5px;
     margin-left: 5px;
   }
-  border: 2px solid #e7cfcfad;
+  border: 1px solid rgba(255, 255, 255, 0.55);
   background-clip: padding-box;
   margin: 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1),
-  0 2px 8px rgba(135, 206, 250, 0.1),
-  inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-  background 0.4s ease,
-  border-color 0.4s ease,
-  box-shadow 0.4s ease,
-  z-index 0s;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12),
+  0 16px 34px rgba(15, 23, 42, 0.1),
+  inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition: transform 0.35s ease,
+  background 0.35s ease,
+  border-color 0.35s ease,
+  box-shadow 0.35s ease;
   will-change: transform, box-shadow;
   z-index: 1;
+}
+
+.article-card-glow,
+.article-card-grid,
+.article-card-shine {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.article-card-glow {
+  inset: -15%;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(96, 165, 250, 0.28), transparent 30%),
+    radial-gradient(circle at 84% 0%, rgba(244, 114, 182, 0.24), transparent 26%);
+  filter: blur(18px);
+  opacity: 0.9;
+}
+
+.article-card-grid {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.11) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 70%);
+  opacity: 0.22;
+}
+
+.article-card-shine {
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
 }
 
 @keyframes gradientShift {
@@ -356,23 +431,36 @@ export default {
 }
 
 .article-item:hover {
-  transform: translateY(-8px) scale(1.02);
-  background: linear-gradient(135deg,
-      rgba(221, 160, 221, 0.25) 0%,
-      rgba(173, 216, 230, 0.25) 50%,
-      rgba(255, 182, 193, 0.25) 100%,
+  transform: perspective(1200px) translateY(-12px) scale(1.018) !important;
+  background: linear-gradient(145deg,
+      rgba(255, 255, 255, 0.84) 0%,
+      rgba(224, 236, 255, 0.72) 42%,
+      rgba(253, 232, 243, 0.72) 100%,
   );
-  border-color: rgba(255, 105, 180, 0.3);
+  border-color: rgba(255, 255, 255, 0.82);
   z-index: 10;
 
   &::before {
     opacity: 1;
+    transform: translateX(120%) skewX(-20deg);
   }
 
-  box-shadow: 0 12px 30px rgba(255, 105, 180, 0.25),
-  0 8px 20px rgba(135, 206, 250, 0.2),
-  0 4px 10px rgba(147, 112, 219, 0.15),
-  inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 22px 48px rgba(99, 102, 241, 0.2),
+  0 24px 60px rgba(15, 23, 42, 0.16),
+  0 0 28px rgba(236, 72, 153, 0.12),
+  inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.article-item:hover .article-card-glow {
+  opacity: 1;
+}
+
+.article-item:hover .article-card-grid {
+  opacity: 0.3;
+}
+
+.article-item:hover .article-card-shine {
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.5);
 }
 
 .article-item-link {
@@ -384,6 +472,7 @@ export default {
   position: relative;
   z-index: 1;
   cursor: pointer;
+  transform-style: preserve-3d;
   @media screen and (max-aspect-ratio: 1/1) {
     display: block;
     width: 100%;
@@ -396,40 +485,47 @@ export default {
   max-height: 190px;
   height: 100%;
   object-fit: contain;
-  border-radius: 10px;
-  border: 2px solid rgba(240, 200, 200, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-  inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.66);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.12),
+  0 12px 20px rgba(15, 23, 42, 0.08),
+  inset 0 1px 0 rgba(255, 255, 255, 0.38);
   @media screen and (max-aspect-ratio: 1/1) {
     max-width: 1500px;
   }
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
   box-shadow 0.4s ease,
-  border-color 0.4s ease;
+  border-color 0.4s ease,
+  filter 0.4s ease;
   transform-origin: center;
   position: relative;
   z-index: 1;
-  transform: scale(1) rotate(0deg);
+  transform: translateZ(26px) scale(1) rotate(0deg);
 }
 
 .article-item:hover .article-media {
-  transform: scale(1.08) rotate(2deg);
-  box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3),
-  0 4px 12px rgba(135, 206, 250, 0.2),
-  inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  border-color: rgba(255, 105, 180, 0.5);
+  transform: translateZ(42px) scale(1.08) rotate(1.6deg);
+  box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
+  0 8px 20px rgba(236, 72, 153, 0.16),
+  inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.88);
+  filter: saturate(1.08);
 }
 
 .article-title {
   position: relative;
   z-index: 1;
   font-size: 1.3em;
+  display: inline-block;
+  transform: translateZ(26px);
+  text-shadow: 0 8px 22px rgba(99, 102, 241, 0.08);
 }
 
 .article-body {
   margin: 2px;
   position: relative;
   z-index: 1;
+  transform-style: preserve-3d;
   @media screen and (max-aspect-ratio: 1/1) {
     width: 100%;
     padding-top: 5px;
@@ -441,17 +537,18 @@ export default {
   font-size: .8em;
   height: 40px;
   line-height: 1.4285em;
-  color: #6c757d;
-  //height: 93px;
+  color: #5b6476;
   overflow-y: hidden;
   display: flex;
   align-items: flex-end;
   position: relative;
   z-index: 1;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transform: translateZ(18px);
 
   &:hover {
-    color: #495057;
+    color: #364152;
+    text-shadow: 0 6px 16px rgba(99, 102, 241, 0.08);
   }
 }
 
@@ -460,16 +557,17 @@ export default {
   margin-bottom: 5px;
   position: relative;
   z-index: 1;
+  transform: translateZ(18px);
 }
 
 .article-tag {
   margin-right: 5px;
   margin-bottom: 5px;
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 4px 12px;
-  background: linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(173, 216, 230, 0.3) 100%);
-  border: 1px solid rgba(255, 105, 180, 0.2);
-  color: #6c757d;
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(96, 165, 250, 0.2) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  color: #4b5563;
   font-weight: 500;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
   background 0.3s ease,
@@ -478,7 +576,8 @@ export default {
   color 0.3s ease;
   position: relative;
   overflow: hidden;
-  transform: scale(1) translateY(0);
+  transform: translateZ(30px) scale(1) translateY(0);
+  backdrop-filter: blur(10px);
 
   &::before {
     content: '';
@@ -487,17 +586,17 @@ export default {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    transition: left 0.55s ease;
   }
 
   &:hover {
-    transform: scale(1.1) translateY(-2px);
-    background: linear-gradient(135deg, rgba(255, 105, 180, 0.4) 0%, rgba(135, 206, 250, 0.4) 100%);
-    border-color: rgba(255, 105, 180, 0.5);
-    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.3),
-    0 2px 6px rgba(135, 206, 250, 0.2);
-    color: #495057;
+    transform: translateZ(36px) scale(1.08) translateY(-2px);
+    background: linear-gradient(135deg, rgba(244, 114, 182, 0.36) 0%, rgba(96, 165, 250, 0.34) 100%);
+    border-color: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
+    0 4px 10px rgba(236, 72, 153, 0.12);
+    color: #374151;
 
     &::before {
       left: 100%;
@@ -505,16 +604,13 @@ export default {
   }
 }
 
-.article-item:hover {
-  scale: 1.02;
-  transition: scale 0.5s ease-in-out;
-}
-
 :deep(.el-card__body) {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   height: 100%;
   background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 // 添加信息图标的动画
@@ -522,31 +618,53 @@ export default {
   i {
     transition: transform 0.3s ease,
     background 0.3s ease,
-    color 0.3s ease;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transform: scale(1);
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+    padding: 3px 6px;
+    border-radius: 999px;
+    transform: translateZ(22px) scale(1);
 
     &:hover {
-      background: linear-gradient(135deg, rgba(255, 182, 193, 0.2) 0%, rgba(173, 216, 230, 0.2) 100%);
-      transform: scale(1.1);
-      color: #ff6b9d !important;
+      background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(96, 165, 250, 0.24) 100%);
+      transform: translateZ(30px) scale(1.08);
+      box-shadow: 0 8px 18px rgba(99, 102, 241, 0.14);
+      color: #7c3aed !important;
     }
   }
 
   a {
     transition: transform 0.3s ease,
     background 0.3s ease,
-    color 0.3s ease;
-    padding: 2px 8px;
-    border-radius: 6px;
-    transform: translateX(0) scale(1);
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+    padding: 4px 10px;
+    border-radius: 999px;
+    transform: translateZ(24px) translateX(0) scale(1);
 
     &:hover {
-      background: linear-gradient(135deg, rgba(255, 105, 180, 0.2) 0%, rgba(135, 206, 250, 0.2) 100%);
-      transform: translateX(5px) scale(1.05);
-      color: #ff1493 !important;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.18) 100%);
+      transform: translateZ(32px) translateX(6px) scale(1.03);
+      box-shadow: 0 10px 18px rgba(99, 102, 241, 0.14);
+      color: #db2777 !important;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-item,
+  .article-item:hover,
+  .article-media,
+  .article-item:hover .article-media,
+  .article-tag,
+  .article-tag:hover,
+  .info i,
+  .info a {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .article-item::before {
+    opacity: 0 !important;
   }
 }
 
