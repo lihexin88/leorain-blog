@@ -25,8 +25,11 @@
               :src="videoInfo.m3u8_url"
               controls
               playsinline
+              autoplay
               class="video-memory-media"
               @loadedmetadata="seekToDefaultPosition"
+              @timeupdate="savePlaybackProgress"
+              @ended="handleVideoEnded"
             ></video>
           </div>
         </div>
@@ -59,8 +62,11 @@ const defaultVideoInfo = () => ({
   m3u8_url: ''
 })
 
-const DEFAULT_SEEK_TIME = 90
+const DEFAULT_SEEK_TIME = 100
 const TOTAL_EPISODES = 81
+const VIDEO_NUM_STORAGE_KEY = 'wlwz_video_memory_num'
+const VIDEO_PROGRESS_STORAGE_KEY = 'wlwz_video_memory_progress'
+const PROGRESS_SAVE_INTERVAL = 10
 
 export default {
   name: 'VideoMemory',
@@ -69,7 +75,8 @@ export default {
       loading: false,
       errorMessage: '',
       episodeDialogVisible: false,
-      videoInfo: defaultVideoInfo()
+      videoInfo: defaultVideoInfo(),
+      lastSavedTime: 0
     }
   },
   computed: {
@@ -85,7 +92,7 @@ export default {
   },
   methods: {
     async getVideoMemory (num) {
-      localStorage.setItem('wlwz_video_memory_num', num)
+      localStorage.setItem(VIDEO_NUM_STORAGE_KEY, num)
       this.loading = true
       this.errorMessage = ''
       try {
@@ -100,6 +107,7 @@ export default {
           num: response.num,
           m3u8_url: response.m3u8_url
         }
+        this.lastSavedTime = this.getSavedPlaybackProgress()
       } catch (error) {
         console.error('获取视频失败:', error)
         this.videoInfo = defaultVideoInfo()
@@ -108,27 +116,67 @@ export default {
         this.loading = false
       }
     },
+    getSavedPlaybackProgress () {
+      const savedTime = Number(localStorage.getItem(VIDEO_PROGRESS_STORAGE_KEY))
+      return Number.isFinite(savedTime) && savedTime >= 0 ? savedTime : 0
+    },
+    clearPlaybackProgress () {
+      localStorage.removeItem(VIDEO_PROGRESS_STORAGE_KEY)
+      this.lastSavedTime = 0
+    },
+    savePlaybackProgress (force = false) {
+      const video = this.$refs.videoRef
+      if (!video) {
+        return
+      }
+      const currentTime = Number(video.currentTime || 0)
+      if (!Number.isFinite(currentTime) || currentTime < 0) {
+        return
+      }
+      if (!force && (video.paused || video.ended || currentTime - this.lastSavedTime < PROGRESS_SAVE_INTERVAL)) {
+        return
+      }
+      localStorage.setItem(VIDEO_PROGRESS_STORAGE_KEY, String(currentTime))
+      this.lastSavedTime = currentTime
+    },
     seekToDefaultPosition () {
       const video = this.$refs.videoRef
       if (!video) {
         return
       }
-      video.currentTime = Math.min(DEFAULT_SEEK_TIME, Number(video.duration) || DEFAULT_SEEK_TIME)
+      const duration = Number(video.duration)
+      const maxSeekTime = Number.isFinite(duration) && duration > 1 ? duration - 1 : DEFAULT_SEEK_TIME
+      const savedTime = this.getSavedPlaybackProgress()
+      const targetTime = savedTime > 0 ? Math.min(savedTime, maxSeekTime) : Math.min(DEFAULT_SEEK_TIME, Number.isFinite(duration) ? duration : DEFAULT_SEEK_TIME)
+      video.currentTime = Math.max(targetTime, 0)
+      this.lastSavedTime = savedTime > 0 ? savedTime : 0
     },
-    playNextEpisode () {
+    handleVideoEnded () {
+      this.clearPlaybackProgress()
       if (!this.hasNext) {
         return
       }
       this.getVideoMemory(this.videoInfo.next)
     },
+    playNextEpisode () {
+      if (!this.hasNext) {
+        return
+      }
+      this.clearPlaybackProgress()
+      this.getVideoMemory(this.videoInfo.next)
+    },
     selectEpisode (episode) {
       this.episodeDialogVisible = false
+      this.clearPlaybackProgress()
       this.getVideoMemory(episode)
     }
   },
   mounted () {
-    const num = localStorage.getItem('wlwz_video_memory_num') || 1
+    const num = localStorage.getItem(VIDEO_NUM_STORAGE_KEY) || 1
     this.getVideoMemory(num)
+  },
+  beforeUnmount () {
+    this.savePlaybackProgress(true)
   }
 }
 </script>
