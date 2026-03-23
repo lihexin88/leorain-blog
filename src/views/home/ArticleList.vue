@@ -168,7 +168,10 @@ export default {
     getCardStyle (index) {
       const rotation = this.currentRotations[index] || { x: 0, y: 0 }
       return {
-        transform: `perspective(1200px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) translateY(0)`
+        transform: `perspective(1200px) translateY(0) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+        willChange: 'transform',
+        '--card-rotate-x': `${rotation.x}deg`,
+        '--card-rotate-y': `${rotation.y}deg`
       }
     },
     handleCardMove (event, index) {
@@ -431,7 +434,7 @@ export default {
 }
 
 .article-item:hover {
-  transform: perspective(1200px) translateY(-12px) scale(1.018) !important;
+  transform: perspective(1200px) translateY(-12px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg)) !important;
   background: linear-gradient(145deg,
       rgba(255, 255, 255, 0.84) 0%,
       rgba(224, 236, 255, 0.72) 42%,
