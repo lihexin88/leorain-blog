@@ -113,7 +113,11 @@
           <el-input v-model="editForm.description" type="textarea" :rows="4" placeholder="请输入简介" />
         </el-form-item>
         <el-form-item label="邮件通知">
-          <el-switch v-model="editForm.email_notify_enabled" />
+          <el-switch
+            v-model="editForm.email_notify_enabled"
+            active-value="yes"
+            inactive-value="no"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -152,7 +156,7 @@ export default {
         nickname: '',
         website: '',
         description: '',
-        email_notify_enabled: false
+        email_notify_enabled: 'no'
       }
     }
   },
@@ -202,7 +206,7 @@ export default {
         nickname: profile.nickname || '',
         website: profile.website || '',
         description: profile.description || '',
-        email_notify_enabled: Boolean(profile.email_notify_enabled)
+        email_notify_enabled: profile.email_notify_enabled === 'yes' ? 'yes' : 'no'
       }
       this.editDialogVisible = true
     },
