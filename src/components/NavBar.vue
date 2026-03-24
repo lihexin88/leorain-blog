@@ -30,7 +30,7 @@
       </el-sub-menu>
       <el-menu-item index="/assets">
         <el-icon class="menu-icon"><Search /></el-icon>
-        <span>向量检索</span>
+        <span>智能媒体</span>
       </el-menu-item>
       <el-menu-item index="/topics">
         <el-icon class="menu-icon"><EditPen /></el-icon>
@@ -62,7 +62,7 @@
     </el-sub-menu>
     <el-menu-item index="/assets" class="desktop-menu">
       <el-icon class="menu-icon"><Search /></el-icon>
-      <span>向量检索</span>
+      <span>智能媒体</span>
     </el-menu-item>
     <el-menu-item index="/topics" class="desktop-menu">
       <el-icon class="menu-icon"><EditPen /></el-icon>
