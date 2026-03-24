@@ -81,6 +81,19 @@
                     </div>
                   </template>
                 </el-table-column>
+                <el-table-column label="封面" width="120">
+                  <template v-slot="scope">
+                    <el-image
+                      v-if="scope.row.asset_display_url"
+                      style="width: 100px; height: 75px; border-radius: 4px;"
+                      fit="cover"
+                      :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
+                      :preview-src-list="[getVideoSnapshotUrl(scope.row.asset_display_url)]"
+                      preview-teleported
+                    ></el-image>
+                    <span v-else>-</span>
+                  </template>
+                </el-table-column>
                 <el-table-column label="资源名称" min-width="220">
                   <template v-slot="scope">
                     <span :title="scope.row.asset_name">{{ scope.row.asset_name }}</span>
@@ -290,6 +303,13 @@ export default {
         asset_type: item.asset?.type,
         status_text: this.getAsrStatusText(item.status)
       }
+    },
+    getVideoSnapshotUrl (url) {
+      if (!url) {
+        return ''
+      }
+      const process = 'x-oss-process=video/snapshot,t_0,f_jpg,w_400,h_0,m_fast'
+      return url.includes('?') ? `${url}&${process}` : `${url}?${process}`
     },
     copyToClipboard (text) {
       if (navigator.clipboard && window.isSecureContext) {
