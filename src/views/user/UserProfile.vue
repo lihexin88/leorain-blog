@@ -92,6 +92,37 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑资料"
+      append-to-body
+      :style="{ width: 'min(520px, calc(100vw - 32px))' }"
+    >
+      <el-form label-position="top">
+        <el-form-item label="用户名">
+          <el-input v-model="editForm.name" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+        </el-form-item>
+        <el-form-item label="网站">
+          <el-input v-model="editForm.website" placeholder="请输入网站地址" />
+        </el-form-item>
+        <el-form-item label="简介">
+          <el-input v-model="editForm.description" type="textarea" :rows="4" placeholder="请输入简介" />
+        </el-form-item>
+        <el-form-item label="邮件通知">
+          <el-switch v-model="editForm.email_notify_enabled" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span>
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="editSubmitting" @click="submitEditProfile">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -113,7 +144,16 @@ export default {
       discussions: [],
       discussions_count: 0,
       comments_count: 0,
-      defaultAvatar: 'https://images.leorain.cn/avatar/default_avatar.png'
+      defaultAvatar: 'https://images.leorain.cn/avatar/default_avatar.png',
+      editDialogVisible: false,
+      editSubmitting: false,
+      editForm: {
+        name: '',
+        nickname: '',
+        website: '',
+        description: '',
+        email_notify_enabled: false
+      }
     }
   },
   computed: {
@@ -134,7 +174,7 @@ export default {
     this.fetchData()
   },
   methods: {
-    ...mapActions(useUserStore, ['setShowLoginDialog']),
+    ...mapActions(useUserStore, ['setShowLoginDialog', 'fetchUserInfo']),
     async fetchData () {
       if (!this.uid) return
       try {
@@ -156,8 +196,33 @@ export default {
       }
     },
     handleEditProfile () {
-      // 已经在 profile 页面，可以跳转到编辑页面，但这里需求没提，暂时保留
-      this.$message.info('编辑资料功能开发中')
+      const profile = this.userInfo || this.user || {}
+      this.editForm = {
+        name: profile.name || '',
+        nickname: profile.nickname || '',
+        website: profile.website || '',
+        description: profile.description || '',
+        email_notify_enabled: Boolean(profile.email_notify_enabled)
+      }
+      this.editDialogVisible = true
+    },
+    async submitEditProfile () {
+      this.editSubmitting = true
+      try {
+        const response = await userApi.updateUserInfo(this.editForm)
+        const message = response?.message || response?.data?.message || '资料更新成功'
+        this.$message.success(message)
+        this.editDialogVisible = false
+        await Promise.all([
+          this.fetchData(),
+          this.fetchUserInfo()
+        ])
+      } catch (error) {
+        const message = error?.response?.data?.message || error?.response?.data?.messages?.[0] || '资料更新失败'
+        this.$message.error(message)
+      } finally {
+        this.editSubmitting = false
+      }
     },
     getCommentableLink (comment) {
       if (comment.commentable_type === 'articles') {
@@ -215,6 +280,12 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
+  padding: 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
 
   .nickname {
     margin: 0 0 10px;
@@ -342,6 +413,7 @@ export default {
   }
 
   .profile-content {
+    color: chocolate;
     margin-top: 20px;
     align-items: center;
 

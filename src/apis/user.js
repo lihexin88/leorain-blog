@@ -4,6 +4,9 @@ const userApi = {
   getUserInfo () {
     return api.get('/user/info')
   },
+  updateUserInfo (params) {
+    return api.patch('/user/info', params)
+  },
   getUserByUid (uid) {
     return api.get(`/user/get_info?uid=${uid}`)
   },

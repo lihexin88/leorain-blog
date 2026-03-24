@@ -37,7 +37,13 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="episodeDialogVisible" title="选集" width="640px" append-to-body>
+    <el-dialog
+      v-model="episodeDialogVisible"
+      title="选集"
+      width="640px"
+      append-to-body
+      :style="{ width: 'min(640px, calc(100vw - 32px))' }"
+    >
       <div class="episode-grid">
         <el-button
           v-for="episode in episodeOptions"
@@ -232,5 +238,12 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .episode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
 }
 </style>
