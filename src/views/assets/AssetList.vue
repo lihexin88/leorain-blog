@@ -2,7 +2,7 @@
   <div class="asset-container">
     <div class="asset-search-container">
       <div class="asset-search">
-        <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪"
+        <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪1"
                   @change="load(true)" v-model="keywords"></el-input>
         <el-button @click="load(true)">搜索</el-button>
         <el-button type="primary" @click="openUploadDialog">上传</el-button>
@@ -181,6 +181,7 @@
 
 <script>
 
+import { markRaw } from 'vue'
 import { mapState } from 'pinia'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
@@ -383,14 +384,26 @@ export default {
       })
     },
     async loadFFmpeg () {
-      if (this.ffmpeg) return
-      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm'
-      const ffmpeg = new FFmpeg()
-      this.ffmpeg = ffmpeg
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
-      })
+      if (this.ffmpegLoaded && this.ffmpeg) {
+        return this.ffmpeg
+      }
+      if (!this.ffmpeg) {
+        this.ffmpeg = markRaw(new FFmpeg())
+      }
+      if (!this.ffmpegLoadPromise) {
+        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm'
+        this.ffmpegLoadPromise = this.ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
+        }).then(() => {
+          this.ffmpegLoaded = true
+          return this.ffmpeg
+        }).catch((error) => {
+          this.ffmpegLoadPromise = null
+          throw error
+        })
+      }
+      return this.ffmpegLoadPromise
     },
     async getVideoCodec (file) {
       await this.loadFFmpeg()
@@ -639,6 +652,8 @@ export default {
       uploadProgress: 0,
       defaultDirAssetId: null,
       ffmpeg: null,
+      ffmpegLoadPromise: null,
+      ffmpegLoaded: false,
       asrList: [],
       activeTab: 'asr',
       asrPage: 1,
