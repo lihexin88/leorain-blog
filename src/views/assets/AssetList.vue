@@ -27,7 +27,8 @@
                         :preview-src-list="[asset.display_url]"
                         :src="asset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
               <div v-else class="asset-video-wrapper" @click="openAssetPreview(asset)">
-                <video :src="asset.display_url" width="100%"></video>
+                <el-image class="asset-items-image" fit="contain" preview-teleported
+                          :src="getVideoSnapshotUrl(asset.display_url)"></el-image>
                 <div class="asset-video-mask">点击播放</div>
               </div>
             </div>
@@ -523,10 +524,14 @@ export default {
         this.uploadStatusText = '准备中'
         let uploadFile = file
         if ((file.type || '').startsWith('video/')) {
-          const codec = await this.getVideoCodec(file)
-          if (this.isH265Codec(codec)) {
-            this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
-            uploadFile = await this.convertH265ToH264(file)
+          try {
+            const codec = await this.getVideoCodec(file)
+            if (this.isH265Codec(codec)) {
+              this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
+              uploadFile = await this.convertH265ToH264(file)
+            }
+          } catch (e) {
+            console.log(e)
           }
         }
         const dirId = await this.ensureDefaultDir()
