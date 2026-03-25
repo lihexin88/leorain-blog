@@ -182,6 +182,8 @@
 <script>
 
 import { mapState } from 'pinia'
+import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useUserStore } from '@/store/user'
 import { getUrlParams, maxString, paginateLayouts, syncUrlPaginate } from '@/utils/helpers'
 import moment from 'moment'
@@ -380,6 +382,98 @@ export default {
         xhr.send(file)
       })
     },
+    async loadFFmpeg () {
+      if (this.ffmpeg) return
+      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm'
+      const ffmpeg = new FFmpeg()
+      this.ffmpeg = ffmpeg
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
+      })
+    },
+    async getVideoCodec (file) {
+      await this.loadFFmpeg()
+      const timestamp = Date.now()
+      const inputExtension = file.name.split('.').pop() || 'mp4'
+      const inputName = `codec_input_${timestamp}.${inputExtension}`
+      let codec = ''
+      const onLog = ({ message }) => {
+        const normalizedMessage = String(message || '').toLowerCase()
+        if (!codec && normalizedMessage.includes('video:')) {
+          if (normalizedMessage.includes('hevc')) {
+            codec = 'hevc'
+          } else if (normalizedMessage.includes('h265')) {
+            codec = 'h265'
+          } else if (normalizedMessage.includes('h264')) {
+            codec = 'h264'
+          }
+        }
+      }
+      try {
+        this.ffmpeg.on('log', onLog)
+        const fileData = await fetchFile(file)
+        await this.ffmpeg.writeFile(inputName, fileData)
+        await this.ffmpeg.exec(['-i', inputName, '-f', 'null', '-'])
+        return codec
+      } finally {
+        this.ffmpeg.off('log', onLog)
+        try {
+          const currentList = await this.ffmpeg.listDir('.')
+          const currentFiles = currentList.map(item => item.name)
+          if (currentFiles.includes(inputName)) {
+            await this.ffmpeg.deleteFile(inputName)
+          }
+        } catch (e) {
+          console.warn('Cleanup after codec detect failed:', e)
+        }
+      }
+    },
+    isH265Codec (codec) {
+      const normalizedCodec = String(codec || '').toLowerCase()
+      return normalizedCodec.includes('hev1') || normalizedCodec.includes('hvc1') || normalizedCodec.includes('hevc') || normalizedCodec.includes('h265')
+    },
+    async convertH265ToH264 (file) {
+      await this.loadFFmpeg()
+      const timestamp = Date.now()
+      const inputExtension = file.name.split('.').pop() || 'mp4'
+      const outputExtension = 'mp4'
+      const inputName = `upload_input_${timestamp}.${inputExtension}`
+      const outputName = `upload_output_${timestamp}.${outputExtension}`
+      try {
+        const fileData = await fetchFile(file)
+        await this.ffmpeg.writeFile(inputName, fileData)
+        const result = await this.ffmpeg.exec([
+          '-threads', '1',
+          '-i', inputName,
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-c:a', 'aac',
+          '-strict', 'experimental',
+          '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p',
+          outputName
+        ])
+        if (result !== 0) {
+          throw new Error(`FFmpeg 执行失败，退出代码: ${result}`)
+        }
+        const data = await this.ffmpeg.readFile(outputName)
+        const fileName = file.name.replace(/\.[^.]+$/, '') + '.mp4'
+        return new File([data.buffer], fileName, { type: 'video/mp4' })
+      } finally {
+        try {
+          const currentList = await this.ffmpeg.listDir('.')
+          const currentFiles = currentList.map(item => item.name)
+          if (currentFiles.includes(inputName)) {
+            await this.ffmpeg.deleteFile(inputName)
+          }
+          if (currentFiles.includes(outputName)) {
+            await this.ffmpeg.deleteFile(outputName)
+          }
+        } catch (e) {
+          console.warn('Cleanup after upload convert failed:', e)
+        }
+      }
+    },
     getFileType (file) {
       const type = file.type || ''
       if (type.startsWith('image/')) {
@@ -397,20 +491,28 @@ export default {
       try {
         this.uploadLoading = true
         this.uploadProgress = 0
+        let uploadFile = file
+        if ((file.type || '').startsWith('video/')) {
+          const codec = await this.getVideoCodec(file)
+          if (this.isH265Codec(codec)) {
+            this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
+            uploadFile = await this.convertH265ToH264(file)
+          }
+        }
         const dirId = await this.ensureDefaultDir()
         if (!dirId) {
           throw new Error('未获取到默认目录')
         }
-        const response = await assetsApi.getUploadUrl(file.name)
+        const response = await assetsApi.getUploadUrl(uploadFile.name)
         const fileUrl = response?.url?.url
         const fileObject = response?.url?.object
         if (!fileUrl || !fileObject) {
           throw new Error('未获取到上传签名')
         }
-        await this.uploadToOss(file, fileUrl)
+        await this.uploadToOss(uploadFile, fileUrl)
         await assetsApi.createAsset({
-          type: this.getFileType(file),
-          name: file.name,
+          type: this.getFileType(uploadFile),
+          name: uploadFile.name,
           url: fileObject,
           dir_id: dirId,
           use_vector: false
@@ -536,6 +638,7 @@ export default {
       uploadLoading: false,
       uploadProgress: 0,
       defaultDirAssetId: null,
+      ffmpeg: null,
       asrList: [],
       activeTab: 'asr',
       asrPage: 1,
