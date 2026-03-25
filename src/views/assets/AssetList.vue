@@ -114,9 +114,10 @@
                     {{ scope.row.full_text || '-' }}
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="100" fixed="right">
+                <el-table-column label="操作" width="140" fixed="right">
                   <template v-slot="scope">
                     <el-button type="primary" link @click="copyToClipboard(scope.row.full_text)">复制</el-button>
+                    <el-button type="danger" link @click="deleteAsr(scope.row)">删除</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -336,6 +337,16 @@ export default {
         }
         document.body.removeChild(textArea)
       }
+    },
+    deleteAsr (row) {
+      this.$confirm('确认删除吗？').then(() => {
+        api.delete('/asr/' + row.id).then(() => {
+          this.$message.success('删除成功')
+        }).finally(() => {
+          this.loadAsrList()
+        })
+      }).catch(() => {
+      })
     },
     openUploadDialog () {
       this.uploadDialogVisible = true
