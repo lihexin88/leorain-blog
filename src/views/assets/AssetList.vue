@@ -158,6 +158,7 @@
         :stroke-width="10"
         class="asset-upload-progress"
       ></el-progress>
+      <div v-if="uploadLoading && uploadStatusText" class="asset-upload-status">{{ uploadStatusText }}</div>
       <template #footer>
         <span>
           <el-button @click="uploadDialogVisible = false">取消</el-button>
@@ -448,6 +449,8 @@ export default {
     },
     async convertH265ToH264 (file) {
       await this.loadFFmpeg()
+      this.uploadStatusText = '转码中'
+      this.uploadProgress = 5
       const timestamp = Date.now()
       const inputExtension = file.name.split('.').pop() || 'mp4'
       const outputExtension = 'mp4'
@@ -466,10 +469,12 @@ export default {
           '-vf', 'pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p',
           outputName
         ])
+        this.uploadProgress = 55
         if (result !== 0) {
           throw new Error(`FFmpeg 执行失败，退出代码: ${result}`)
         }
         const data = await this.ffmpeg.readFile(outputName)
+        this.uploadProgress = 65
         const fileName = file.name.replace(/\.[^.]+$/, '') + '.mp4'
         return new File([data.buffer], fileName, { type: 'video/mp4' })
       } finally {
@@ -504,6 +509,7 @@ export default {
       try {
         this.uploadLoading = true
         this.uploadProgress = 0
+        this.uploadStatusText = '准备中'
         let uploadFile = file
         if ((file.type || '').startsWith('video/')) {
           const codec = await this.getVideoCodec(file)
@@ -517,6 +523,8 @@ export default {
           throw new Error('未获取到默认目录')
         }
         const response = await assetsApi.getUploadUrl(uploadFile.name)
+        this.uploadStatusText = '上传中'
+        this.uploadProgress = Math.max(this.uploadProgress, 70)
         const fileUrl = response?.url?.url
         const fileObject = response?.url?.object
         if (!fileUrl || !fileObject) {
@@ -530,17 +538,20 @@ export default {
           dir_id: dirId,
           use_vector: false
         })
+        this.uploadStatusText = '上传完成'
         this.$message.success('上传成功')
         this.uploadDialogVisible = false
         this.uploadFileList = []
         this.$refs.assetUploadRef?.clearFiles()
         this.load(true)
       } catch (err) {
+        this.uploadStatusText = '上传失败'
         this.$message.error(err?.message || '上传失败')
       } finally {
         this.uploadLoading = false
         if (this.uploadDialogVisible) {
           this.uploadProgress = 0
+          this.uploadStatusText = ''
         }
       }
     },
@@ -650,6 +661,7 @@ export default {
       uploadFileList: [],
       uploadLoading: false,
       uploadProgress: 0,
+      uploadStatusText: '',
       defaultDirAssetId: null,
       ffmpeg: null,
       ffmpegLoadPromise: null,
@@ -810,6 +822,13 @@ export default {
 
 .asset-upload-progress {
   margin-top: 16px;
+}
+
+.asset-upload-status {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #606266;
 }
 
 @media screen and (max-aspect-ratio: 1/1) {
