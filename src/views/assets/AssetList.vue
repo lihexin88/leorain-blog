@@ -26,9 +26,13 @@
               <el-image class="asset-items-image" fit="contain" preview-teleported v-if="asset.type === 1"
                         :preview-src-list="[asset.display_url]"
                         :src="asset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
-              <div v-else class="asset-video-wrapper" @click="openAssetPreview(asset)">
+              <div v-else-if="asset.type === 2" class="asset-video-wrapper" @click="openAssetPreview(asset)">
                 <el-image class="asset-items-image" fit="contain" preview-teleported
                           :src="getVideoSnapshotUrl(asset.display_url)"></el-image>
+                <div class="asset-video-mask">点击播放</div>
+              </div>
+              <div v-else-if="asset.type === 3" class="asset-audio-wrapper" @click="openAssetPreview(asset)">
+                <el-icon class="asset-audio-icon"><Microphone /></el-icon>
                 <div class="asset-video-mask">点击播放</div>
               </div>
             </div>
@@ -144,6 +148,7 @@
         ref="assetUploadRef"
         action="#"
         drag
+        accept="image/*,video/*,audio/*"
         :limit="1"
         :auto-upload="false"
         :file-list="uploadFileList"
@@ -152,7 +157,10 @@
         :on-remove="handleUploadRemove"
       >
         <el-icon><Plus /></el-icon>
-        <div class="el-upload__text">拖拽文件到这里，或 <em>点击上传</em></div>
+        <div class="el-upload__text">拖拽图片、视频或音频到这里，或 <em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 10MB</div>
+        </template>
       </el-upload>
       <el-progress
         v-if="uploadLoading || uploadProgress > 0"
@@ -169,15 +177,23 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="previewDialogVisible" :title="previewAsset?.name || '视频预览'" width="70%">
+    <el-dialog v-model="previewDialogVisible" :title="previewAsset?.name || '资源预览'" width="70%">
       <video
           ref="videoPlayer"
-        v-if="previewAsset"
+        v-if="previewAsset && previewAsset.type === 2"
         :src="previewAsset.display_url"
         controls
         autoplay
         style="width: 100%; max-height: 70vh"
       ></video>
+      <audio
+        ref="audioPlayer"
+        v-else-if="previewAsset && previewAsset.type === 3"
+        :src="previewAsset.display_url"
+        controls
+        autoplay
+        style="width: 100%"
+      ></audio>
     </el-dialog>
   </div>
 </template>
@@ -193,11 +209,12 @@ import { getUrlParams, maxString, paginateLayouts, syncUrlPaginate } from '@/uti
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
-import { Search, Plus } from '@element-plus/icons-vue'
+import { Search, Plus, Microphone } from '@element-plus/icons-vue'
 import AsrMediaPlayer from '@/components/AsrMediaPlayer.vue'
 
 export default {
   components: {
+    Microphone,
     AsrMediaPlayer
   },
   beforeUnmount () {
@@ -206,7 +223,8 @@ export default {
   setup () {
     return {
       Search,
-      Plus
+      Plus,
+      Microphone
     }
   },
   computed: {
@@ -243,7 +261,8 @@ export default {
     },
     previewDialogVisible (val) {
       if (!val) {
-        this.$refs.videoPlayer.pause()
+        this.$refs.videoPlayer?.pause()
+        this.$refs.audioPlayer?.pause()
       }
     }
   },
@@ -352,7 +371,25 @@ export default {
     openUploadDialog () {
       this.uploadDialogVisible = true
     },
+    validateUploadFile (file) {
+      const isAllowedType = (file.type || '').startsWith('image/') || (file.type || '').startsWith('video/') || (file.type || '').startsWith('audio/')
+      if (!isAllowedType) {
+        this.$message.error('仅支持上传图片、视频和音频')
+        return false
+      }
+      const isAllowedSize = file.size <= 10 * 1024 * 1024
+      if (!isAllowedSize) {
+        this.$message.error('上传文件大小不能超过 10MB')
+        return false
+      }
+      return true
+    },
     handleUploadChange (file, fileList) {
+      if (!this.validateUploadFile(file.raw || file)) {
+        this.uploadFileList = []
+        this.$refs.assetUploadRef?.clearFiles()
+        return
+      }
       this.uploadFileList = fileList.slice(-1)
     },
     handleUploadRemove (file, fileList) {
@@ -361,6 +398,10 @@ export default {
     submitUpload () {
       if (!this.uploadFileList.length) {
         this.$message.error('请先选择文件')
+        return
+      }
+      const currentFile = this.uploadFileList[0]?.raw || this.uploadFileList[0]
+      if (!this.validateUploadFile(currentFile)) {
         return
       }
       this.$refs.assetUploadRef.submit()
@@ -763,7 +804,8 @@ export default {
   z-index: 2;
 }
 
-.asset-video-wrapper {
+.asset-video-wrapper,
+.asset-audio-wrapper {
   position: relative;
   width: 100%;
   cursor: pointer;
@@ -778,6 +820,18 @@ export default {
   background: #000;
 }
 
+.asset-audio-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 220px;
+  font-size: 64px;
+  color: #409eff;
+  border-radius: 6px;
+  background: #f7f9fb;
+}
+
 .asset-video-mask {
   position: absolute;
   inset: 0;
@@ -788,6 +842,10 @@ export default {
   font-size: 14px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.3);
+  &:hover{
+    transition: background-color .3s ease;
+    background: rgba(0, 0, 0, 0.1);
+  }
 }
 
 .asset-items-image {
