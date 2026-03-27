@@ -14,6 +14,7 @@ import clipboardApi from './clipboard'
 import requestLogApi from './request-log'
 import responseApi from './response'
 import videoMemoryApi from './videoMemory'
+import rssApi from './rss'
 
 export default {
   articleApi,
@@ -30,7 +31,8 @@ export default {
   topicApi,
   clipboardApi,
   responseApi,
-  videoMemoryApi
+  videoMemoryApi,
+  rssApi
 }
 
 // 也可以单独导出各个模块
@@ -50,5 +52,6 @@ export {
   clipboardApi,
   requestLogApi,
   responseApi,
-  videoMemoryApi
+  videoMemoryApi,
+  rssApi
 }
