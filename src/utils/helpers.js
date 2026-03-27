@@ -1,4 +1,5 @@
 import moment from 'moment/moment'
+import confetti from 'canvas-confetti'
 
 export function mediaType (fileName) {
   if (fileName.match(/\.(jpg|jpeg|png|gif)$/)) {
@@ -184,18 +185,23 @@ export function dataURLToBlob (dataURL) {
  * @param paramName
  * @param paramValue
  */
-export function updateURLParameter (paramName, paramValue) {
-  const url = new URL(window.location.href)
-  const params = new URLSearchParams(url.search)
+export function triggerConfetti () {
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }
 
-  // 如果参数已存在，则更新其值；否则，添加新参数
-  if (params.has(paramName)) {
-    params.set(paramName, paramValue)
-  } else {
-    params.append(paramName, paramValue)
+  function randomInRange (min, max) {
+    return Math.random() * (max - min) + min
   }
 
-  // 使用 pushState() 更新 URL，避免页面刷新
-  const newUrl = `${url.origin}${url.pathname}?${params.toString()}${url.hash}`
-  window.history.pushState({ path: newUrl }, '', newUrl)
+  const interval = setInterval(function () {
+    const particleCount = 50
+    confetti(Object.assign({}, defaults, {
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+    }))
+    confetti(Object.assign({}, defaults, {
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+    }))
+  }, 250)
+  setTimeout(() => clearInterval(interval), 2000)
 }
