@@ -211,6 +211,7 @@ import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
 import { Search, Plus, Microphone } from '@element-plus/icons-vue'
 import AsrMediaPlayer from '@/components/AsrMediaPlayer.vue'
+import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   components: {
@@ -234,6 +235,11 @@ export default {
     }
   },
   mounted () {
+    window.addEventListener(USER_LOGIN_SUCCESS_EVENT, () => {
+      // 登录成功后加载数据
+      this.load()
+      this.loadAsrList()
+    })
     const paginateStyle = paginateLayouts()
     this.smallWindowSize = paginateStyle.smallWindowSize
     this.layout = paginateStyle.layout
