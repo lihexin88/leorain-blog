@@ -222,13 +222,17 @@ export default {
           page: this.rssPage,
           per_page: this.rssPerPage
         })
+        console.log(response)
         const items = response?.data || []
         this.rssList = reset ? items : [...this.rssList, ...items]
-        this.rssLastPage = response?.last_page || 1
-        this.rssFinished = this.rssPage >= this.rssLastPage || items.length === 0
-        if (!this.rssFinished) {
-          this.rssPage += 1
-        }
+        const meta = response.meta
+        this.rssLastPage = meta.pagination.total_page || 1
+        const currentPage = Number(meta.pagination.current_page || this.rssPage)
+        const loadedCount = this.rssList.length
+        const total = Number(meta.pagination.total || 0)
+
+        this.rssFinished = items.length === 0 || (total > 0 ? loadedCount >= total : currentPage >= this.rssLastPage)
+        this.rssPage = currentPage + 1
       } catch (e) {
         this.rssFinished = true
       } finally {
