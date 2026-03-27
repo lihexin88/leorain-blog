@@ -43,7 +43,7 @@
     <el-dialog
       v-model="userStore.showLoginDialog"
       title="登录"
-      width="450px"
+      width="1080px"
       :append-to-body="true"
       destroy-on-close
       class="login-dialog"
@@ -104,11 +104,15 @@ export default {
 </script>
 
 <style scoped>
-.main-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  position: relative;
+.login-dialog :deep(.el-dialog) {
+  min-width: 95%;
+  max-width: 920px;
+}
+
+@media (min-width: 769px) {
+  :deep(.el-dialog) {
+    max-width: 500px;
+  }
 }
 
 .background-container {

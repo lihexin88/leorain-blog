@@ -33,6 +33,7 @@
     "jsnes": "^2.0.0",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
+    "lottie-web": "^5.13.0",
     "marked": "^9.1.6",
     "moment": "^2.29.4",
     "moment-timezone": "^0.6.0",
@@ -43,7 +44,8 @@
     "three": "^0.182.0",
     "vue": "^3.3.11",
     "vue-particles": "^1.0.9",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",
