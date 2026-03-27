@@ -133,7 +133,7 @@
 
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { dataURLToBlob, updateURLParameter } from '@/utils/helpers'
+import { dataURLToBlob } from '@/utils/helpers'
 import debounce from 'lodash/debounce' // 防抖函数
 import Swal from 'sweetalert2'
 import moment from 'moment'
@@ -295,7 +295,6 @@ export default {
         this.asset_name = response.data.data.name
       })
       this.load()
-      updateURLParameter('asset_id', asset_id)
     },
     /**
      * 获取默认文件夹
