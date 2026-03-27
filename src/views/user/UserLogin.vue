@@ -8,7 +8,7 @@
       </template>
 
       <div class="login-content" :class="{ 'is-dialog': isDialog }">
-        <div v-if="!isDialog || true" class="login-animation-panel">
+        <div class="login-animation-panel">
           <div class="login-animation-card">
             <Vue3Lottie
               class="login-animation"
@@ -20,7 +20,7 @@
             />
             <div class="animation-copy">
               <h3>欢迎回来</h3>
-              <p>登录后即可继续评论、留言和管理你的个人信息，动画我保留为轻量、友好的欢迎风格。</p>
+              <p>登录后即可继续评论、留言和管理个人信息等。</p>
             </div>
           </div>
         </div>
@@ -108,6 +108,7 @@ import { Vue3Lottie } from 'vue3-lottie'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { Message, Lock } from '@element-plus/icons-vue'
+import { triggerConfetti } from '@/utils/helpers'
 
 export default {
   name: 'UserLogin',
@@ -171,6 +172,7 @@ export default {
             validate_result: validator.validateResult
           }
           await this.login(payload)
+          triggerConfetti()
           this.$message.success('登录成功')
           if (this.isDialog) {
             this.setShowLoginDialog(false)
@@ -249,10 +251,6 @@ export default {
   display: grid;
   grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   align-items: stretch;
-
-  &.is-dialog {
-    display: block;
-  }
 }
 
 .login-animation-panel {

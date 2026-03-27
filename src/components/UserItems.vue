@@ -88,8 +88,8 @@
 </template>
 
 <script>
-import confetti from 'canvas-confetti'
 import userApi from '@/apis/user'
+import { triggerConfetti } from '@/utils/helpers'
 export default {
   name: 'UserItems',
   props: {
@@ -288,31 +288,11 @@ export default {
             prize = parseFloat(spot.prize) * 2
           }
           if (prize > 0) {
-            this.triggerConfetti()
+            triggerConfetti()
           }
           return sum + prize
         }, 0)
         .toFixed(2)
-    },
-    triggerConfetti () {
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }
-
-      function randomInRange (min, max) {
-        return Math.random() * (max - min) + min
-      }
-
-      const interval = setInterval(function () {
-        const particleCount = 50
-        confetti(Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-        }))
-        confetti(Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-        }))
-      }, 250)
-      setTimeout(() => clearInterval(interval), 2000)
     },
     redeemTicket () {
       if (!this.currentLotteryUserItemId) return

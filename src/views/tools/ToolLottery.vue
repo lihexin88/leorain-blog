@@ -164,9 +164,9 @@
 </template>
 
 <script>
-import confetti from 'canvas-confetti'
 import lotteryApi from '@/apis/lottery'
 import UserItems from '@/components/UserItems.vue'
+import { triggerConfetti } from '@/utils/helpers'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 
@@ -444,28 +444,8 @@ export default {
           winnings += spot.symbol === '囍' ? spot.prize * 2 : spot.prize
         }
       })
-      if (winnings > this.totalWinnings) this.triggerConfetti()
+      if (winnings > this.totalWinnings) triggerConfetti()
       this.totalWinnings = winnings
-    },
-    triggerConfetti () {
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }
-
-      function randomInRange (min, max) {
-        return Math.random() * (max - min) + min
-      }
-
-      const interval = setInterval(function () {
-        const particleCount = 50
-        confetti(Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-        }))
-        confetti(Object.assign({}, defaults, {
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-        }))
-      }, 250)
-      setTimeout(() => clearInterval(interval), 2000)
     }
   },
   mounted () {
