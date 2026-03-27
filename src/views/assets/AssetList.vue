@@ -2,7 +2,7 @@
   <div class="asset-container">
     <div class="asset-search-container">
       <div class="asset-search">
-        <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪1"
+        <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪"
                   @change="load(true)" v-model="keywords"></el-input>
         <el-button @click="load(true)">搜索</el-button>
         <el-button type="primary" @click="openUploadDialog">上传</el-button>

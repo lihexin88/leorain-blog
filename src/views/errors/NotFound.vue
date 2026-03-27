@@ -35,10 +35,10 @@
 export default {
   name: 'NotFound',
   methods: {
-    goHome() {
+    goHome () {
       this.$router.push('/')
     },
-    goBack() {
+    goBack () {
       this.$router.go(-1)
     }
   }

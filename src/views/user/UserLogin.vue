@@ -7,90 +7,114 @@
         </div>
       </template>
 
-      <el-form
-        ref="loginFormRef"
-        :model="loginForm"
-        :rules="loginRules"
-        label-position="top"
-        @submit.prevent="handleLogin"
-      >
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-            v-model="loginForm.email"
-            placeholder="请输入邮箱"
-            clearable
-            autofocus
-          >
-            <template #prefix>
-              <el-icon><Message /></el-icon>
-            </template>
-          </el-input>
-          <div class="form-tip">
-            如果您在本站评论或者留言过，请点击下面的忘记密码，重置您的密码即可登录
+      <div class="login-content" :class="{ 'is-dialog': isDialog }">
+        <div class="login-animation-panel">
+          <div class="login-animation-card">
+            <Vue3Lottie
+              class="login-animation"
+              :animation-data="loginAnimation"
+              :height="280"
+              :width="280"
+              :loop="true"
+              :auto-play="true"
+            />
+            <div class="animation-copy">
+              <h3>欢迎回来</h3>
+              <p>登录后即可继续评论、留言和管理个人信息等。</p>
+            </div>
           </div>
-        </el-form-item>
-
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="请输入密码"
-            show-password
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-
-        <el-form-item prop="remember">
-          <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-        </el-form-item>
-
-        <el-form-item label="验证码" required>
-          <Validator ref="validatorRef" />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="login-button"
-            :loading="loading"
-            native-type="submit"
-          >
-            登录
-          </el-button>
-        </el-form-item>
-
-        <div class="divider-container">
-          <el-divider>or</el-divider>
         </div>
 
-        <el-form-item>
-          <el-button class="github-button" @click="handleGithubLogin">
-            <i class="fab fa-github"></i>&nbsp;GitHub 登录
-          </el-button>
-        </el-form-item>
+        <el-form
+          ref="loginFormRef"
+          :model="loginForm"
+          :rules="loginRules"
+          label-position="top"
+          class="login-form"
+          @submit.prevent="handleLogin"
+        >
+          <el-form-item label="邮箱" prop="email">
+            <el-input
+              v-model="loginForm.email"
+              placeholder="请输入邮箱"
+              clearable
+              autofocus
+            >
+              <template #prefix>
+                <el-icon><Message /></el-icon>
+              </template>
+            </el-input>
+            <div class="form-tip">
+              如果您在本站评论或者留言过，请点击下面的忘记密码，重置您的密码即可登录
+            </div>
+          </el-form-item>
 
-        <div class="login-footer">
-          <el-link type="info" @click="handleResetPassword">忘记密码</el-link>
-          <el-link type="primary" @click="handleRegister">立即注册</el-link>
-        </div>
-      </el-form>
+          <el-form-item label="密码" prop="password">
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              placeholder="请输入密码"
+              show-password
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item prop="remember">
+            <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+          </el-form-item>
+
+          <el-form-item label="验证码" required>
+            <Validator ref="validatorRef" />
+          </el-form-item>
+
+          <el-form-item>
+            <el-button
+              type="primary"
+              class="login-button"
+              :loading="loading"
+              native-type="submit"
+            >
+              登录
+            </el-button>
+          </el-form-item>
+
+          <div class="divider-container">
+            <el-divider>or</el-divider>
+          </div>
+
+          <el-form-item>
+            <el-button class="github-button" @click="handleGithubLogin">
+              <i class="fab fa-github"></i>&nbsp;GitHub 登录
+            </el-button>
+          </el-form-item>
+
+          <div class="login-footer">
+            <el-link type="info" @click="handleResetPassword">忘记密码</el-link>
+            <el-link type="primary" @click="handleRegister">立即注册</el-link>
+          </div>
+        </el-form>
+      </div>
     </el-card>
   </div>
 </template>
 
 <script>
 import HumanValidator from '@/components/HumanValidator.vue'
+import loginAnimation from '@/assets/animations/login.json'
+import { Vue3Lottie } from 'vue3-lottie'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { Message, Lock } from '@element-plus/icons-vue'
+import { triggerConfetti } from '@/utils/helpers'
 
 export default {
   name: 'UserLogin',
   components: {
     Validator: HumanValidator,
+    Vue3Lottie,
     Lock,
     Message
   },
@@ -103,7 +127,8 @@ export default {
   setup () {
     return {
       Message,
-      Lock
+      Lock,
+      loginAnimation
     }
   },
   data () {
@@ -147,6 +172,7 @@ export default {
             validate_result: validator.validateResult
           }
           await this.login(payload)
+          triggerConfetti()
           this.$message.success('登录成功')
           if (this.isDialog) {
             this.setShowLoginDialog(false)
@@ -199,11 +225,12 @@ export default {
 
 .login-card {
   width: 100%;
-  max-width: 450px;
+  max-width: 920px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   &.is-dialog {
+    max-width: 100%;
     border: none;
     box-shadow: none;
     border-radius: 0;
@@ -214,6 +241,57 @@ export default {
     text-align: center;
     border-bottom: 1px solid #ebeef5;
   }
+
+  :deep(.el-card__body) {
+    padding: 0;
+  }
+}
+
+.login-content {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.login-animation-panel {
+  padding: 36px 28px;
+  background: linear-gradient(180deg, rgba(80, 134, 255, 0.08) 0%, rgba(80, 134, 255, 0.03) 100%);
+  border-right: 1px solid #ebeef5;
+}
+
+.login-animation-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.login-animation {
+  width: 100%;
+  max-width: 280px;
+}
+
+.animation-copy {
+  h3 {
+    margin: 0 0 10px;
+    font-size: 24px;
+    color: #303133;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #606266;
+  }
+}
+
+.login-form {
+  padding: 28px 32px 32px;
 }
 
 .login-header {
@@ -270,8 +348,23 @@ export default {
   }
 
   .login-card {
+    max-width: 100%;
     box-shadow: none;
     border: none;
+  }
+
+  .login-content {
+    grid-template-columns: 1fr;
+  }
+
+  .login-animation-panel {
+    padding: 28px 20px 12px;
+    border-right: none;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  .login-form {
+    padding: 24px 20px 28px;
   }
 }
 </style>
