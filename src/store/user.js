@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import authApi from '@/apis/auth'
 import userApi from '@/apis/user'
+import { dispatchUserLoginSuccess } from '@/utils/auth-events'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -55,6 +56,10 @@ export const useUserStore = defineStore('user', {
 
         // 登录成功后获取用户信息
         await this.fetchUserInfo()
+        dispatchUserLoginSuccess({
+          user: this.user,
+          token: this.token
+        })
 
         return response
       } catch (error) {
