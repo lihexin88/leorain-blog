@@ -39,7 +39,15 @@ export default {
       // 移动方向，1为向右，-1为向左
       direction: 1,
       // 移动速度
-      moveSpeed: 0.5
+      moveSpeed: 0.5,
+      showItemDialog: false,
+      itemObj: {
+        cover_display: '',
+        description: '',
+        id: 0,
+        name: '',
+        price: 0
+      }
     }
   },
   created () {
@@ -316,7 +324,7 @@ export default {
           const fishCenterY = fish.y + fish.size * 0.2 // 鱼的高度是size的0.4倍，所以中心高度是0.2倍
           const distance = Math.sqrt(
             Math.pow(fishCenterX - this.mouseX, 2) +
-            Math.pow(fishCenterY - this.mouseY, 2)
+              Math.pow(fishCenterY - this.mouseY, 2)
           )
 
           if (distance < 80 && currentTime - fish.lastDodgeTime > 500) {
@@ -470,11 +478,9 @@ export default {
           .then((response) => {
             const data = response || {}
             if (data.status === 'granted') {
-              const itemName = data.item ? data.item.name : '物资'
-              this.$message.success(`恭喜！你获得了${itemName}！`)
-              setTimeout(() => {
-                this.dialogVisible = false
-              }, 1200)
+              this.itemObj = data.item
+              this.showItemDialog = true
+              this.dialogVisible = false
               this.message = ''
             } else if (data.status === 'pending') {
               const left = data.attempts_left || 0
@@ -608,6 +614,11 @@ export default {
           <g><path style="opacity:0.766" fill="url(#fishGradient${id})" d="M 40.5,23.5 C 40.3605,25.337 39.6939,25.6704 38.5,24.5C 38.9569,23.7025 39.6236,23.3691 40.5,23.5 Z"/></g>
         </svg>
       `
+    },
+    goUserProfile () {
+      this.$router.push({
+        name: 'UserProfile'
+      })
     }
 
   },
@@ -672,13 +683,13 @@ export default {
     <!-- 鱼的 DOM 元素将通过 JavaScript 动态添加 -->
 
     <el-dialog
-      v-model="dialogVisible"
-      title="钓鱼小游戏"
-      width="30%"
-      max-width="600px"
-      :before-close="handleClose"
-      center
-      :close-on-click-modal="false"
+        v-model="dialogVisible"
+        title="钓鱼小游戏"
+        width="30%"
+        max-width="600px"
+        :before-close="handleClose"
+        center
+        :close-on-click-modal="false"
     >
       <div v-if="fishing" class="game-container">
         <div class="stats">
@@ -704,10 +715,57 @@ export default {
         </div>
       </div>
     </el-dialog>
+    <el-dialog v-model="showItemDialog" :close-on-click-modal="false" width="420px" center>
+      <div class="item-dialog">
+        <div class="item-dialog__title">恭喜获得{{ itemObj.name }}</div>
+        <el-image v-if="itemObj.cover_display" class="item-dialog__image" :src="itemObj.cover_display" fit="contain" />
+        <div class="item-dialog__description">{{ itemObj.description }}</div>
+        <div class="item-dialog__price">市场估值 {{ itemObj.price }}</div>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="showItemDialog = false">
+          开心收下
+        </el-button>
+        <el-button @click="goUserProfile">我的物资</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped lang="scss">
+.item-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.item-dialog__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 20px;
+}
+
+.item-dialog__image {
+  width: 180px;
+  height: 180px;
+  margin-bottom: 16px;
+}
+
+.item-dialog__description {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.item-dialog__price {
+  font-size: 14px;
+  color: #909399;
+}
+
 .fish-container {
   position: relative;
   width: 100%;

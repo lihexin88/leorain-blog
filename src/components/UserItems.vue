@@ -8,10 +8,14 @@
 </template>
       <el-table :data="userItems" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80"></el-table-column>
-        <el-table-column prop="created_at" label="获取时间"></el-table-column>
         <el-table-column label="名称">
           <template v-slot="scope">
             {{ scope.row.origin.data.name }}
+          </template>
+        </el-table-column>
+        <el-table-column  label="获取时间">
+          <template v-slot="scope">
+            <el-image :src="scope.row.origin.data.cover_display"></el-image>
           </template>
         </el-table-column>
         <el-table-column label="类型" width="100">
@@ -21,6 +25,7 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="created_at" label="获取时间"></el-table-column>
         <el-table-column label="状态" width="120">
           <template v-slot="scope">
             <template v-if="scope.row.status === 1">
@@ -90,6 +95,7 @@
 <script>
 import userApi from '@/apis/user'
 import { triggerConfetti } from '@/utils/helpers'
+import moment from 'moment'
 export default {
   name: 'UserItems',
   props: {
@@ -115,6 +121,9 @@ export default {
     }
   },
   computed: {
+    moment () {
+      return moment
+    },
     categoryBackgroundImage () {
       return this.modalTicket && this.modalTicket.category ? this.modalTicket.category.image : ''
     }
