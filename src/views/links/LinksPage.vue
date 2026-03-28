@@ -85,7 +85,7 @@
           <template #header>
             <div class="rss-header">
               <span>RSS 订阅</span>
-              <span class="rss-count">已加载 {{ rssList.length }} 条</span>
+              <span class="rss-count">已加载 {{ rssList.length }}/{{ rssTotal }} 条</span>
             </div>
           </template>
 
@@ -170,6 +170,7 @@ export default {
     return {
       links: [],
       rssList: [],
+      rssTotal: 0,
       rssPage: 1,
       rssLastPage: 1,
       rssPerPage: 10,
@@ -230,6 +231,7 @@ export default {
         const currentPage = Number(meta.pagination.current_page || this.rssPage)
         const loadedCount = this.rssList.length
         const total = Number(meta.pagination.total || 0)
+        this.rssTotal = total
 
         this.rssFinished = items.length === 0 || (total > 0 ? loadedCount >= total : currentPage >= this.rssLastPage)
         this.rssPage = currentPage + 1

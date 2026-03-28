@@ -69,14 +69,9 @@ export default {
           endpoint: 'php',
           mime: 'php',
           versions: [
-            { version: 56, name: '5.6' },
-            { version: 70, name: '7.0' },
-            { version: 72, name: '7.2' },
-            { version: 74, name: '7.4' },
-            { version: 80, name: '8.0' },
             { version: 82, name: '8.2' }
           ],
-          defaultVersion: { version: 74, name: '7.4' },
+          defaultVersion: { version: 82, name: '8.2' },
           sample: ''
         },
         golang: {
@@ -84,8 +79,6 @@ export default {
           endpoint: 'golang',
           mime: 'text/x-go',
           versions: [
-            { version: 118, name: '1.18' },
-            { version: 119, name: '1.19' },
             { version: 120, name: '1.20' }
           ],
           defaultVersion: { version: 120, name: '1.20' },
@@ -105,8 +98,6 @@ func main() {
           endpoint: 'java',
           mime: 'text/x-java',
           versions: [
-            { version: 8, name: 'openjdk:8' },
-            { version: 11, name: 'openjdk:11' },
             { version: 17, name: 'openjdk:17' }
           ],
           defaultVersion: { version: 17, name: 'openjdk:17' },
@@ -151,12 +142,9 @@ int main() {
           endpoint: 'python',
           mime: 'python',
           versions: [
-            { version: 27, name: '2.7' },
-            { version: 36, name: '3.6' },
-            { version: 38, name: '3.8' },
             { version: 310, name: '3.10' }
           ],
-          defaultVersion: { version: 38, name: '3.8' },
+          defaultVersion: { version: 310, name: '3.10' },
           sample: `from platform import python_version
 print(python_version())`
         },
