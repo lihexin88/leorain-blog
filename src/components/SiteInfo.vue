@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="settings-bar">
-      <el-button :type="button_type" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
+      <el-button circle :type="button_type" :class="{ 'stats-flash': isStatsFlashing }" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
     </div>
     <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
       <div class="settings-container">
@@ -80,6 +80,8 @@ export default {
       show_visitor: true,
       messages: [],
       button_type: 'info',
+      isStatsFlashing: false,
+      statsFlashTimer: null,
       connection_retried: 0,
       stats: {
         load_average: 0,
@@ -99,6 +101,20 @@ export default {
     getHumanReadableDate,
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
+    },
+    flashStatsButton () {
+      this.isStatsFlashing = false
+      if (this.statsFlashTimer) {
+        clearTimeout(this.statsFlashTimer)
+        this.statsFlashTimer = null
+      }
+      requestAnimationFrame(() => {
+        this.isStatsFlashing = true
+        this.statsFlashTimer = setTimeout(() => {
+          this.isStatsFlashing = false
+          this.statsFlashTimer = null
+        }, 200)
+      })
     },
     async connectWebSocket () {
       // const accessToken = await this.$accessToken(1)
@@ -127,6 +143,20 @@ export default {
         this.connection_retried = 0
         this.button_type = 'success'
         this.stompClient.subscribe('/info/visitors', (message) => {
+          this.flashStatsButton()
+          const visitor = message.body.split('-')
+          this.messages.unshift({
+            time: moment().format('HH:mm:ss'),
+            city: visitor[0],
+            country: visitor[1]
+          })
+          if (this.messages.length > 10) {
+            this.messages.pop()
+          }
+        })
+        // 模拟用户访问
+        this.stompClient.subscribe('/info/visitors/location', (message) => {
+          this.flashStatsButton()
           const visitor = message.body.split('-')
           this.messages.unshift({
             time: moment().format('HH:mm:ss'),
@@ -139,6 +169,7 @@ export default {
         })
         // 订阅服务端的频道 "/topic/timestamp"
         this.stompClient.subscribe('/info/stats', (message) => {
+          this.flashStatsButton()
           const stats = message.body.split('-')
           this.stats.disk_usage = stats[0] * 100
           this.stats.memory_usage = stats[1] * 100
@@ -195,6 +226,11 @@ export default {
       this.connectWebSocket()
     }
   },
+  beforeUnmount () {
+    if (this.statsFlashTimer) {
+      clearTimeout(this.statsFlashTimer)
+    }
+  },
   watch: {
     show_visitor (newValue) {
       if (newValue) {
@@ -225,9 +261,28 @@ export default {
   justify-content: space-between;
   width: 60px;
   height: 40px;
-  top: 50px;
-  right: 10px;
+  bottom: 50px;
+  right: 20px;
   position: fixed;
   z-index: 1000;
+}
+
+.stats-flash {
+  animation: stats-flash .4s ease;
+}
+
+@keyframes stats-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(64, 158, 255, 0);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 12px rgba(64, 158, 255, .65);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(64, 158, 255, 0);
+  }
 }
 </style>
