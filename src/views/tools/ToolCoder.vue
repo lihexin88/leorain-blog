@@ -26,35 +26,6 @@
         </div>
       </div>
 
-      <div class="extra-tools">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <div class="tool-item">
-              <label>指定子串：</label>
-              <el-input v-model="subString" placeholder="统计此串出现次数" size="small">
-                <template #append>
-                  <el-button @click="countOccurrence">统计</el-button>
-                </template>
-              </el-input>
-            </div>
-          </el-col>
-          <el-col :span="16">
-            <div class="tool-item">
-              <label>生成密码：</label>
-              <div class="password-options">
-                <el-input-number v-model="passLength" :min="1" :max="100" size="small" />
-                <el-checkbox-group v-model="passOptions" size="small">
-                  <el-checkbox label="digits">数字</el-checkbox>
-                  <el-checkbox label="letters">字母</el-checkbox>
-                  <el-checkbox label="symbols">符号</el-checkbox>
-                </el-checkbox-group>
-                <el-button type="success" size="small" @click="generatePassword">生成</el-button>
-              </div>
-            </div>
-          </el-col>
-        </el-row>
-      </div>
-
       <div class="button-grid">
         <!-- HTML 文本提取 -->
         <el-button type="primary" @click="extractHtmlText">提取 HTML 文本</el-button>
@@ -85,6 +56,34 @@
         <!-- MD5 哈希 -->
         <el-button type="danger" @click="generateMd5">MD5 Hash</el-button>
       </div>
+      <div class="extra-tools">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <div class="tool-item">
+              <label>指定子串：</label>
+              <el-input v-model="subString" placeholder="统计此串出现次数" size="small">
+                <template #append>
+                  <el-button @click="countOccurrence">统计</el-button>
+                </template>
+              </el-input>
+            </div>
+          </el-col>
+          <el-col :span="16">
+            <div class="tool-item">
+              <label>生成密码：</label>
+              <div class="password-options">
+                <el-input-number v-model="passLength" :min="1" :max="100" size="small" />
+                <el-checkbox-group v-model="passOptions" size="small">
+                  <el-checkbox label="digits">数字</el-checkbox>
+                  <el-checkbox label="letters">字母</el-checkbox>
+                  <el-checkbox label="symbols">符号</el-checkbox>
+                </el-checkbox-group>
+                <el-button type="success" size="small" @click="generatePassword">生成</el-button>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
 
       <div class="output-section">
         <div class="label-row">
@@ -112,7 +111,7 @@ const inputText = ref('')
 const outputText = ref('')
 const subString = ref('')
 const passLength = ref(16)
-const passOptions = ref(['digits', 'letters', 'symbols'])
+const passOptions = ref(['digits', 'letters'])
 
 const wordCount = computed(() => {
   if (!inputText.value) return 0
@@ -275,7 +274,7 @@ const copyToClipboard = () => {
 <style scoped lang="scss">
 .tool-coder {
   max-width: 1000px;
-  margin: 20px auto;
+  margin: 10px auto 0 auto;
   padding: 0 10px;
 
   .card-header {
