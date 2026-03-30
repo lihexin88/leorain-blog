@@ -1,12 +1,13 @@
 <template>
-  <el-menu
-      :default-active="activeIndex"
-      class="nav-el-menu"
-      mode="horizontal"
-      :router="true"
-      :ellipsis="false"
-      @select="handleSelect"
-  >
+    <el-menu
+        :default-active="activeIndex"
+        class="nav-el-menu"
+        mode="horizontal"
+        :router="true"
+        :ellipsis="false"
+        menu-trigger="click"
+        @select="handleSelect"
+    >
     <el-menu-item index="/">
       <img src="/images/logo.png" class="menu-icon" />
       <span>首页</span>
@@ -203,6 +204,12 @@ export default {
         description: '在线处理图片视频，格式转换，压缩等',
         href: '/tools/media',
         image: 'https://images.leorain.cn/icons/tools/tool_picture.png'
+      },
+      {
+        text: '开发工具箱',
+        description: 'URL, Base64, MD5, Unicode, 大小写转换',
+        href: '/tools/coder',
+        image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
       },
       {
         text: '鱼乐一下',

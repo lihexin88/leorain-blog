@@ -101,6 +101,11 @@ const routes = [
             path: 'media',
             name: 'ToolMedia',
             component: () => import('../views/tools/ToolMedia.vue')
+          },
+          {
+            path: 'coder',
+            name: 'ToolCoder',
+            component: () => import('../views/tools/ToolCoder.vue')
           }
         ]
       },
