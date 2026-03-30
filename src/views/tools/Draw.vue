@@ -113,7 +113,7 @@
     <div class="draw-setting-tips">
       <el-button class="tips-button" @click="switchDrawerSetting">展开</el-button>
     </div>
-    <el-dialog v-model="show_new_modal"  :show-footer="true"
+    <el-dialog v-model="show_new_modal" v-if="false"  :show-footer="true"
                @cancel="show_new_modal = false"
     >
       <template v-slot:header>
@@ -283,16 +283,16 @@ export default {
     /**
      * 跳转到指定的画布
      */
-    go_to_draw (asset_id) {
-      if (this.asset_id === asset_id) {
+    go_to_draw (assetId) {
+      if (this.asset_id === assetId) {
         return
       }
       this.show_draw_list = false
       this.show_draw_setting = false
-      this.asset_id = asset_id
+      this.asset_id = assetId
       // 加载当前数据
       getDraw(this.asset_id).then((response) => {
-        this.asset_name = response.data.data.name
+        this.asset_name = response.data.name
       })
       this.load()
     },
@@ -382,15 +382,15 @@ export default {
         per_page: this.per_page,
         include: 'cover_image,user'
       }).then((response) => {
-        if (response?.data?.data?.length > 0) {
-          response.data.data.forEach(item => {
+        if (response?.data?.length > 0) {
+          response.data.forEach(item => {
             this.draw_list.push(item)
           })
         } else {
           this.show_draw_list = false
           this.show_new_modal = true
         }
-        this.asset_list_meta = response.data.meta ?? {}
+        this.asset_list_meta = response.meta ?? {}
         this.loading_draw_list = false
       }).catch((response) => {
         console.log(response)
@@ -553,11 +553,11 @@ export default {
       this.canvasTx.clearRect(0, 0, this.canvas.width, this.canvas.height) // 清空画布
       // 加载当前数据
       getDraw(this.asset_id).then((response) => {
-        this.asset_name = response.data.data.name
+        this.asset_name = response.data.name
       })
       // 从服务端获取已存在的数据
       getDrawInitData(this.asset_id).then((response) => {
-        this.lines = response.data ?? []
+        this.lines = response ?? []
 
         const data = this.lines
         if (data.length === 0) return

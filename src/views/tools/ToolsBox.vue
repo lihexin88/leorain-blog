@@ -21,6 +21,6 @@ export default {
 </script>
 <style scoped lang="scss">
 .tool-container {
-  height: 100%;
+  height: calc(100vh - 150px);
 }
 </style>
