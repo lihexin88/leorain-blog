@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="settings-bar">
-      <el-button circle :type="button_type" :class="{ 'stats-flash': isStatsFlashing }" @click="switch_show_settings"><span class="fa fa-gamepad"></span></el-button>
+      <el-button circle :type="button_type" :class="{ 'stats-flash': isStatsFlashing }" @click="switch_show_settings">
+        <span class="fa fa-gamepad"></span>
+        {{ stats.online }}
+      </el-button>
     </div>
     <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
       <div class="settings-container">
@@ -23,20 +26,24 @@
         </div>
         <div>
           <div>
-            系统负载: <el-progress :text-inside="true" :stroke-width="26"
-              :percentage="stats.load_average / stats.cpu_num * 100"></el-progress>
+            系统负载:
+            <el-progress :text-inside="true" :stroke-width="26"
+                         :percentage="stats.load_average / stats.cpu_num * 100"></el-progress>
           </div>
           <div>
-            内存用量: <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.memory_usage"></el-progress>
+            内存用量:
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.memory_usage"></el-progress>
           </div>
           <div>
-            磁盘用量: <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.disk_usage"></el-progress>
+            磁盘用量:
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.disk_usage"></el-progress>
           </div>
           <div>
-            交换分区:<el-progress :text-inside="true" :stroke-width="26" :percentage="stats.swap_usage"></el-progress>
+            交换分区:
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.swap_usage"></el-progress>
           </div>
           <div>
-            启动时间: {{ getHumanReadableDate(stats.uptime*1000) }} s
+            启动时间: {{ getHumanReadableDate(stats.uptime * 1000) }} s
           </div>
           <div>
             实时qps: {{ stats.qps }}
@@ -93,7 +100,8 @@ export default {
         max_qps: 0,
         count: 0,
         cpu_num: 1,
-        today_count: 0
+        today_count: 0,
+        online: 0
       }
     }
   },
@@ -127,7 +135,7 @@ export default {
       this.tool_access_token = 'null'
       const configStore = useConfigStore()
       // 1. 创建 SockJS 连接
-      const socket = new SockJS(process.env.DRAW_WS_HOST + '/ws?access_token=' + this.tool_access_token) // WebSocket 端点
+      const socket = new SockJS(process.env.DRAW_WS_HOST + '/info?access_token=' + this.tool_access_token) // WebSocket 端点
 
       // 2. 创建 STOMP 客户端
       this.stompClient = new Client({
@@ -181,6 +189,7 @@ export default {
           this.stats.count = stats[7]
           this.stats.cpu_num = stats[8]
           this.stats.today_count = stats[9]
+          this.stats.online = stats[10]
         })
       }
 
