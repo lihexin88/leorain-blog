@@ -2,93 +2,90 @@
   <div class="container list article-list-container" id="container-left">
     <div class="row">
       <div class="article-list">
-        <el-card v-for="(article,index) in articles"
+        <el-card v-for="(article, index) in articles"
                  class="media article-item"
                  :style="getCardStyle(index)"
                  :key="index"
                  @mousemove="handleCardMove($event, index)"
                  @mouseleave="resetCardTransform(index)"
         >
-            <div class="article-card-glow"></div>
-            <div class="article-card-grid"></div>
-            <div class="article-card-shine"></div>
-            <div>
-              <a v-if="article.page_image" class="article-item-link"
-                 :title="article.slug"
-                 @click="openArticle(article.slug)"
-              >
-                <!--             图片 -->
-                <img v-if="mediaType(article.page_image) === 'image'" class="article-media" :alt="article.slug"
-                     :src="article.is_zoom ? article.page_image+'?x-oss-process=style/page-image':article.page_image"
-                     data-holder-rendered="true">
-                <!--            视频-->
-                <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted autoplay
-                       playsinline="true" webkit-playsinline="true"
-                       :src="article.page_image"></video>
-              </a>
-              <a v-else class="article-item-link"
-                 @click="openArticle(article.slug)"
-              >
-                <img class="article-media" :alt="article.slug"
-                     src="https://images.leorain.cn/icons/assets/pure_article.png"
-                     data-holder-rendered="true">
+          <div class="article-card-glow"></div>
+          <div class="article-card-grid"></div>
+          <div class="article-card-shine"></div>
+          <div>
+            <a v-if="article.page_image" class="article-item-link"
+               :title="article.slug"
+               @click="openArticle(article.slug)"
+            >
+              <!--             图片 -->
+              <img v-if="mediaType(article.page_image) === 'image'" class="article-media" :alt="article.slug"
+                   :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
+                   data-holder-rendered="true">
+              <!--            视频-->
+              <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted autoplay
+                     playsinline="true" webkit-playsinline="true"
+                     :src="article.page_image"></video>
+            </a>
+            <a v-else class="article-item-link"
+               @click="openArticle(article.slug)"
+            >
+              <img v-if="article.page_image !== undefined" class="article-media" :alt="article.slug"
+                   src="https://images.leorain.cn/icons/assets/pure_article.png"
+                   data-holder-rendered="true">
+            </a>
+          </div>
+          <div class="media-body article-body">
+            <div class="media-heading" style="cursor: pointer">
+              <a @click="openArticle(article.slug)" :title="article.title">
+                <span class="article-title">
+                  {{ article.title }}
+                </span>
               </a>
             </div>
-            <div class="media-body article-body">
-              <div class="media-heading" style="cursor: pointer"
-              >
-                <a @click="openArticle(article.slug)" :title="article.title"
-                >
-                 <span class="article-title">
-                    {{ article.title }}
+            <div class="article-description" style="cursor: pointer"
+                 :style="getTransform(index, 'description')"
+            >
+              <div @click="openArticle(article.slug)" :title="article.slug">
+                <span>
+                  {{ article.meta_description ?? article.subtitle }}
                 </span>
+              </div>
+            </div>
+            <div class="article-extra">
+              <div style="display: flex; flex-wrap: wrap;">
+                <el-tag v-for="(tag, index) in article.tags" class="article-tag" style="cursor: pointer" :key="index"
+                        @click="open_tag(tag.tag)"
+                        :title="tag.tag" type="info">
+                  {{
+                    tag.tag
+                  }}
+                </el-tag>
+              </div>
+
+              <div class="info" style="color: grey; font-size: .8em">
+                <i class="fas fa-user" @click="go_user(article.user.uid)" style="cursor: pointer">
+                  {{ article.user.name ?? 'null' }}
+                </i>
+                <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
+                  {{ getFriendlyDate(moment(article.published_at).format("Y-M-D H:m:s")) }}
+                </i>
+                <i class="fas fa-eye">
+                  {{ article.view_count }}
+                </i>
+                <i class="fas fa-comments">
+                  {{ article.comments_count }}
+                </i>
+                <a @click="openArticle(article.slug)" class="float-right" style="cursor: pointer"
+                   :title="article.slug">
+                  More
+                  <i class="fas fa-chevron-right"></i>
                 </a>
               </div>
-              <div class="article-description" style="cursor: pointer"
-                   :style="getTransform(index,'description')"
-              >
-                <div @click="openArticle(article.slug)" :title="article.slug"
-                >
-                  <span>
-                    {{ article.meta_description ?? article.subtitle }}
-                  </span>
-                </div>
-              </div>
-              <div class="article-extra"
-              >
-                <div style="display: flex;flex-wrap: wrap;">
-                  <el-tag v-for="(tag,index) in article.tags" class="article-tag" style="cursor: pointer" :key="index"
-                          @click="open_tag(tag.tag)"
-                          :title="tag.tag" type="info">{{
-                      tag.tag
-                    }}
-                  </el-tag>
-                </div>
-
-                <div class="info" style="color: grey;font-size: .8em">
-                  <i class="fas fa-user" @click="go_user(article.user.uid)" style="cursor: pointer">
-                    {{ article.user.name ?? 'null' }}
-                  </i>
-                  <i :title=" moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
-                    {{ getFriendlyDate(moment(article.published_at).format("Y-M-D H:m:s")) }}
-                  </i>
-                  <i class="fas fa-eye">
-                    {{ article.view_count }}
-                  </i>
-                  <i class="fas fa-comments">
-                    {{ article.comments_count }}
-                  </i>
-                  <a @click="openArticle(article.slug)" class="float-right" style="cursor: pointer"
-                     :title="article.slug">
-                    More
-                    <i class="fas fa-chevron-right"></i>
-                  </a>
-                </div>
-              </div>
             </div>
+          </div>
         </el-card>
       </div>
-      <div style="width: 100%;display: flex;justify-content: center;align-items: center;padding: 10px">
+      <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px">
         <el-pagination
             v-model:page-size="per_page"
             :page-sizes="[18, 21, 36]"
@@ -601,11 +598,7 @@ export default {
     border-color: rgba(255, 255, 255, 0.72);
     box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
     0 4px 10px rgba(236, 72, 153, 0.12);
-    color: #374151;
-
-    &::before {
-      left: 100%;
-    }
+    color: #7c3aed !important;
   }
 }
 
