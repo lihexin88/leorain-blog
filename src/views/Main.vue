@@ -166,6 +166,8 @@ export default {
   backdrop-filter: blur(8px) saturate(180%);
   padding: 1rem;
   text-align: center;
+  bottom: 0;
+  width: 100%;
 }
 
 :deep(.login-dialog) {

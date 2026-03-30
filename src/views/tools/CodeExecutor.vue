@@ -99,7 +99,7 @@ export default {
 
 .executor-container {
   display: flex;
-  height: 100vh;
+  height: 86vh;
 }
 
 .code-area {
