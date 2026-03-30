@@ -158,7 +158,7 @@ export default {
 
 .body {
   flex: 1;
-  height: 100%;
+  min-height: calc(100vh - 150px);
 }
 
 .footer {
