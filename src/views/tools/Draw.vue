@@ -6,7 +6,6 @@
     <div class="draw-container">
       <div class="draw-list-container">
         <el-drawer
-            :before-close="checkIfShowDrawer"
             v-model="show_draw_list"
             direction="ltr"
             :size=560
@@ -113,7 +112,7 @@
     <div class="draw-setting-tips">
       <el-button class="tips-button" @click="switchDrawerSetting">展开</el-button>
     </div>
-    <el-dialog v-model="show_new_modal" v-if="false"  :show-footer="true"
+    <el-dialog v-model="show_new_modal" :show-footer="true"
                @cancel="show_new_modal = false"
     >
       <template v-slot:header>
@@ -406,14 +405,6 @@ export default {
           })
         }
       })
-    },
-    checkIfShowDrawer () {
-      if (this.asset_id === null) {
-        this.$message.error('请先选择或创建画布')
-        this.show_draw_list = true
-      } else {
-        this.show_draw_list = !this.show_draw_list
-      }
     },
     export_image () {
       const image = this.canvas.toDataURL('image/png') // 默认格式是 PNG
