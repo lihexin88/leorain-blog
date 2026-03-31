@@ -572,11 +572,11 @@ export default {
         let uploadFile = file
         if ((file.type || '').startsWith('video/')) {
           try {
-            const codec = await this.getVideoCodec(file)
-            if (this.isH265Codec(codec)) {
-              this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
-              uploadFile = await this.convertH265ToH264(file)
-            }
+            #const codec = await this.getVideoCodec(file)
+            #if (this.isH265Codec(codec)) {
+            #  this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
+            #  uploadFile = await this.convertH265ToH264(file)
+            #}
           } catch (e) {
             console.log(e)
           }
