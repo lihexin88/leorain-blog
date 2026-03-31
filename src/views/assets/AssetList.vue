@@ -74,7 +74,8 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="rename">重命名</el-dropdown-item>
+                  <el-dropdown-item command="move" divided>移动</el-dropdown-item>
+                  <el-dropdown-item command="rename" disabled>重命名</el-dropdown-item>
                   <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -256,6 +257,65 @@
           style="width: 100%"
       ></audio>
     </el-dialog>
+    <!-- 移动到目录弹窗 -->
+    <el-dialog v-model="moveDialogVisible" title="移动到目录" width="480px" :close-on-click-modal="false">
+      <div class="move-dir-tree">
+        <div v-if="!moveDirTree.length" style="color:#999;text-align:center;padding:20px">暂无目录</div>
+        <template v-else>
+          <div v-for="dir in moveDirTree" :key="dir.asset_id">
+            <div
+              class="move-dir-item"
+              :class="{ 'move-dir-selected': moveSelectedDirId === dir.asset_id }"
+              @click="moveSelectedDirId = dir.asset_id"
+            >
+              <el-icon><Folder /></el-icon>
+              <span style="flex:1;margin-left:6px">{{ dir.name }}</span>
+              <el-button link type="primary" size="small" @click.stop="loadSubDirs(dir)">{{ dir.expanded ? '−' : '+' }}</el-button>
+            </div>
+            <div v-if="dir.expanded && dir.children" style="padding-left:20px">
+              <div v-for="sub in dir.children" :key="sub.asset_id">
+                <div
+                  class="move-dir-item"
+                  :class="{ 'move-dir-selected': moveSelectedDirId === sub.asset_id }"
+                  @click="moveSelectedDirId = sub.asset_id"
+                >
+                  <el-icon><Folder /></el-icon>
+                  <span style="flex:1;margin-left:6px">{{ sub.name }}</span>
+                  <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub)">{{ sub.expanded ? '−' : '+' }}</el-button>
+                </div>
+                <div v-if="sub.expanded && sub.children" style="padding-left:20px">
+                  <div v-for="sub2 in sub.children" :key="sub2.asset_id">
+                    <div
+                      class="move-dir-item"
+                      :class="{ 'move-dir-selected': moveSelectedDirId === sub2.asset_id }"
+                      @click="moveSelectedDirId = sub2.asset_id"
+                    >
+                      <el-icon><Folder /></el-icon>
+                      <span style="flex:1;margin-left:6px">{{ sub2.name }}</span>
+                      <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub2)">{{ sub2.expanded ? '−' : '+' }}</el-button>
+                    </div>
+                    <div v-if="sub2.expanded && sub2.children" style="padding-left:20px">
+                      <div v-for="sub3 in sub2.children" :key="sub3.asset_id"
+                        class="move-dir-item"
+                        :class="{ 'move-dir-selected': moveSelectedDirId === sub3.asset_id }"
+                        @click="moveSelectedDirId = sub3.asset_id"
+                      >
+                        <el-icon><Folder /></el-icon>
+                        <span style="flex:1;margin-left:6px">{{ sub3.name }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+      <template #footer>
+        <el-button @click="moveDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="moveSubmitting" @click="submitMove">确定</el-button>
+      </template>
+    </el-dialog>
     <!-- 重命名弹窗 -->
     <el-dialog
         v-model="renameDialogVisible"
@@ -410,6 +470,53 @@ export default {
         this.openRenameDialog(asset)
       } else if (command === 'delete') {
         this.confirmDeleteAsset(asset)
+      } else if (command === 'move') {
+        this.openMoveDialog(asset)
+      }
+    },
+    openMoveDialog (asset) {
+      this.currentActionAsset = asset
+      this.moveDialogVisible = true
+      this.moveDirTree = []
+      this.moveSelectedDirId = null
+      this.moveSubmitting = false
+      assetsApi.assetDirs(0).then(res => {
+        this.moveDirTree = (res?.data || []).filter(d => d.asset_id !== asset.asset_id).map(d => ({ ...d, children: null, expanded: false }))
+      }).catch(() => {
+        this.$message.error('加载目录失败')
+      })
+    },
+    async loadSubDirs (dir) {
+      if (dir.children && dir.children.length) {
+        dir.expanded = !dir.expanded
+        return
+      }
+      try {
+        const res = await assetsApi.assetDirs(dir.asset_id)
+        const movingAssetId = this.currentActionAsset?.asset_id
+        dir.children = (res?.data || []).filter(d => d.asset_id !== movingAssetId).map(d => ({ ...d, children: null, expanded: false }))
+        dir.expanded = true
+      } catch {
+        this.$message.error('加载子目录失败')
+      }
+    },
+    async submitMove () {
+      if (!this.moveSelectedDirId) {
+        this.$message.warning('请选择目标目录')
+        return
+      }
+      const asset = this.currentActionAsset
+      if (!asset) return
+      this.moveSubmitting = true
+      try {
+        await assetsApi.updateAsset(asset.asset_id, { dir_id: this.moveSelectedDirId })
+        this.$message.success('移动成功')
+        this.moveDialogVisible = false
+        this.load()
+      } catch (e) {
+        this.$message.error(e?.message || '移动失败')
+      } finally {
+        this.moveSubmitting = false
       }
     },
     openRenameDialog (asset) {
@@ -1048,7 +1155,12 @@ export default {
         name: ''
       },
       currentActionAsset: null,
-      dragAsset: null
+      dragAsset: null,
+      dirTree: [],
+      moveDialogVisible: false,
+      moveDirTree: [],
+      moveSelectedDirId: null,
+      moveSubmitting: false
     }
   }
 }
@@ -1297,5 +1409,28 @@ export default {
 
 .asset-breadcrumb-link {
   cursor: pointer;
+}
+
+.move-dir-tree {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.move-dir-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 2px;
+
+  &:hover {
+    background: #f0f7ff;
+  }
+}
+
+.move-dir-selected {
+  background: #e6f0ff;
+  outline: 1px solid #409eff;
 }
 </style>

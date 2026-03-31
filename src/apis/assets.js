@@ -10,6 +10,9 @@ const assetsApi = {
   updateAsset (assetId, data) {
     return api.patch(`/api/frontend/asset/${assetId}`, data)
   },
+  assetDirs (assetId) {
+    return api.get(`/api/frontend/asset_dir/${assetId}`)
+  },
   deleteAsset (assetId) {
     return api.delete(`/api/frontend/asset/${assetId}`)
   },
