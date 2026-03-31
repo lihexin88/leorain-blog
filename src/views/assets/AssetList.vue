@@ -383,7 +383,7 @@ export default {
         this.$message.error('仅支持上传图片、视频和音频')
         return false
       }
-      const isAllowedSize = file.size <= 10 * 1024 * 1024
+      const isAllowedSize = file.size <= 30 * 1024 * 1024
       if (!isAllowedSize) {
         this.$message.error('上传文件大小不能超过 10MB')
         return false
