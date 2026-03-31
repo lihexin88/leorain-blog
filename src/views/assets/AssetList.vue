@@ -149,7 +149,8 @@
         action="#"
         drag
         accept="image/*,video/*,audio/*"
-        :limit="1"
+        multiple
+        :limit="20"
         :auto-upload="false"
         :file-list="uploadFileList"
         :http-request="handleUploadRequest"
@@ -159,7 +160,7 @@
         <el-icon><Plus /></el-icon>
         <div class="el-upload__text">拖拽图片、视频或音频到这里，或 <em>点击上传</em></div>
         <template #tip>
-          <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 10MB</div>
+          <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 30MB</div>
         </template>
       </el-upload>
       <el-progress
@@ -391,12 +392,17 @@ export default {
       return true
     },
     handleUploadChange (file, fileList) {
-      if (!this.validateUploadFile(file.raw || file)) {
-        this.uploadFileList = []
-        this.$refs.assetUploadRef?.clearFiles()
-        return
+      // 过滤不合法的文件，但保留其余合法项
+      const validList = []
+      for (const f of fileList) {
+        if (this.validateUploadFile(f.raw || f)) {
+          validList.push(f)
+        }
       }
-      this.uploadFileList = fileList.slice(-1)
+      if (validList.length !== fileList.length) {
+        this.$message.error('部分文件不符合要求，已自动忽略')
+      }
+      this.uploadFileList = validList
     },
     handleUploadRemove (file, fileList) {
       this.uploadFileList = fileList
@@ -406,10 +412,19 @@ export default {
         this.$message.error('请先选择文件')
         return
       }
-      const currentFile = this.uploadFileList[0]?.raw || this.uploadFileList[0]
-      if (!this.validateUploadFile(currentFile)) {
+      // 全量校验一次
+      const invalid = this.uploadFileList.find(f => !this.validateUploadFile(f.raw || f))
+      if (invalid) {
+        this.$message.error('存在不符合要求的文件，请移除后重试')
         return
       }
+      this.uploadTotal = this.uploadFileList.length
+      this.uploadSuccessCount = 0
+      this.uploadFailCount = 0
+      this.uploadingCount = 0
+      this.uploadLoading = true
+      this.uploadProgress = 0
+      this.uploadStatusText = '准备上传'
       this.$refs.assetUploadRef.submit()
     },
     ensureDefaultDir () {
@@ -565,18 +580,20 @@ export default {
       return 5
     },
     async handleUploadRequest ({ file }) {
+      this.uploadingCount += 1
+      const currentIndex = (this.uploadSuccessCount + this.uploadFailCount + 1)
       try {
         this.uploadLoading = true
         this.uploadProgress = 0
-        this.uploadStatusText = '准备中'
+        this.uploadStatusText = `准备中（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
         let uploadFile = file
         if ((file.type || '').startsWith('video/')) {
           try {
-            #const codec = await this.getVideoCodec(file)
-            #if (this.isH265Codec(codec)) {
-            #  this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
-            #  uploadFile = await this.convertH265ToH264(file)
-            #}
+            // const codec = await this.getVideoCodec(file)
+            // if (this.isH265Codec(codec)) {
+            //   this.$message.info('检测到 H.265 视频，正在转换为 H.264...')
+            //   uploadFile = await this.convertH265ToH264(file)
+            // }
           } catch (e) {
             console.log(e)
           }
@@ -586,7 +603,7 @@ export default {
           throw new Error('未获取到默认目录')
         }
         const response = await assetsApi.getUploadUrl(uploadFile.name)
-        this.uploadStatusText = '上传中'
+        this.uploadStatusText = `上传中（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
         this.uploadProgress = Math.max(this.uploadProgress, 70)
         const fileUrl = response?.url?.url
         const fileObject = response?.url?.object
@@ -601,20 +618,39 @@ export default {
           dir_id: dirId,
           use_vector: false
         })
-        this.uploadStatusText = '上传完成'
-        this.$message.success('上传成功')
-        this.uploadDialogVisible = false
-        this.uploadFileList = []
-        this.$refs.assetUploadRef?.clearFiles()
-        this.load(true)
+        this.uploadStatusText = `上传完成（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
+        this.uploadSuccessCount += 1
       } catch (err) {
-        this.uploadStatusText = '上传失败'
-        this.$message.error(err?.message || '上传失败')
+        this.uploadStatusText = `上传失败（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
+        this.uploadFailCount += 1
+        console.error(err)
       } finally {
-        this.uploadLoading = false
-        if (this.uploadDialogVisible) {
+        this.uploadingCount -= 1
+        // 全部完成后做收尾
+        if (this.uploadingCount === 0) {
+          this.uploadLoading = false
           this.uploadProgress = 0
+          const success = this.uploadSuccessCount
+          const fail = this.uploadFailCount
+          // 清理并关闭
+          this.uploadDialogVisible = false
+          this.$refs.assetUploadRef?.clearFiles()
+          this.uploadFileList = []
           this.uploadStatusText = ''
+          // 刷新列表
+          this.load(true)
+          // 汇总提示
+          if (fail === 0) {
+            this.$message.success(`全部上传成功（${success}/${this.uploadTotal || success}）`)
+          } else if (success === 0) {
+            this.$message.error('上传全部失败，请重试')
+          } else {
+            this.$message.warning(`部分上传成功：成功 ${success} 个，失败 ${fail} 个`)
+          }
+          // 重置统计
+          this.uploadTotal = 0
+          this.uploadSuccessCount = 0
+          this.uploadFailCount = 0
         }
       }
     },
@@ -725,6 +761,11 @@ export default {
       uploadLoading: false,
       uploadProgress: 0,
       uploadStatusText: '',
+      // 批量上传统计
+      uploadingCount: 0,
+      uploadTotal: 0,
+      uploadSuccessCount: 0,
+      uploadFailCount: 0,
       defaultDirAssetId: null,
       ffmpeg: null,
       ffmpegLoadPromise: null,
