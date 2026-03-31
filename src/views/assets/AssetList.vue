@@ -4,7 +4,8 @@
       <div class="asset-search">
         <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪"
                   @change="load(true)" v-model="keywords"></el-input>
-        <el-button @click="load(true)">搜索</el-button>
+        <el-button @click="fileNameSearch()">文件名搜索</el-button>
+        <el-button @click="vectorSearch()">语义搜索</el-button>
         <el-button type="primary" @click="openUploadDialog">上传</el-button>
       </div>
     </div>
@@ -34,6 +35,9 @@
               <div v-else-if="asset.type === 3" class="asset-audio-wrapper" @click="openAssetPreview(asset)">
                 <el-icon class="asset-audio-icon"><Microphone /></el-icon>
                 <div class="asset-video-mask">点击播放</div>
+              </div>
+              <div v-else-if="asset.type === 4" class="asset-audio-wrapper" @click="openAssetDir(asset)">
+                <el-icon class="asset-audio-icon"><Folder /></el-icon>
               </div>
             </div>
             <div v-if="asset.score" class="asset-info">
@@ -210,12 +214,13 @@ import { getUrlParams, maxString, paginateLayouts, syncUrlPaginate } from '@/uti
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
-import { Search, Plus, Microphone } from '@element-plus/icons-vue'
+import { Search, Plus, Microphone, Folder } from '@element-plus/icons-vue'
 import AsrMediaPlayer from '@/components/AsrMediaPlayer.vue'
 import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   components: {
+    Folder,
     Microphone,
     AsrMediaPlayer
   },
@@ -245,6 +250,7 @@ export default {
     this.smallWindowSize = paginateStyle.smallWindowSize
     this.layout = paginateStyle.layout
     const urlParams = getUrlParams()
+    this.dirId = urlParams.dir_id || ''
     if (urlParams.page) {
       this.page = parseInt(urlParams.page) || 1
     }
@@ -711,6 +717,18 @@ export default {
       this.previewAsset = asset
       this.previewDialogVisible = true
     },
+    openAssetDir (asset) {
+      this.dirId = asset.asset_id
+      this.load(true)
+    },
+    fileNameSearch () {
+      this.isVectorSearch = 0
+      this.load(true)
+    },
+    vectorSearch () {
+      this.isVectorSearch = 1
+      this.load(true)
+    },
     load (resetPage = false) {
       if (resetPage) {
         this.page = 1
@@ -718,14 +736,20 @@ export default {
       assetsApi.getAssets({
         page: this.page,
         per_page: this.per_page,
-        keywords: this.keywords
+        keywords: this.keywords,
+        dir_id: this.dirId,
+        is_vector_search: this.isVectorSearch
       }).then((response) => {
         this.assets = response.data
         this.total = response.total
         let urlParams = {
           page: this.page,
           per_page: this.per_page,
-          keywords: this.keywords
+          keywords: this.keywords,
+          is_vector_search: this.isVectorSearch
+        }
+        if (this.dirId) {
+          urlParams.dir_id = this.dirId
         }
         syncUrlPaginate(urlParams)
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -778,7 +802,9 @@ export default {
       asrPollingTimer: null,
       asrPollingCount: 0,
       smallWindowSize: false,
-      layout: ''
+      layout: '',
+      dirId: null,
+      isVectorSearch: 0
     }
   }
 }
