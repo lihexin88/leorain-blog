@@ -29,7 +29,13 @@
     <div class="asset-layout">
       <div class="asset-main">
         <div class="list asset-item-container" id="container-left">
-          <div v-for="(asset,index) in assets" :key="index" class="asset-items-box">
+          <div v-for="(asset,index) in assets" :key="index" class="asset-items-box"
+               draggable="true"
+               @dragstart="onDragStart($event, asset)"
+               @dragover.prevent="onDragOver($event, asset)"
+               @dragleave="onDragLeave($event)"
+               @drop.prevent="onDrop($event, asset)"
+          >
             <el-button
                 v-if="isVideoAsset(asset) && user?.id === asset.uid"
                 class="asset-asr-btn"
@@ -280,7 +286,6 @@ import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useUserStore } from '@/store/user'
 import {
-  getFriendlyDate,
   getUrlParams, humanFilesize,
   maxString,
   paginateLayouts,
@@ -362,8 +367,44 @@ export default {
   },
   methods: {
     humanFilesize,
-    getFriendlyDate,
     maxString,
+    onDragStart (e, asset) {
+      this.dragAsset = asset
+      e.dataTransfer.effectAllowed = 'move'
+    },
+    onDragOver (e, asset) {
+      if (asset.type === 4 && this.dragAsset && this.dragAsset.asset_id !== asset.asset_id) {
+        e.dataTransfer.dropEffect = 'move'
+        e.currentTarget.classList.add('drag-over')
+      }
+    },
+    onDragLeave (e) {
+      e.currentTarget.classList.remove('drag-over')
+    },
+    async onDrop (e, targetAsset) {
+      e.currentTarget.classList.remove('drag-over')
+      const sourceAsset = this.dragAsset
+      this.dragAsset = null
+      if (!sourceAsset || !targetAsset) return
+      if (sourceAsset.asset_id === targetAsset.asset_id) return
+      if (targetAsset.type !== 4) return
+      try {
+        await this.$confirm(
+          `是否将 「${sourceAsset.name}」 移动到 「${targetAsset.name}」？`,
+          '移动确认',
+          { type: 'info' }
+        )
+      } catch {
+        return
+      }
+      try {
+        await assetsApi.updateAsset(sourceAsset.asset_id, { dir_id: targetAsset.asset_id })
+        this.$message.success('移动成功')
+        this.load()
+      } catch (err) {
+        this.$message.error(err?.message || '移动失败')
+      }
+    },
     onAssetMenuCommand (command, asset) {
       if (command === 'rename') {
         this.openRenameDialog(asset)
@@ -818,7 +859,6 @@ export default {
     },
     loadDirPath (assetId) {
       assetsApi.getAssetDetail(assetId).then((res) => {
-        console.log(res)
         const data = res?.data
         if (data?.fullPath) {
           // 期望的数据结构：{ data: [{ asset_id, name }, ...] }
@@ -828,6 +868,11 @@ export default {
             name: data.name
           })
         }
+      })
+    },
+    getAssetDetail (assetId) {
+      assetsApi.getAssetDetail(assetId).then((res) => {
+        return res
       })
     },
     openDirCreateDialog () {
@@ -1002,7 +1047,8 @@ export default {
       renameForm: {
         name: ''
       },
-      currentActionAsset: null
+      currentActionAsset: null,
+      dragAsset: null
     }
   }
 }
@@ -1159,6 +1205,12 @@ export default {
   box-shadow: 0 0 20px rgba(52, 152, 219, 0.4),
   0 0 30px rgba(52, 152, 219, 0.22),
   0 0 40px rgba(52, 152, 219, 0.06);
+}
+
+.asset-items-box.drag-over {
+  outline: 2px dashed #409eff;
+  outline-offset: -2px;
+  background: rgba(64, 158, 255, 0.08);
 }
 
 .asset-info {
