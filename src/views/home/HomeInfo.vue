@@ -10,7 +10,6 @@
             <el-avatar :size="70" shape="circle" src="/images/logo.png"></el-avatar>
           </div>
           <div style="display: flex;justify-content: flex-start;padding-top: 10px;align-items: center;flex-wrap: wrap">
-            <div class="info-personal" style="display: flex; align-items: center;">手机: <b>18337565527</b></div>
             <div class="info-personal">邮箱:
               <el-link type="primary" href="mailto:1678822783@qq.com">1678822783@qq.com</el-link>
             </div>
