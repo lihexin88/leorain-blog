@@ -4,6 +4,15 @@ const assetsApi = {
   getAssets (params) {
     return api.get('/asset', { params })
   },
+  getAssetDetail (assetId) {
+    return api.get('/api/frontend/asset/' + assetId + '?include=fullPath')
+  },
+  updateAsset (assetId, data) {
+    return api.patch(`/api/frontend/asset/${assetId}`, data)
+  },
+  deleteAsset (assetId) {
+    return api.delete(`/api/frontend/asset/${assetId}`)
+  },
   getDefaultDir () {
     return api.get('/api/assets_dir/default')
   },
