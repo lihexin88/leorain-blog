@@ -160,7 +160,7 @@
         <el-icon><Plus /></el-icon>
         <div class="el-upload__text">拖拽图片、视频或音频到这里，或 <em>点击上传</em></div>
         <template #tip>
-          <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 30MB</div>
+          <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 50MB</div>
         </template>
       </el-upload>
       <el-progress
@@ -384,9 +384,9 @@ export default {
         this.$message.error('仅支持上传图片、视频和音频')
         return false
       }
-      const isAllowedSize = file.size <= 30 * 1024 * 1024
+      const isAllowedSize = file.size <= 50 * 1024 * 1024
       if (!isAllowedSize) {
-        this.$message.error('上传文件大小不能超过 10MB')
+        this.$message.error('上传文件大小不能超过 50MB')
         return false
       }
       return true
