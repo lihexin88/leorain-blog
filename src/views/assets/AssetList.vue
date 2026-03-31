@@ -7,6 +7,7 @@
         <el-button @click="fileNameSearch()">文件名搜索</el-button>
         <el-button @click="vectorSearch()">语义搜索</el-button>
         <el-button type="primary" @click="openUploadDialog">上传</el-button>
+        <el-button type="primary" @click="openDirCreateDialog">创建目录</el-button>
       </div>
     </div>
 
@@ -146,6 +147,13 @@
         </el-tabs>
       </div>
     </div>
+    <el-dialog v-model="showCreatDirDialog">
+      <el-input v-model="creatDirName"></el-input>
+      <template #footer>
+        <el-button @click="showCreatDirDialog = false">取消</el-button>
+        <el-button type="primary" @click="createDir">确认</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="uploadDialogVisible" title="上传资源" width="520px">
       <el-upload
@@ -240,7 +248,7 @@ export default {
       return moment
     }
   },
-  mounted () {
+  async mounted () {
     window.addEventListener(USER_LOGIN_SUCCESS_EVENT, () => {
       // 登录成功后加载数据
       this.load()
@@ -250,7 +258,7 @@ export default {
     this.smallWindowSize = paginateStyle.smallWindowSize
     this.layout = paginateStyle.layout
     const urlParams = getUrlParams()
-    this.dirId = urlParams.dir_id || ''
+    this.dirId = urlParams.dir_id || await this.ensureDefaultDir()
     if (urlParams.page) {
       this.page = parseInt(urlParams.page) || 1
     }
@@ -663,6 +671,19 @@ export default {
         }
       }
     },
+    async createDir () {
+      await assetsApi.createAsset({
+        type: 4,
+        name: this.creatDirName,
+        url: '',
+        dir_id: this.dirId,
+        use_vector: false
+      })
+    },
+    openDirCreateDialog () {
+      this.showCreatDirDialog = true
+      this.creatDirName = ''
+    },
     stopAsrPolling () {
       if (this.asrPollingTimer) {
         clearTimeout(this.asrPollingTimer)
@@ -808,7 +829,9 @@ export default {
       smallWindowSize: false,
       layout: '',
       dirId: null,
-      isVectorSearch: 0
+      isVectorSearch: 0,
+      showCreatDirDialog: false,
+      creatDirName: ''
     }
   }
 }
