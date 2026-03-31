@@ -205,3 +205,22 @@ export function triggerConfetti () {
   }, 250)
   setTimeout(() => clearInterval(interval), 2000)
 }
+
+/**
+ * 将字节数转换为更友好的文件大小表示（如：1.23MB）。
+ * 等效于示例 PHP 版本：human_filesize($bytes, $decimals = 2)
+ *
+ * @param {number|string} bytes - 字节数
+ * @param {number} [decimals=2] - 小数位数（非 B 时生效）
+ * @returns {string} 例如："0B"、"512B"、"1.00kB"、"1.23MB"
+ */
+export function humanFilesize (bytes, decimals = 2) {
+  const n = typeof bytes === 'string' ? parseFloat(bytes) : bytes
+  if (!isFinite(n) || n <= 0) return '0B'
+
+  const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB']
+  const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1)
+  const value = n / Math.pow(1024, i)
+  const dm = i === 0 ? 0 : (Number.isFinite(decimals) ? Math.max(0, decimals) : 2)
+  return `${value.toFixed(dm)}${units[i]}`
+}

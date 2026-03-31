@@ -1,8 +1,23 @@
 <template>
   <div class="asset-container">
     <div class="asset-search-container">
-      <div class="asset-search">
-        <el-input autofocus clearable :prefix-icon="Search" placeholder="输入文本进行搜索，例如：睡觉的猫咪"
+      <div class="asset-header">
+        <div class="header-breadcrumb">
+          文件路径：
+          <el-breadcrumb separator=">" v-if="(fullPath && fullPath.length)">
+            <el-breadcrumb-item
+                v-for="(item, index) in (fullPath || [])"
+                :key="item?.asset_id || index"
+            >
+              <el-link :disabled="index === fullPath.length - 1 && fullPath.length !== 1" class="asset-breadcrumb-link" href="#"
+                       @click.prevent="onBreadcrumbClick(item)">
+                {{ item?.name }}
+              </el-link>
+            </el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+        <el-input autofocus clearable style="width: 300px" :prefix-icon="Search"
+                  placeholder="输入文本进行搜索，例如：睡觉的猫咪"
                   @change="load(true)" v-model="keywords"></el-input>
         <el-button @click="fileNameSearch()">文件名搜索</el-button>
         <el-button @click="vectorSearch()">语义搜索</el-button>
@@ -16,15 +31,21 @@
         <div class="list asset-item-container" id="container-left">
           <div v-for="(asset,index) in assets" :key="index" class="asset-items-box">
             <el-button
-              v-if="isVideoAsset(asset) && user?.id === asset.uid"
-              class="asset-asr-btn"
-              size="small"
-              type="primary"
-              @click="handleAssetAsr(asset)"
+                v-if="isVideoAsset(asset) && user?.id === asset.uid"
+                class="asset-asr-btn"
+                size="small"
+                type="primary"
+                @click="handleAssetAsr(asset)"
             >
               识别
             </el-button>
-            <div style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
+            <!-- 右键菜单：重命名 / 删除 -->
+            <el-dropdown
+              trigger="contextmenu"
+              @command="onAssetMenuCommand($event, asset)"
+              style="display: block; width: 100%"
+            >
+              <div style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
               <el-image class="asset-items-image" fit="contain" preview-teleported v-if="asset.type === 1"
                         :preview-src-list="[asset.display_url]"
                         :src="asset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
@@ -34,13 +55,24 @@
                 <div class="asset-video-mask">点击播放</div>
               </div>
               <div v-else-if="asset.type === 3" class="asset-audio-wrapper" @click="openAssetPreview(asset)">
-                <el-icon class="asset-audio-icon"><Microphone /></el-icon>
+                <el-icon class="asset-audio-icon">
+                  <Microphone/>
+                </el-icon>
                 <div class="asset-video-mask">点击播放</div>
               </div>
               <div v-else-if="asset.type === 4" class="asset-audio-wrapper" @click="openAssetDir(asset)">
-                <el-icon class="asset-audio-icon"><Folder /></el-icon>
+                <el-icon class="asset-audio-icon">
+                  <Folder/>
+                </el-icon>
               </div>
-            </div>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="rename">重命名</el-dropdown-item>
+                  <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
             <div v-if="asset.score" class="asset-info">
               <span>余弦距离：{{ asset.score }}</span>
             </div>
@@ -48,11 +80,19 @@
               <span :title="asset.name">{{ maxString(asset.name, 18) }}</span>
             </div>
             <div class="asset-info">
-              <i class="fa fa-clock">{{ moment(asset.created_at).format("Y-M-D H:m") }}</i>
+              <span class="asset-info-time">
+                <Clock style="width: 18px" />
+                {{ formatDate(asset.created_at) }}
+              </span>
+              <span v-if="asset.type !== 4" class="asset-info-size">
+                <Files style="width: 18px" />
+                {{ humanFilesize(asset.size) }}
+              </span>
             </div>
           </div>
         </div>
 
+        <el-empty v-if="assets?.length === 0">暂无数据</el-empty>
         <div class="asset-pagination">
           <el-pagination
               v-model:page-size="per_page"
@@ -73,20 +113,20 @@
           <el-tab-pane label="ASR 列表" name="asr">
             <div class="asr-tab-content">
               <el-table
-                v-if="asrList.length"
-                :data="asrList"
-                stripe
-                :row-key="getAsrRowKey"
-                class="asr-table"
+                  v-if="asrList.length"
+                  :data="asrList"
+                  stripe
+                  :row-key="getAsrRowKey"
+                  class="asr-table"
               >
                 <el-table-column type="expand" width="60">
                   <template v-slot="scope">
                     <div class="asr-expand-content">
                       <AsrMediaPlayer
-                        :src="scope.row.asset_display_url"
-                        :asset-type="scope.row.asset_type"
-                        :words="scope.row.words"
-                        :full-text="scope.row.full_text"
+                          :src="scope.row.asset_display_url"
+                          :asset-type="scope.row.asset_type"
+                          :words="scope.row.words"
+                          :full-text="scope.row.full_text"
                       ></AsrMediaPlayer>
                     </div>
                   </template>
@@ -94,12 +134,12 @@
                 <el-table-column label="封面" width="120">
                   <template v-slot="scope">
                     <el-image
-                      v-if="scope.row.asset_display_url"
-                      style="width: 100px; height: 75px; border-radius: 4px;"
-                      fit="cover"
-                      :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
-                      :preview-src-list="[getVideoSnapshotUrl(scope.row.asset_display_url)]"
-                      preview-teleported
+                        v-if="scope.row.asset_display_url"
+                        style="width: 100px; height: 75px; border-radius: 4px;"
+                        fit="cover"
+                        :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
+                        :preview-src-list="[getVideoSnapshotUrl(scope.row.asset_display_url)]"
+                        preview-teleported
                     ></el-image>
                     <span v-else>-</span>
                   </template>
@@ -135,11 +175,11 @@
 
               <div v-if="asrTotal" class="asr-pagination">
                 <el-pagination
-                  v-model:current-page="asrPage"
-                  :page-size="asrPerPage"
-                  layout="prev, pager, next"
-                  :total="asrTotal"
-                  @current-change="loadAsrList"
+                    v-model:current-page="asrPage"
+                    :page-size="asrPerPage"
+                    layout="prev, pager, next"
+                    :total="asrTotal"
+                    @current-change="loadAsrList"
                 ></el-pagination>
               </div>
             </div>
@@ -157,29 +197,31 @@
 
     <el-dialog v-model="uploadDialogVisible" title="上传资源" width="520px">
       <el-upload
-        ref="assetUploadRef"
-        action="#"
-        drag
-        accept="image/*,video/*,audio/*"
-        multiple
-        :limit="20"
-        :auto-upload="false"
-        :file-list="uploadFileList"
-        :http-request="handleUploadRequest"
-        :on-change="handleUploadChange"
-        :on-remove="handleUploadRemove"
+          ref="assetUploadRef"
+          action="#"
+          drag
+          accept="image/*,video/*,audio/*"
+          multiple
+          :limit="20"
+          :auto-upload="false"
+          :file-list="uploadFileList"
+          :http-request="handleUploadRequest"
+          :on-change="handleUploadChange"
+          :on-remove="handleUploadRemove"
       >
-        <el-icon><Plus /></el-icon>
+        <el-icon>
+          <Plus/>
+        </el-icon>
         <div class="el-upload__text">拖拽图片、视频或音频到这里，或 <em>点击上传</em></div>
         <template #tip>
           <div class="el-upload__tip">仅支持图片、视频和音频，大小不超过 100MB</div>
         </template>
       </el-upload>
       <el-progress
-        v-if="uploadLoading || uploadProgress > 0"
-        :percentage="uploadProgress"
-        :stroke-width="10"
-        class="asset-upload-progress"
+          v-if="uploadLoading || uploadProgress > 0"
+          :percentage="uploadProgress"
+          :stroke-width="10"
+          class="asset-upload-progress"
       ></el-progress>
       <div v-if="uploadLoading && uploadStatusText" class="asset-upload-status">{{ uploadStatusText }}</div>
       <template #footer>
@@ -193,20 +235,39 @@
     <el-dialog v-model="previewDialogVisible" :title="previewAsset?.name || '资源预览'" width="70%">
       <video
           ref="videoPlayer"
-        v-if="previewAsset && previewAsset.type === 2"
-        :src="previewAsset.display_url"
-        controls
-        autoplay
-        style="width: 100%; max-height: 70vh"
+          v-if="previewAsset && previewAsset.type === 2"
+          :src="previewAsset.display_url"
+          controls
+          autoplay
+          style="width: 100%; max-height: 70vh"
       ></video>
       <audio
-        ref="audioPlayer"
-        v-else-if="previewAsset && previewAsset.type === 3"
-        :src="previewAsset.display_url"
-        controls
-        autoplay
-        style="width: 100%"
+          ref="audioPlayer"
+          v-else-if="previewAsset && previewAsset.type === 3"
+          :src="previewAsset.display_url"
+          controls
+          autoplay
+          style="width: 100%"
       ></audio>
+    </el-dialog>
+    <!-- 重命名弹窗 -->
+    <el-dialog
+        v-model="renameDialogVisible"
+        title="重命名"
+        width="420px"
+        :close-on-click-modal="false"
+    >
+      <el-form @submit.prevent>
+        <el-form-item label="名称" label-width="60px">
+          <el-input v-model="renameForm.name" :placeholder="currentActionAsset?.name || '输入新名称'" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="renameDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="renameSubmitting" @click="submitRename">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -218,16 +279,24 @@ import { mapState } from 'pinia'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { useUserStore } from '@/store/user'
-import { getUrlParams, maxString, paginateLayouts, syncUrlPaginate } from '@/utils/helpers'
+import {
+  getFriendlyDate,
+  getUrlParams, humanFilesize,
+  maxString,
+  paginateLayouts,
+  syncUrlPaginate
+} from '@/utils/helpers'
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
-import { Search, Plus, Microphone, Folder } from '@element-plus/icons-vue'
+import { Search, Plus, Microphone, Folder, ArrowRight, Clock, Files } from '@element-plus/icons-vue'
 import AsrMediaPlayer from '@/components/AsrMediaPlayer.vue'
 import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   components: {
+    Files,
+    Clock,
     Folder,
     Microphone,
     AsrMediaPlayer
@@ -243,6 +312,9 @@ export default {
     }
   },
   computed: {
+    ArrowRight () {
+      return ArrowRight
+    },
     ...mapState(useUserStore, ['user']),
     moment () {
       return moment
@@ -259,6 +331,7 @@ export default {
     this.layout = paginateStyle.layout
     const urlParams = getUrlParams()
     this.dirId = urlParams.dir_id || await this.ensureDefaultDir()
+    this.loadDirPath(this.dirId)
     if (urlParams.page) {
       this.page = parseInt(urlParams.page) || 1
     }
@@ -288,7 +361,63 @@ export default {
     }
   },
   methods: {
+    humanFilesize,
+    getFriendlyDate,
     maxString,
+    onAssetMenuCommand (command, asset) {
+      if (command === 'rename') {
+        this.openRenameDialog(asset)
+      } else if (command === 'delete') {
+        this.confirmDeleteAsset(asset)
+      }
+    },
+    openRenameDialog (asset) {
+      this.currentActionAsset = asset
+      this.renameForm.name = asset?.name || ''
+      this.renameDialogVisible = true
+    },
+    async submitRename () {
+      if (!this.currentActionAsset) return
+      const asset = this.currentActionAsset
+      const payload = {
+        name: this.renameForm.name?.trim() || asset.name,
+        dir_id: asset.dir_id || this.dirId
+      }
+      this.renameSubmitting = true
+      try {
+        await assetsApi.updateAsset(asset.asset_id, payload)
+        this.$message.success('重命名成功')
+        this.renameDialogVisible = false
+        // 刷新列表或本地更新名称
+        if (Array.isArray(this.assets)) {
+          const target = this.assets.find(a => (a.asset_id) === (asset.asset_id))
+          if (target) target.name = payload.name
+        }
+      } catch (e) {
+        this.$message.error(e?.message || '重命名失败')
+      } finally {
+        this.renameSubmitting = false
+      }
+    },
+    async confirmDeleteAsset (asset) {
+      try {
+        await this.$confirm(`确定删除该素材：${asset?.name}？`, '删除确认', { type: 'warning' })
+      } catch (e) {
+        return
+      }
+      try {
+        await assetsApi.deleteAsset(asset.asset_id)
+        this.$message.success('删除成功')
+        // 从本地列表移除
+        if (Array.isArray(this.assets)) {
+          this.assets = this.assets.filter(a => (a.asset_id) !== (asset.asset_id))
+        } else {
+          this.load(true)
+        }
+      } catch (e) {
+        this.$message.error(e?.message || '删除失败')
+      }
+    },
     formatDate (value) {
       return value ? moment(value).format('Y-M-D H:m') : '-'
     },
@@ -671,13 +800,34 @@ export default {
         }
       }
     },
-    async createDir () {
-      await assetsApi.createAsset({
+    createDir () {
+      assetsApi.createAsset({
         type: 4,
         name: this.creatDirName,
         url: '',
         dir_id: this.dirId,
         use_vector: false
+      }).then((res) => {
+        this.dirId = res.data.asset_id
+        this.showCreatDirDialog = false
+        this.$message.success('创建成功')
+        this.load(true)
+      }).catch(() => {
+        this.$message.error('创建目录失败，请重试')
+      })
+    },
+    loadDirPath (assetId) {
+      assetsApi.getAssetDetail(assetId).then((res) => {
+        console.log(res)
+        const data = res?.data
+        if (data?.fullPath) {
+          // 期望的数据结构：{ data: [{ asset_id, name }, ...] }
+          this.fullPath = data.fullPath.data
+          this.fullPath.push({
+            asset_id: assetId,
+            name: data.name
+          })
+        }
       })
     },
     openDirCreateDialog () {
@@ -735,15 +885,28 @@ export default {
       })
     },
     isVideoAsset (asset) {
-      return String(asset?.type) !== '1'
+      return ['2', '3'].includes(String(asset?.type))
     },
     openAssetPreview (asset) {
       this.previewAsset = asset
       this.previewDialogVisible = true
     },
+    onBreadcrumbClick (item) {
+      const dirId = item?.asset_id
+      if (!dirId) return
+      // 重置到指定需求的查询条件并加载
+      this.page = 1
+      this.keywords = null
+      this.per_page = 32
+      this.isVectorSearch = 0
+      this.dirId = dirId
+      this.load(true)
+      this.loadDirPath(dirId)
+    },
     openAssetDir (asset) {
       this.dirId = asset.asset_id
       this.load(true)
+      this.loadDirPath(this.dirId)
     },
     fileNameSearch () {
       this.isVectorSearch = 0
@@ -831,7 +994,15 @@ export default {
       dirId: null,
       isVectorSearch: 0,
       showCreatDirDialog: false,
-      creatDirName: ''
+      creatDirName: '',
+      fullPath: [],
+      // 右键菜单-重命名相关
+      renameDialogVisible: false,
+      renameSubmitting: false,
+      renameForm: {
+        name: ''
+      },
+      currentActionAsset: null
     }
   }
 }
@@ -847,10 +1018,32 @@ export default {
   justify-content: center;
 }
 
-.asset-search {
-  width: 30%;
+.asset-header {
+  width: 100%;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
+
+  .header-breadcrumb {
+    background-color: aliceblue;
+    padding: 0 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    /* 靠左对齐：占据可用空间把后续元素“推”到右侧/中部 */
+    margin-right: auto;
+  }
+}
+
+/* 移动端：面包屑独占一行 */
+@media (max-width: 768px) {
+  .asset-header {
+    justify-content: flex-start;
+  }
+  .asset-header .header-breadcrumb {
+    flex: 0 0 100%;
+  }
 }
 
 .asset-layout {
@@ -884,6 +1077,10 @@ export default {
   grid-template-columns: repeat(auto-fill, 242px);
   justify-content: center;
   gap: 16px;
+  min-height: 80vh;
+  @media screen and (max-aspect-ratio: 1/1) {
+    min-height: 0;
+  }
 }
 
 .asset-items-box {
@@ -942,7 +1139,8 @@ export default {
   font-size: 14px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.3);
-  &:hover{
+
+  &:hover {
     transition: background-color .3s ease;
     background: rgba(0, 0, 0, 0.1);
   }
@@ -967,7 +1165,20 @@ export default {
   margin-top: 6px;
   font-size: .85em;
   color: #606266;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  align-items: center;
+  .asset-info-time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .asset-info-size {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .asset-pagination {
@@ -1006,7 +1217,7 @@ export default {
 }
 
 @media screen and (max-aspect-ratio: 1/1) {
-  .asset-search {
+  .asset-header {
     width: 95%;
   }
 }
@@ -1030,5 +1241,9 @@ export default {
   .asset-items-image {
     height: 180px;
   }
+}
+
+.asset-breadcrumb-link {
+  cursor: pointer;
 }
 </style>
