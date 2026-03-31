@@ -604,9 +604,12 @@ export default {
             console.log(e)
           }
         }
-        const dirId = await this.ensureDefaultDir()
-        if (!dirId) {
-          throw new Error('未获取到默认目录')
+        if (!this.dirId) {
+          const dirId = await this.ensureDefaultDir()
+          if (!dirId) {
+            throw new Error('未获取到默认目录')
+          }
+          this.dirId = dirId
         }
         const response = await assetsApi.getUploadUrl(uploadFile.name)
         this.uploadStatusText = `上传中（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
@@ -621,7 +624,7 @@ export default {
           type: this.getFileType(uploadFile),
           name: uploadFile.name,
           url: fileObject,
-          dir_id: dirId,
+          dir_id: this.dirId,
           use_vector: false
         })
         this.uploadStatusText = `上传完成（${currentIndex}/${this.uploadTotal || this.uploadFileList.length || 1}）`
@@ -738,7 +741,8 @@ export default {
         per_page: this.per_page,
         keywords: this.keywords,
         dir_id: this.dirId,
-        is_vector_search: this.isVectorSearch
+        is_vector_search: this.isVectorSearch,
+        owner: 'mine'
       }).then((response) => {
         this.assets = response.data
         this.total = response.total
