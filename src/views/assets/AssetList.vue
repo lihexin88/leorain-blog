@@ -766,7 +766,7 @@ export default {
         }
       }).then((response) => {
         this.asrList = Array.isArray(response?.data) ? response.data.map(item => this.parseAsrItem(item)) : []
-        this.asrTotal = response?.total || 0
+        this.asrTotal = response.meta.pagination?.total || 0
         this.asrPerPage = Number(response?.per_page) || 15
         this.asrPage = Number(response?.current_page) || 1
       }).catch(() => {
