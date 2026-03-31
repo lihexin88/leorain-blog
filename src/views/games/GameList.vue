@@ -1,9 +1,14 @@
 <script>
 import api from '@/apis/base'
 import { getFriendlyDate, maxString, syncUrlPaginate } from '@/utils/helpers'
-import { VideoPlay, ChatLineRound, Clock } from '@element-plus/icons-vue'
+import { VideoPlay, ChatLineRound, Clock, Search } from '@element-plus/icons-vue'
 
 export default {
+  computed: {
+    Search () {
+      return Search
+    }
+  },
   tdk () {
     return {
       title: '童年NES游戏模拟器 - 经典红白机游戏在线玩',
@@ -15,12 +20,14 @@ export default {
   components: {
     VideoPlay,
     ChatLineRound,
-    Clock
+    Clock,
+    Search
   },
   data () {
     return {
       games: [],
       loading: false,
+      keywords: '',
       pagination: {
         current_page: 1,
         per_page: 12,
@@ -40,7 +47,8 @@ export default {
         const response = await api.get('/games', {
           params: {
             page,
-            page_size: this.pagination.per_page
+            page_size: this.pagination.per_page,
+            keywords: this.keywords
           }
         })
         if (response.data) {
@@ -66,6 +74,9 @@ export default {
         this.loading = false
       }
     },
+    handleSearch () {
+      this.fetchGames(1)
+    },
     handlePageChange (page) {
       this.fetchGames(page)
     },
@@ -78,6 +89,18 @@ export default {
 
 <template>
   <div class="game-list-container" v-loading="loading">
+    <div class="search-container">
+      <el-input
+          style="max-width: 300px"
+          v-model="keywords"
+          clearable
+          :prefix-icon="Search"
+          placeholder="请输入游戏名称关键词"
+          @keyup.enter="handleSearch"
+      />
+      <el-button type="primary" @click="handleSearch">搜索</el-button>
+    </div>
+
     <div class="game-grid">
       <el-card
           v-for="game in games"
@@ -119,6 +142,13 @@ export default {
 .game-list-container {
   padding: 20px;
   margin: 0 auto;
+
+  .search-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
 
   .game-grid {
     display: grid;
