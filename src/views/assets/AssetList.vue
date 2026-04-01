@@ -75,7 +75,7 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="move" divided>移动</el-dropdown-item>
-                  <el-dropdown-item command="rename" disabled>重命名</el-dropdown-item>
+                  <el-dropdown-item command="rename" divided>重命名</el-dropdown-item>
                   <el-dropdown-item command="delete" divided>删除</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
