@@ -54,13 +54,13 @@
                 style="display: block; width: 100%"
             >
               <div class="asset-cover-wrapper"
-                   style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
+                   style="display: flex;justify-content: center;align-items: center;padding-top: 3px;width: 100%">
                 <div class="asset-share-btn" v-if="asset.type !== 4" @click.stop="openShareDialog(asset)">
                   <el-icon>
                     <Share/>
                   </el-icon>
                 </div>
-                <AssetCover :asset="asset" @preview="openAssetPreview" @open-dir="openAssetDir" />
+                <AssetCover style="width: 100%" :asset="asset" @preview="openAssetPreview" @open-dir="openAssetDir" />
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -70,21 +70,23 @@
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-            <div v-if="asset.score" class="asset-info">
-              <span>余弦距离：{{ asset.score }}</span>
-            </div>
-            <div class="asset-info">
-              <span :title="asset.name">{{ maxString(asset.name, 18) }}</span>
-            </div>
-            <div class="asset-info">
+            <div class="asset-info-wrapper">
+              <div v-if="asset.score" class="asset-info">
+                <span>余弦距离：{{ asset.score }}</span>
+              </div>
+              <div class="asset-info">
+                <span :title="asset.name">{{ maxString(asset.name, 18) }}</span>
+              </div>
+              <div class="asset-info">
               <span class="asset-info-time">
                 <Clock style="width: 18px"/>
                 {{ formatDate(asset.created_at) }}
               </span>
-              <span v-if="asset.type !== 4" class="asset-info-size">
+                <span v-if="asset.type !== 4" class="asset-info-size">
                 <Files style="width: 18px"/>
                 {{ humanFilesize(asset.size) }}
               </span>
+              </div>
             </div>
           </div>
         </div>
@@ -168,7 +170,7 @@
                     {{ formatDate(scope.row.created_at) }}
                   </template>
                 </el-table-column>
-                <el-table-column label="全文" min-width="220" show-overflow-tooltip>
+                <el-table-column label="全文" min-width="220" :show-overflow-tooltip="{ popperOptions: { modifiers: [{ name: 'computeStyles', options: { adaptive: false } }] }, popperClass: 'asr-fulltext-tooltip' }">
                   <template v-slot="scope">
                     {{ scope.row.full_text || '-' }}
                   </template>
@@ -1381,6 +1383,12 @@ export default {
   background-color: rgba(255, 255, 255, .9);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: transform .2s ease, box-shadow .2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.asset-info-wrapper {
+  margin-top: auto;
 }
 
 .asset-asr-btn {
@@ -1597,5 +1605,11 @@ export default {
 .move-dir-selected {
   background: #e6f0ff;
   outline: 1px solid #409eff;
+}
+</style>
+
+<style>
+.asr-fulltext-tooltip {
+  max-width: 400px !important;
 }
 </style>
