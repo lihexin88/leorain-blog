@@ -164,6 +164,11 @@ export default {
           return
         }
 
+        if (validator.timeRemain === 0) {
+          this.$message.warning('验证码已过期，请点击刷新后重试')
+          return
+        }
+
         this.loading = true
         try {
           const payload = {
