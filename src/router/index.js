@@ -135,6 +135,11 @@ const routes = [
         name: 'AssetList',
         component: () => import('../views/assets/AssetList.vue')
       },
+      {
+        path: 'shared_asset',
+        name: 'SharedAsset',
+        component: () => import('../views/assets/SharedAsset.vue')
+      },
       // Topic routes
       {
         path: 'topics',
