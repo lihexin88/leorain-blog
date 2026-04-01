@@ -1526,6 +1526,12 @@ export default {
 
 .asr-tab-content {
   min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.asr-search-bar {
+  align-self: flex-end;
 }
 
 .asr-table {
