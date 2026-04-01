@@ -524,7 +524,8 @@ export default {
           }
         })
         this.shareResultUrl = res.data?.url || res.url || res.data || ''
-        this.$message.success('分享链接已生成')
+        this.copyToClipboard(this.shareResultUrl)
+        this.$message.success('分享链接已生成,已复制到剪贴板')
       } catch (err) {
         this.$message.error(err?.message || '获取分享链接失败')
       } finally {
