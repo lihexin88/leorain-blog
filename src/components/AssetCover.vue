@@ -103,7 +103,7 @@ export default {
   flex-wrap: wrap;
   width: 100%;
   height: 220px;
-  padding: 20px;
+  padding: 40px;
   gap: 6px;
 }
 
