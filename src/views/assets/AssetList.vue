@@ -9,7 +9,8 @@
                 v-for="(item, index) in (fullPath || [])"
                 :key="item?.asset_id || index"
             >
-              <el-link :disabled="index === fullPath.length - 1 && fullPath.length !== 1" class="asset-breadcrumb-link" href="#"
+              <el-link :disabled="index === fullPath.length - 1 && fullPath.length !== 1" class="asset-breadcrumb-link"
+                       href="#"
                        @click.prevent="onBreadcrumbClick(item)">
                 {{ item?.name }}
               </el-link>
@@ -48,30 +49,18 @@
             </el-button>
             <!-- 右键菜单：重命名 / 删除 -->
             <el-dropdown
-              trigger="contextmenu"
-              @command="onAssetMenuCommand($event, asset)"
-              style="display: block; width: 100%"
+                trigger="contextmenu"
+                @command="onAssetMenuCommand($event, asset)"
+                style="display: block; width: 100%"
             >
-              <div style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
-              <el-image class="asset-items-image" fit="contain" preview-teleported v-if="asset.type === 1"
-                        :preview-src-list="[asset.display_url]"
-                        :src="asset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
-              <div v-else-if="asset.type === 2" class="asset-video-wrapper" @click="openAssetPreview(asset)">
-                <el-image class="asset-items-image" fit="contain" preview-teleported
-                          :src="getVideoSnapshotUrl(asset.display_url)"></el-image>
-                <div class="asset-video-mask">点击播放</div>
-              </div>
-              <div v-else-if="asset.type === 3" class="asset-audio-wrapper" @click="openAssetPreview(asset)">
-                <el-icon class="asset-audio-icon">
-                  <Microphone/>
-                </el-icon>
-                <div class="asset-video-mask">点击播放</div>
-              </div>
-              <div v-else-if="asset.type === 4" class="asset-audio-wrapper" @click="openAssetDir(asset)">
-                <el-icon class="asset-audio-icon">
-                  <Folder/>
-                </el-icon>
-              </div>
+              <div class="asset-cover-wrapper"
+                   style="display: flex;justify-content: center;align-items: center;padding-top: 3px">
+                <div class="asset-share-btn" v-if="asset.type !== 4" @click.stop="openShareDialog(asset)">
+                  <el-icon>
+                    <Share/>
+                  </el-icon>
+                </div>
+                <AssetCover :asset="asset" @preview="openAssetPreview" @open-dir="openAssetDir" />
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -89,11 +78,11 @@
             </div>
             <div class="asset-info">
               <span class="asset-info-time">
-                <Clock style="width: 18px" />
+                <Clock style="width: 18px"/>
                 {{ formatDate(asset.created_at) }}
               </span>
               <span v-if="asset.type !== 4" class="asset-info-size">
-                <Files style="width: 18px" />
+                <Files style="width: 18px"/>
                 {{ humanFilesize(asset.size) }}
               </span>
             </div>
@@ -104,7 +93,7 @@
         <div class="asset-pagination">
           <el-pagination
               v-model:page-size="per_page"
-              :page-sizes="[16, 32, 40, 48]"
+              :page-sizes="[15, 30, 45, 50]"
               v-model:current-page="page"
               @size-change="load(true)"
               @current-change="load(false)"
@@ -207,6 +196,56 @@
         </el-tabs>
       </div>
     </div>
+    <el-dialog v-model="shareDialogVisible" title="分享" width="680px">
+      <div v-if="shareAsset" style="margin-bottom: 16px;">
+        <div style="display:flex;justify-content:center;margin-bottom:12px;">
+          <el-image v-if="shareAsset.type === 1" style="max-height:180px;max-width:100%;border-radius:6px;"
+                    fit="contain" :src="shareAsset.display_url + '?x-oss-process=style/gallery_thumbnail'"></el-image>
+          <el-image v-else-if="shareAsset.type === 2" style="max-height:180px;max-width:100%;border-radius:6px;"
+                    fit="contain" :src="getVideoSnapshotUrl(shareAsset.display_url)"></el-image>
+          <div v-else-if="shareAsset.type === 3" style="font-size:48px;color:#409eff;">
+            <el-icon>
+              <Microphone/>
+            </el-icon>
+          </div>
+          <div v-else-if="shareAsset.type === 4" style="font-size:48px;color:#409eff;">
+            <el-icon>
+              <Folder/>
+            </el-icon>
+          </div>
+        </div>
+        <el-descriptions :column="1" border size="small">
+          <el-descriptions-item label="名称">{{ shareAsset.name }}</el-descriptions-item>
+          <el-descriptions-item label="大小">{{ humanFilesize(shareAsset.size) }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ formatDate(shareAsset.created_at) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <el-form :inline="true" style="margin-top:12px;">
+        <el-form-item label="有效期">
+          <el-input v-model.number="shareExpireValue" placeholder="输入数字" style="width:120px;"
+                    :disabled="shareExpireType === 4"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-select v-model="shareExpireType" style="width:120px;">
+            <el-option label="分钟" :value="1"></el-option>
+            <el-option label="小时" :value="2"></el-option>
+            <el-option label="天" :value="3"></el-option>
+            <el-option label="永久" :value="4"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="shareSubmitting" @click="submitShare">分享</el-button>
+        </el-form-item>
+      </el-form>
+      <div v-if="shareResultUrl" style="margin-top:12px;">
+        <el-input readonly :model-value="shareResultUrl">
+          <template #append>
+            <el-button @click="copyToClipboard(shareResultUrl)">复制</el-button>
+          </template>
+        </el-input>
+      </div>
+    </el-dialog>
+
     <el-dialog v-model="showCreatDirDialog">
       <el-input v-model="creatDirName"></el-input>
       <template #footer>
@@ -277,43 +316,59 @@
         <template v-else>
           <div v-for="dir in moveDirTree" :key="dir.asset_id">
             <div
-              class="move-dir-item"
-              :class="{ 'move-dir-selected': moveSelectedDirId === dir.asset_id }"
-              @click="moveSelectedDirId = dir.asset_id"
+                class="move-dir-item"
+                :class="{ 'move-dir-selected': moveSelectedDirId === dir.asset_id }"
+                @click="moveSelectedDirId = dir.asset_id"
             >
-              <el-icon><Folder /></el-icon>
+              <el-icon>
+                <Folder/>
+              </el-icon>
               <span style="flex:1;margin-left:6px">{{ dir.name }}</span>
-              <el-button link type="primary" size="small" @click.stop="loadSubDirs(dir)">{{ dir.expanded ? '−' : '+' }}</el-button>
+              <el-button link type="primary" size="small" @click.stop="loadSubDirs(dir)">{{
+                  dir.expanded ? '−' : '+'
+                }}
+              </el-button>
             </div>
             <div v-if="dir.expanded && dir.children" style="padding-left:20px">
               <div v-for="sub in dir.children" :key="sub.asset_id">
                 <div
-                  class="move-dir-item"
-                  :class="{ 'move-dir-selected': moveSelectedDirId === sub.asset_id }"
-                  @click="moveSelectedDirId = sub.asset_id"
+                    class="move-dir-item"
+                    :class="{ 'move-dir-selected': moveSelectedDirId === sub.asset_id }"
+                    @click="moveSelectedDirId = sub.asset_id"
                 >
-                  <el-icon><Folder /></el-icon>
+                  <el-icon>
+                    <Folder/>
+                  </el-icon>
                   <span style="flex:1;margin-left:6px">{{ sub.name }}</span>
-                  <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub)">{{ sub.expanded ? '−' : '+' }}</el-button>
+                  <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub)">{{
+                      sub.expanded ? '−' : '+'
+                    }}
+                  </el-button>
                 </div>
                 <div v-if="sub.expanded && sub.children" style="padding-left:20px">
                   <div v-for="sub2 in sub.children" :key="sub2.asset_id">
                     <div
-                      class="move-dir-item"
-                      :class="{ 'move-dir-selected': moveSelectedDirId === sub2.asset_id }"
-                      @click="moveSelectedDirId = sub2.asset_id"
+                        class="move-dir-item"
+                        :class="{ 'move-dir-selected': moveSelectedDirId === sub2.asset_id }"
+                        @click="moveSelectedDirId = sub2.asset_id"
                     >
-                      <el-icon><Folder /></el-icon>
+                      <el-icon>
+                        <Folder/>
+                      </el-icon>
                       <span style="flex:1;margin-left:6px">{{ sub2.name }}</span>
-                      <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub2)">{{ sub2.expanded ? '−' : '+' }}</el-button>
+                      <el-button link type="primary" size="small" @click.stop="loadSubDirs(sub2)">
+                        {{ sub2.expanded ? '−' : '+' }}
+                      </el-button>
                     </div>
                     <div v-if="sub2.expanded && sub2.children" style="padding-left:20px">
                       <div v-for="sub3 in sub2.children" :key="sub3.asset_id"
-                        class="move-dir-item"
-                        :class="{ 'move-dir-selected': moveSelectedDirId === sub3.asset_id }"
-                        @click="moveSelectedDirId = sub3.asset_id"
+                           class="move-dir-item"
+                           :class="{ 'move-dir-selected': moveSelectedDirId === sub3.asset_id }"
+                           @click="moveSelectedDirId = sub3.asset_id"
                       >
-                        <el-icon><Folder /></el-icon>
+                        <el-icon>
+                          <Folder/>
+                        </el-icon>
                         <span style="flex:1;margin-left:6px">{{ sub3.name }}</span>
                       </div>
                     </div>
@@ -338,7 +393,7 @@
     >
       <el-form @submit.prevent>
         <el-form-item label="名称" label-width="60px">
-          <el-input v-model="renameForm.name" :placeholder="currentActionAsset?.name || '输入新名称'" />
+          <el-input v-model="renameForm.name" :placeholder="currentActionAsset?.name || '输入新名称'"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -367,8 +422,9 @@ import {
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
-import { Search, Plus, Microphone, Folder, ArrowRight, Clock, Files } from '@element-plus/icons-vue'
+import { Search, Plus, Microphone, Folder, ArrowRight, Clock, Files, Share } from '@element-plus/icons-vue'
 import AsrMediaPlayer from '@/components/AsrMediaPlayer.vue'
+import AssetCover from '@/components/AssetCover.vue'
 import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
@@ -377,7 +433,9 @@ export default {
     Clock,
     Folder,
     Microphone,
-    AsrMediaPlayer
+    AsrMediaPlayer,
+    Share,
+    AssetCover
   },
   beforeUnmount () {
     this.stopAsrPolling()
@@ -386,7 +444,8 @@ export default {
     return {
       Search,
       Plus,
-      Microphone
+      Microphone,
+      Share
     }
   },
   computed: {
@@ -417,7 +476,7 @@ export default {
       this.page = parseInt(urlParams.page) || 1
     }
     if (urlParams.per_page) {
-      this.per_page = parseInt(urlParams.per_page) || 32
+      this.per_page = parseInt(urlParams.per_page) || 30
     }
     if (urlParams.keywords) {
       this.keywords = urlParams.keywords
@@ -444,6 +503,34 @@ export default {
   methods: {
     humanFilesize,
     maxString,
+    openShareDialog (asset) {
+      this.shareAsset = asset
+      this.shareExpireType = 1
+      this.shareExpireValue = 1
+      this.shareResultUrl = ''
+      this.shareDialogVisible = true
+    },
+    async submitShare () {
+      if (this.shareExpireType !== 4 && (!this.shareExpireValue || this.shareExpireValue <= 0)) {
+        this.$message.warning('请输入有效的数字')
+        return
+      }
+      this.shareSubmitting = true
+      try {
+        const res = await api.get(`asset_get_share_url/${this.shareAsset.asset_id}`, {
+          params: {
+            expire_type: this.shareExpireType,
+            expire_value: this.shareExpireType === 4 ? 0 : this.shareExpireValue
+          }
+        })
+        this.shareResultUrl = res.data?.url || res.url || res.data || ''
+        this.$message.success('分享链接已生成')
+      } catch (err) {
+        this.$message.error(err?.message || '获取分享链接失败')
+      } finally {
+        this.shareSubmitting = false
+      }
+    },
     onDragStart (e, asset) {
       this.dragAsset = asset
       e.dataTransfer.effectAllowed = 'move'
@@ -466,9 +553,9 @@ export default {
       if (targetAsset.type !== 4) return
       try {
         await this.$confirm(
-          `是否将 「${sourceAsset.name}」 移动到 「${targetAsset.name}」？`,
-          '移动确认',
-          { type: 'info' }
+            `是否将 「${sourceAsset.name}」 移动到 「${targetAsset.name}」？`,
+            '移动确认',
+            { type: 'info' }
         )
       } catch {
         return
@@ -497,7 +584,11 @@ export default {
       this.moveSelectedDirId = null
       this.moveSubmitting = false
       assetsApi.assetDirs(0).then(res => {
-        this.moveDirTree = (res?.data || []).filter(d => d.asset_id !== asset.asset_id).map(d => ({ ...d, children: null, expanded: false }))
+        this.moveDirTree = (res?.data || []).filter(d => d.asset_id !== asset.asset_id).map(d => ({
+          ...d,
+          children: null,
+          expanded: false
+        }))
       }).catch(() => {
         this.$message.error('加载目录失败')
       })
@@ -510,7 +601,11 @@ export default {
       try {
         const res = await assetsApi.assetDirs(dir.asset_id)
         const movingAssetId = this.currentActionAsset?.asset_id
-        dir.children = (res?.data || []).filter(d => d.asset_id !== movingAssetId).map(d => ({ ...d, children: null, expanded: false }))
+        dir.children = (res?.data || []).filter(d => d.asset_id !== movingAssetId).map(d => ({
+          ...d,
+          children: null,
+          expanded: false
+        }))
         dir.expanded = true
       } catch {
         this.$message.error('加载子目录失败')
@@ -1071,7 +1166,7 @@ export default {
       // 重置到指定需求的查询条件并加载
       this.page = 1
       this.keywords = null
-      this.per_page = 32
+      this.per_page = 30
       this.isVectorSearch = 0
       this.dirId = dirId
       this.load(true)
@@ -1142,7 +1237,7 @@ export default {
     return {
       total: null,
       page: 1,
-      per_page: 32,
+      per_page: 30,
       keywords: null,
       assets: null,
       previewAsset: null,
@@ -1189,7 +1284,13 @@ export default {
       moveDialogVisible: false,
       moveDirTree: [],
       moveSelectedDirId: null,
-      moveSubmitting: false
+      moveSubmitting: false,
+      shareDialogVisible: false,
+      shareAsset: null,
+      shareExpireType: 1,
+      shareExpireValue: 1,
+      shareSubmitting: false,
+      shareResultUrl: ''
     }
   }
 }
@@ -1341,6 +1442,38 @@ export default {
   background: #f7f9fb;
 }
 
+.asset-cover-wrapper {
+  position: relative;
+}
+
+.asset-share-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  cursor: pointer;
+  color: #409eff;
+  font-size: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s;
+
+  &:hover {
+    background: #409eff;
+    color: #fff;
+  }
+}
+
+.asset-items-box:hover .asset-share-btn {
+  display: flex;
+}
+
 .asset-items-box:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(52, 152, 219, 0.4),
@@ -1362,11 +1495,13 @@ export default {
   justify-content: center;
   gap: 5px;
   align-items: center;
+
   .asset-info-time {
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
   .asset-info-size {
     display: flex;
     align-items: center;
