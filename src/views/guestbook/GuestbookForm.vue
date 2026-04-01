@@ -122,6 +122,8 @@ export default {
           this.guestbook.children.push({
             ...response.data
           })
+        } else {
+          this.$emit('created')
         }
         // 关闭输入框
         this.$emit('replay', null)

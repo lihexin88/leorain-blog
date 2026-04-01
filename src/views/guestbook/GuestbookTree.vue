@@ -43,11 +43,10 @@
           </div>
         </div>
         <div v-if="hasChildren">
-          <guestbook-tree v-for="children in guestbook.children" @replay="setActiveId" :activeId="activeId"
-                          :key="children.id" :guestbook="children"/>
-          <el-link v-if="guestbook.descendants_count > 1 && !show_all" class="pointer" @click="show_guestbook">... 展开
-          </el-link>
-          <el-link v-if="show_all" class="pointer" @click="hide_guestbook">折叠^</el-link>
+          <transition-group name="gb-item" tag="div">
+            <guestbook-tree v-for="children in guestbook.children" @replay="setActiveId" @deleted="removeChild"
+                            :activeId="activeId" :key="children.id" :guestbook="children"/>
+          </transition-group>
         </div>
       </div>
     </el-card>
@@ -68,7 +67,7 @@ export default {
   props: {
     guestbook: {
       type: Object,
-      default: {}
+      default: () => ({})
     },
     activeId: {
       type: String,
@@ -89,16 +88,7 @@ export default {
         response.forEach(item => {
           this.guestbook.children.push(item)
         })
-        this.show_all = true
       })
-    },
-    hide_guestbook () {
-      // 点击折叠
-      this.show_all = false
-      this.guestbook.children = this.guestbook.children.slice(0, 1)
-      if (this.guestbook.children.length > 0) {
-        this.guestbook.children[0].children = []
-      }
     },
     get_avatar (guestbook) {
       if (guestbook?.user?.avatar) {
@@ -111,12 +101,19 @@ export default {
       guestbookApi.deleteGuestbook(this.guestbook.id).then(() => {
         this.$emit('deleted', this.guestbook.id)
       })
+    },
+    removeChild (id) {
+      this.guestbook.children = this.guestbook.children.filter(c => c.id !== id)
+    }
+  },
+  mounted () {
+    if (this.guestbook.descendants_count > 0) {
+      this.show_guestbook()
     }
   },
   data () {
     return {
       nodeReplayId: 'replay_' + Math.random().toString(36).substr(2),
-      show_all: false,
       avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
       show_replay: false,
       deletePopconfirmVisible: false
@@ -144,9 +141,11 @@ export default {
 }
 
 .card-title-area {
-  background-color: #00f7de14;
+  background: linear-gradient(90deg, rgba(0, 247, 222, 0.08), rgba(0, 247, 222, 0.03));
   display: flex;
   align-items: center;
+  border-bottom: 1px solid rgba(0, 247, 222, 0.1);
+  border-radius: 4px 4px 0 0;
 }
 
 .card-content-area {
@@ -161,7 +160,7 @@ export default {
   align-items: center;
   width: 36px;
   padding: 2px;
-  justify-content: center
+  justify-content: center;
 }
 
 .guestbook-heading-tips {
@@ -170,5 +169,50 @@ export default {
   align-items: center;
   padding-right: 15px;
   font-size: .9em;
+}
+
+.box-card {
+  transition: box-shadow 0.3s ease, transform 0.25s ease;
+  border-radius: 6px;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 247, 222, 0.15), 0 2px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+}
+
+/* 子列表进出动效 */
+.gb-item-enter-active {
+  animation: gb-slide-in 0.35s ease;
+}
+
+.gb-item-leave-active {
+  animation: gb-slide-out 0.25s ease forwards;
+}
+
+.gb-item-move {
+  transition: transform 0.3s ease;
+}
+
+@keyframes gb-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gb-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 </style>
