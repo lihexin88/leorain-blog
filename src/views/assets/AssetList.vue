@@ -43,7 +43,8 @@
                 type="primary"
                 @click="handleAssetAsr(asset)"
             >
-              识别
+              <span v-if="asset.has_asr">已识别</span>
+              <span v-else>识别</span>
             </el-button>
             <!-- 右键菜单：重命名 / 删除 -->
             <el-dropdown
@@ -115,10 +116,22 @@
         </div>
       </div>
 
-      <div class="asset-sidebar" v-if="asrList.length">
+      <div class="asset-sidebar" v-if="showAsrSidebar">
         <el-tabs v-model="activeTab" class="asset-tabs">
           <el-tab-pane label="ASR 列表" name="asr">
             <div class="asr-tab-content">
+              <div class="asr-search-bar">
+                <el-input
+                    v-model="asrKeywords"
+                    clearable
+                    style="width: 280px"
+                    :prefix-icon="Search"
+                    placeholder="搜索 ASR 全文"
+                    @change="loadAsrList(true)"
+                    @clear="loadAsrList(true)"
+                ></el-input>
+                <el-button type="primary" @click="loadAsrList(true)">搜索</el-button>
+              </div>
               <el-table
                   v-if="asrList.length"
                   :data="asrList"
@@ -383,6 +396,9 @@ export default {
     ...mapState(useUserStore, ['user']),
     moment () {
       return moment
+    },
+    showAsrSidebar () {
+      return this.asrList.length > 0 || !!this.currentAsrAssetId || !!this.asrKeywords
     }
   },
   async mounted () {
@@ -1020,18 +1036,24 @@ export default {
       this.asrPollingTimer = setTimeout(poll, 1000)
     },
     handleAssetAsr (asset) {
+      this.currentAsrAssetId = asset.asset_id
+      this.asrPage = 1
+      if (Number(asset?.has_asr) === 1) {
+        this.loadAsrList(true)
+        return
+      }
       assetsApi.assetAsr({
         asset_id: asset.asset_id
       }).then((response) => {
         const recordId = response?.data?.record_id ?? response?.record_id
-        this.loadAsrList()
+        this.loadAsrList(true)
         this.$message.success('识别任务已提交')
         if (recordId) {
           this.pollAsrDetail(recordId)
           return
         }
         this.load()
-        this.loadAsrList()
+        this.loadAsrList(true)
       }).catch(err => {
         this.$message.error(err?.message || '提交识别失败')
       })
@@ -1095,10 +1117,15 @@ export default {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       })
     },
-    loadAsrList () {
+    loadAsrList (resetPage = false) {
+      if (resetPage) {
+        this.asrPage = 1
+      }
       api.get('/asr_list', {
         params: {
-          page: this.asrPage
+          page: this.asrPage,
+          asset_id: this.currentAsrAssetId,
+          keywords: this.asrKeywords
         }
       }).then((response) => {
         this.asrList = Array.isArray(response?.data) ? response.data.map(item => this.parseAsrItem(item)) : []
@@ -1139,6 +1166,8 @@ export default {
       asrPage: 1,
       asrPerPage: 15,
       asrTotal: 0,
+      asrKeywords: '',
+      currentAsrAssetId: null,
       asrPollingTimer: null,
       asrPollingCount: 0,
       smallWindowSize: false,
