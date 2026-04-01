@@ -319,7 +319,7 @@ export default {
   :deep(.el-card__body) {
     overflow: hidden;
     border-radius: 15px;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgb(255 255 255 / 0.81);
   }
 
   padding: 5px !important;

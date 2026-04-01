@@ -46,6 +46,9 @@
             启动时间: {{ getHumanReadableDate(stats.uptime * 1000) }} s
           </div>
           <div>
+            在线人数: {{ stats.online }}
+          </div>
+          <div>
             实时qps: {{ stats.qps }}
           </div>
           <div>

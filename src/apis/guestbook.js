@@ -16,5 +16,9 @@ export default {
   // 提交已授权留言
   createAuthorizedGuestbook (data) {
     return api.post('/guestbooks/authorized', data)
+  },
+  // 删除留言
+  deleteGuestbook (id) {
+    return api.delete(`/guestbooks/${id}`)
   }
 }

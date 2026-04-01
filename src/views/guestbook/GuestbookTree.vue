@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-top: 3px;padding-left: 2px" @mouseover="show_replay=true" @mouseleave="show_replay=false">
+  <div style="padding-top: 3px;padding-left: 2px" @mouseover="show_replay=true" @mouseleave="!deletePopconfirmVisible && (show_replay=false)">
     <el-card body-style="padding: 2px 0 0 6px;" class="box-card">
       <div class="card-body">
         <div>
@@ -22,6 +22,13 @@
             </div>
             <div class="pointer-style guestbook-heading-tips" style="padding: 2px;" v-show="show_replay">
               <el-button class="card-replay-button" type="success" @click="showThisReplay">回复</el-button>
+            </div>
+            <div class="pointer-style guestbook-heading-tips" style="padding: 2px;" v-if="user && show_replay">
+              <el-popconfirm title="确定要删除这条留言吗？" @confirm="deleteThisGuestbook" v-model:visible="deletePopconfirmVisible">
+                <template #reference>
+                  <el-button class="card-replay-button" type="danger">删除</el-button>
+                </template>
+              </el-popconfirm>
             </div>
           </div>
           <div class="card-content-area">
@@ -52,6 +59,8 @@ import moment from 'moment'
 import { getFriendlyDate } from '@/utils/helpers'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 import { guestbookApi } from '@/apis'
+import { mapState } from 'pinia'
+import { useUserStore } from '@/store/user'
 
 export default {
   name: 'GuestbookTree',
@@ -97,6 +106,11 @@ export default {
       } else {
         return this.avatar + guestbook.user.email_hash
       }
+    },
+    deleteThisGuestbook () {
+      guestbookApi.deleteGuestbook(this.guestbook.id).then(() => {
+        this.$emit('deleted', this.guestbook.id)
+      })
     }
   },
   data () {
@@ -104,10 +118,12 @@ export default {
       nodeReplayId: 'replay_' + Math.random().toString(36).substr(2),
       show_all: false,
       avatar: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
-      show_replay: false
+      show_replay: false,
+      deletePopconfirmVisible: false
     }
   },
   computed: {
+    ...mapState(useUserStore, ['user']),
     moment () {
       return moment
     },
