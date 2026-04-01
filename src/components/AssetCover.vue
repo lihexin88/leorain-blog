@@ -15,7 +15,12 @@
       <div class="asset-cover-video-mask">点击播放</div>
     </div>
     <div v-else-if="asset.type === 4" class="asset-cover-audio-wrapper" @click="$emit('openDir', asset)">
-      <el-icon class="asset-cover-audio-icon">
+      <div v-if="asset.children?.length" class="asset-cover-folder-grid">
+        <div v-for="(item,index) in asset.children" :key="index" class="asset-cover-folder-cell">
+          <el-image style="border-radius: 6px" class="asset-cover-folder-thumb" fit="cover" :src="item.child_thumbnail" />
+        </div>
+      </div>
+      <el-icon v-else class="asset-cover-audio-icon">
         <Folder/>
       </el-icon>
     </div>
@@ -74,7 +79,6 @@ export default {
   font-size: 64px;
   color: #409eff;
   border-radius: 6px;
-  background: #f7f9fb;
 }
 
 .asset-cover-video-mask {
@@ -92,5 +96,25 @@ export default {
 .asset-cover-video-mask:hover {
   transition: background-color .3s ease;
   background: rgba(0, 0, 0, 0.1);
+}
+
+.asset-cover-folder-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 220px;
+  padding: 20px;
+  gap: 6px;
+}
+
+.asset-cover-folder-cell {
+  width: calc(50% - 3px);
+  height: calc(50% - 3px);
+}
+
+.asset-cover-folder-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
