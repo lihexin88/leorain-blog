@@ -17,6 +17,7 @@ api.interceptors.request.use(
     if (config.url.startsWith('/api/')) {
       config.baseURL = ''
     }
+    config.headers.apiOrigin = 'frontend'
     return config
   },
   error => {
