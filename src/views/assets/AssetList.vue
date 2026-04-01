@@ -467,6 +467,14 @@ export default {
       // 登录成功后加载数据
       this.load()
       this.loadAsrList()
+      if (!this.dirId) {
+        this.ensureDefaultDir().then(dirId => {
+          this.dirId = dirId
+          this.loadDirPath(this.dirId)
+        })
+      } else {
+        this.loadDirPath(this.dirId)
+      }
     })
     const paginateStyle = paginateLayouts()
     this.smallWindowSize = paginateStyle.smallWindowSize
