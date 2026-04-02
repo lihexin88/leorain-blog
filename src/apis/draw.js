@@ -6,7 +6,7 @@ import http from './base'
  * @returns {Promise}
  */
 export function deleteDraw (assetId) {
-  return http.delete(`/draws/${assetId}`)
+  return http.delete(`/api/draws/${assetId}`)
 }
 
 /**
@@ -45,7 +45,7 @@ export function getDraw (assetId) {
  * @returns {Promise}
  */
 export function updateDraw (assetId, data) {
-  return http.patch(`/draws/${assetId}`, data)
+  return http.patch(`/api/draws/${assetId}`, data)
 }
 
 /**

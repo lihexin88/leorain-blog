@@ -542,54 +542,46 @@ export default {
     },
     load () {
       this.canvasTx.clearRect(0, 0, this.canvas.width, this.canvas.height) // 清空画布
-      // 加载当前数据
-      getDraw(this.asset_id).then((response) => {
-        this.asset_name = response.data.name
-      })
-      // 从服务端获取已存在的数据
-      getDrawInitData(this.asset_id).then((response) => {
-        this.lines = response ?? []
+      this.drawing = true
+      Promise.all([
+        getDraw(this.asset_id),
+        getDrawInitData(this.asset_id)
+      ]).then(([drawResponse, initDataResponse]) => {
+        this.asset_name = drawResponse.data.name
+        this.lines = initDataResponse ?? []
 
         const data = this.lines
         if (data.length === 0) return
-        let currentPathIndex = 0
-        let currentPointIndex = 0
 
-        const drawNextStep = () => {
-          if (currentPathIndex >= data.length) return // 绘制结束
-
-          const path = data[currentPathIndex]
+        // 直接批量绘制，避免逐点 requestAnimationFrame 带来的额外开销
+        data.forEach((path) => {
           const points = path.positionList
+          if (!points || points.length === 0) return
 
-          // 如果是第一个点，初始化路径
-          if (currentPointIndex === 0) {
-            this.canvasTx.strokeStyle = path.color
-            this.printerColor = path.color
-            this.lineWidth = path.lineWidth
-            this.canvasTx.lineWidth = path.lineWidth
-            this.canvasTx.beginPath()
-            this.canvasTx.moveTo(points[0].x, points[0].y)
-          }
+          this.canvasTx.strokeStyle = path.color
+          this.canvasTx.lineWidth = path.lineWidth
+          this.canvasTx.beginPath()
+          this.canvasTx.moveTo(points[0].x, points[0].y)
 
-          // 连接到下一个点
-          if (currentPointIndex < points.length) {
-            const point = points[currentPointIndex]
+          for (let i = 1; i < points.length; i++) {
+            const point = points[i]
             this.canvasTx.lineTo(point.x, point.y)
-            this.canvasTx.stroke()
-            currentPointIndex++
           }
 
-          // 如果当前路径绘制完，切换到下一条路径
-          if (currentPointIndex >= points.length) {
-            currentPointIndex = 0
-            currentPathIndex++
+          this.canvasTx.stroke()
+          this.canvasTx.closePath()
+        })
+      }).then(() => {
+        if (this.lines.length > 0) {
+          const lastPath = this.lines[this.lines.length - 1]
+          if (lastPath?.color) {
+            this.printerColor = lastPath.color
           }
-
-          // 使用 requestAnimationFrame 递归调用
-          requestAnimationFrame(drawNextStep)
+          if (lastPath?.lineWidth) {
+            this.lineWidth = lastPath.lineWidth
+          }
         }
-        this.drawing = true
-        drawNextStep()
+      }).finally(() => {
         this.drawing = false
       })
     }
@@ -619,11 +611,6 @@ export default {
         if (response.data === true) {
           this.drawing = true
           this.currentLine = [] // 清空当前线段
-          const pos = this.getMousePos(event)
-          this.currentLine.push({ x: pos.x, y: pos.y })
-          this.canvasTx.beginPath()
-          this.canvasTx.lineWidth = this.lineWidth
-          this.canvasTx.moveTo(pos.x, pos.y)
         } else {
           this.drawing = true
         }
@@ -634,6 +621,12 @@ export default {
     this.canvas.addEventListener('mousemove', (event) => {
       if (this.drawing) {
         const pos = this.getMousePos(event)
+        // 第一个点时初始化路径，避免异步锁请求延迟导致 moveTo 位置偏差产生直线
+        if (this.currentLine.length === 0) {
+          this.canvasTx.beginPath()
+          this.canvasTx.lineWidth = this.lineWidth
+          this.canvasTx.moveTo(pos.x, pos.y)
+        }
         this.canvasTx.lineTo(pos.x, pos.y)
         this.canvasTx.stroke()
         this.currentLine.push({ x: pos.x, y: pos.y }) // 保存当前线段的坐标
