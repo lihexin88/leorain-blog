@@ -23,6 +23,8 @@ export default {
       fishCooldowns: {},
       // 抓取动作状态
       isGrabbing: false,
+      // 当前帧率
+      fps: 0,
 
       // 游戏状态
       fishing: false,
@@ -59,9 +61,13 @@ export default {
     this.bubbleGroup = null
     this.fishMeshes = []
     this.bubbleMeshes = []
+    this.fishElements = []
 
     // 游戏相关的非响应式属性
     this.timer = null
+    this.sceneFrame = null
+    this.fpsLastTime = 0
+    this.fpsFrameCount = 0
   },
   methods: {
     // 初始化 Three.js 场景
@@ -199,9 +205,9 @@ export default {
       }
 
       this.movingFishes = buttons
-      this.startMovingButtons()
       this.initBubbles()
-      this.startBubbles()
+      this.createFishElements()
+      this.startSceneLoop()
     },
     // 初始化气泡
     initBubbles () {
@@ -234,154 +240,125 @@ export default {
       }
       this.bubbles = bubbles
     },
-    // 开始移动气泡
-    startBubbles () {
-      const animate = () => {
-        // 更新气泡数据
-        this.bubbles = this.bubbles.map((bubble, index) => {
-          let newY = bubble.y - bubble.speed
-          let newOpacity = bubble.opacity
+    // 更新气泡位置
+    updateBubbles () {
+      for (let i = 0; i < this.bubbles.length; i++) {
+        const bubble = this.bubbles[i]
+        let newY = bubble.y - bubble.speed
+        let newOpacity = bubble.opacity
 
-          // 计算气泡在屏幕上的位置比例（0=顶部，1=底部）
-          const positionRatio = newY / window.innerHeight
+        const positionRatio = newY / window.innerHeight
+        if (positionRatio < 0.2) {
+          newOpacity = bubble.opacity * positionRatio * 5
+        }
 
-          // 根据位置调整透明度，越接近顶部越透明
-          if (positionRatio < 0.2) {
-            newOpacity = bubble.opacity * positionRatio * 5 // 在顶部20%区域内逐渐消失
-          }
+        if (newY < -bubble.size) {
+          newY = window.innerHeight + Math.random() * 200
+          bubble.x = Math.random() * window.innerWidth
+          newOpacity = Math.random() * (0.7 - 0.3) + 0.3
+        }
 
-          // 如果气泡移出屏幕顶部，重置到底部
-          if (newY < -bubble.size) {
-            newY = window.innerHeight + Math.random() * 200
-            bubble.x = Math.random() * window.innerWidth
-            newOpacity = Math.random() * (0.7 - 0.3) + 0.3 // 重置透明度
-          }
+        const mesh = this.bubbleMeshes[i]
+        if (mesh) {
+          mesh.position.set(
+            bubble.x - window.innerWidth / 2,
+            window.innerHeight / 2 - newY,
+            0
+          )
+          mesh.material.opacity = newOpacity
+        }
 
-          // 更新对应的 Three.js 网格
-          if (this.bubbleMeshes[index]) {
-            this.bubbleMeshes[index].position.set(
-              bubble.x - window.innerWidth / 2,
-              window.innerHeight / 2 - newY,
-              0
-            )
+        bubble.y = newY
+        bubble.opacity = newOpacity
+      }
+    },
+    // 开始移动气泡和鱼的统一动画循环
+    startSceneLoop () {
+      const animate = (time) => {
+        const currentTime = time || Date.now()
 
-            // 更新材质透明度
-            this.bubbleMeshes[index].material.opacity = newOpacity
-          }
+        this.updateBubbles()
+        this.updateMovingFishes(currentTime)
 
-          return {
-            ...bubble,
-            y: newY,
-            opacity: newOpacity
-          }
-        })
-
-        // 渲染 Three.js 场景
         if (this.renderer && this.scene && this.camera) {
           this.renderer.render(this.scene, this.camera)
         }
 
-        this.bubbleAnimationFrame = requestAnimationFrame(animate)
+        this.updateFps(currentTime)
+        this.sceneFrame = requestAnimationFrame(animate)
       }
 
-      this.bubbleAnimationFrame = requestAnimationFrame(animate)
+      if (this.sceneFrame) {
+        cancelAnimationFrame(this.sceneFrame)
+      }
+      this.sceneFrame = requestAnimationFrame(animate)
     },
-    // 开始移动按钮
-    startMovingButtons () {
-      // 创建鱼的 DOM 元素
-      this.createFishElements()
+    // 更新鱼的位置
+    updateMovingFishes (currentTime) {
+      for (let i = 0; i < this.movingFishes.length; i++) {
+        const fish = this.movingFishes[i]
+        let newX = fish.x + fish.speedX
+        let newY = fish.y + fish.speedY
+        let newSpeedX = fish.speedX
+        let newSpeedY = fish.speedY
 
-      const animate = () => {
-        const currentTime = Date.now()
+        if (newX <= 0 || newX >= window.innerWidth - fish.size) {
+          newSpeedX = -newSpeedX
+          newX = newX <= 0 ? 0 : window.innerWidth - fish.size
+        }
 
-        // 更新鱼的数据
-        this.movingFishes = this.movingFishes.map((fish) => {
-          let newX = fish.x + fish.speedX
-          let newY = fish.y + fish.speedY
-          let newSpeedX = fish.speedX
-          let newSpeedY = fish.speedY
+        if (newY <= 0 || newY >= window.innerHeight - 40) {
+          newSpeedY = -newSpeedY
+          newY = newY <= 0 ? 0 : window.innerHeight - 40
+        }
 
-          // 检测X轴边缘碰撞
-          if (newX <= 0 || newX >= window.innerWidth - fish.size) {
-            newSpeedX = -newSpeedX
-            newX = newX <= 0 ? 0 : window.innerWidth - fish.size
+        if (Math.random() < 0.001) {
+          newSpeedX = (Math.random() - 0.5) * 2
+          newSpeedY = (Math.random() - 0.5) * 2
+        }
+
+        const fishCenterX = fish.x + fish.size / 2
+        const fishCenterY = fish.y + fish.size * 0.2
+        const distance = Math.sqrt(
+          Math.pow(fishCenterX - this.mouseX, 2) +
+          Math.pow(fishCenterY - this.mouseY, 2)
+        )
+
+        if (distance < 80 && currentTime - fish.lastDodgeTime > 500) {
+          const dx = fishCenterX - this.mouseX
+          const dy = fishCenterY - this.mouseY
+          const magnitude = Math.sqrt(dx * dx + dy * dy)
+          if (magnitude > 0) {
+            newSpeedX = (dx / magnitude) * 1.2
+            newSpeedY = (dy / magnitude) * 1.2
+            fish.lastDodgeTime = currentTime
           }
+        }
 
-          // 检测Y轴边缘碰撞
-          if (newY <= 0 || newY >= window.innerHeight - 40) {
-            newSpeedY = -newSpeedY
-            newY = newY <= 0 ? 0 : window.innerHeight - 40
-          }
+        const angle = Math.atan2(newSpeedY, newSpeedX) * (180 / Math.PI)
+        const fishEl = this.fishElements[i]
+        if (fishEl) {
+          fishEl.style.transform = `translate3d(${newX}px, ${newY}px, 0) rotate(${angle}deg)`
+        }
 
-          // 随机改变方向（0.1%的概率）
-          if (Math.random() < 0.001) {
-            newSpeedX = (Math.random() - 0.5) * 2
-            newSpeedY = (Math.random() - 0.5) * 2
-          }
-
-          // 检测与鼠标的距离，如果小于150像素且冷却时间已过，则躲避
-          const fishCenterX = fish.x + fish.size / 2
-          const fishCenterY = fish.y + fish.size * 0.2 // 鱼的高度是size的0.4倍，所以中心高度是0.2倍
-          const distance = Math.sqrt(
-            Math.pow(fishCenterX - this.mouseX, 2) +
-              Math.pow(fishCenterY - this.mouseY, 2)
-          )
-
-          if (distance < 80 && currentTime - fish.lastDodgeTime > 500) {
-            // 计算从鼠标到鱼的方向向量
-            const dx = fishCenterX - this.mouseX
-            const dy = fishCenterY - this.mouseY
-
-            // 归一化向量并设置新的速度
-            const magnitude = Math.sqrt(dx * dx + dy * dy)
-            if (magnitude > 0) {
-              newSpeedX = (dx / magnitude) * 1.2 // 加速逃离
-              newSpeedY = (dy / magnitude) * 1.2
-
-              // 记录躲避时间
-              fish.lastDodgeTime = currentTime
-            }
-          }
-
-          // 计算移动角度（弧度转换为角度）
-          const angle = Math.atan2(newSpeedY, newSpeedX) * (180 / Math.PI)
-
-          // 更新对应的 DOM 元素
-          const fishEl = document.querySelector(`.fish-${fish.id}`)
-          if (fishEl) {
-            fishEl.style.left = `${newX}px`
-            fishEl.style.top = `${newY}px`
-            fishEl.style.transform = `rotate(${angle}deg)`
-          }
-
-          return {
-            ...fish,
-            x: newX,
-            y: newY,
-            speedX: newSpeedX,
-            speedY: newSpeedY,
-            angle,
-            lastDodgeTime: fish.lastDodgeTime
-          }
-        })
-
-        this.animationFrame = requestAnimationFrame(animate)
+        fish.x = newX
+        fish.y = newY
+        fish.speedX = newSpeedX
+        fish.speedY = newSpeedY
+        fish.angle = angle
       }
-
-      this.animationFrame = requestAnimationFrame(animate)
     },
 
     // 创建鱼的 DOM 元素
     createFishElements () {
-      // 获取或创建鱼的容器
-      let fishContainer = document.querySelector('.fish-container')
+      const fishContainer = this.$el
 
       this.movingFishes.forEach(fish => {
         const fishEl = document.createElement('div')
         fishEl.className = `moving-fishes fish-button fish-${fish.id}`
         fishEl.style.position = 'absolute'
-        fishEl.style.left = `${fish.x}px`
-        fishEl.style.top = `${fish.y}px`
+        fishEl.style.left = '0'
+        fishEl.style.top = '0'
         fishEl.style.width = `${fish.size}px`
         fishEl.style.height = `${fish.size}px`
         fishEl.style.zIndex = '5'
@@ -389,9 +366,10 @@ export default {
         fishEl.style.backgroundSize = 'contain'
         fishEl.style.backgroundRepeat = 'no-repeat'
         fishEl.style.backgroundPosition = 'center'
-        fishEl.style.transform = `rotate(${fish.angle}deg)`
+        fishEl.style.transform = `translate3d(${fish.x}px, ${fish.y}px, 0) rotate(${fish.angle}deg)`
         fishEl.style.transformOrigin = 'center'
         fishEl.style.pointerEvents = 'auto'
+        fishEl.style.willChange = 'transform'
 
         // 添加点击事件
         fishEl.addEventListener('click', (e) => {
@@ -400,7 +378,24 @@ export default {
         })
 
         fishContainer.appendChild(fishEl)
+        this.fishElements.push(fishEl)
       })
+    },
+    // 更新 FPS 显示
+    updateFps (currentTime) {
+      if (!this.fpsLastTime) {
+        this.fpsLastTime = currentTime
+        this.fpsFrameCount = 0
+        return
+      }
+
+      this.fpsFrameCount++
+      const elapsed = currentTime - this.fpsLastTime
+      if (elapsed >= 500) {
+        this.fps = Math.round((this.fpsFrameCount * 1000) / elapsed)
+        this.fpsFrameCount = 0
+        this.fpsLastTime = currentTime
+      }
     },
     // 打开弹窗并开始游戏
     openDialog () {
@@ -576,17 +571,6 @@ export default {
       }
     },
 
-    // 开始渲染循环
-    startRenderLoop () {
-      const render = () => {
-        // 只在有场景时渲染
-        if (this.renderer && this.scene && this.camera) {
-          this.renderer.render(this.scene, this.camera)
-        }
-        requestAnimationFrame(render)
-      }
-      render()
-    },
     // 关闭弹窗
     handleClose (done) {
       this.fishing = false
@@ -626,7 +610,6 @@ export default {
     window.addEventListener('keydown', this.onKeyDown)
     window.addEventListener('mousemove', this.updateMousePosition)
     this.initMovingButtons()
-    this.startRenderLoop()
   },
   beforeUnmount () {
     window.removeEventListener('keydown', this.onKeyDown)
@@ -642,10 +625,12 @@ export default {
     if (this.bubbleAnimationFrame) {
       cancelAnimationFrame(this.bubbleAnimationFrame)
     }
+    if (this.sceneFrame) {
+      cancelAnimationFrame(this.sceneFrame)
+    }
 
     // 清理鱼的 DOM 元素
-    this.movingFishes.forEach(fish => {
-      const fishEl = document.querySelector(`.fish-${fish.id}`)
+    this.fishElements.forEach((fishEl) => {
       if (fishEl && fishEl.parentNode) {
         fishEl.parentNode.removeChild(fishEl)
       }
@@ -673,12 +658,14 @@ export default {
 
     // 清空数组
     this.bubbleMeshes = []
+    this.fishElements = []
   }
 }
 </script>
 
 <template>
   <div class="fish-container" :class="{ 'grabbing': isGrabbing }" @click="handleGrabClick">
+    <div class="fps-badge">FPS {{ fps }}</div>
     <!-- Three.js 渲染器将通过 JavaScript 动态添加 -->
     <!-- 鱼的 DOM 元素将通过 JavaScript 动态添加 -->
 
@@ -739,6 +726,22 @@ export default {
   align-items: center;
   text-align: center;
   padding: 8px 0 4px;
+}
+
+.fps-badge {
+  position: fixed;
+  top: 72px;
+  right: 12px;
+  z-index: 20;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  backdrop-filter: blur(4px);
 }
 
 .item-dialog__title {
