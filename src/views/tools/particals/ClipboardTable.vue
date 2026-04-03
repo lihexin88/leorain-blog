@@ -14,6 +14,8 @@ export default {
       show_popup: false,
       smallWindowSize: false,
       layout: '',
+      showContentDialog: false,
+      currentContent: '',
       currentClipboard: {
         id: null,
         content: null,
@@ -207,6 +209,10 @@ export default {
       this.currentClipboard.id = null
       this.currentClipboard.content = null
     },
+    showContent (content) {
+      this.currentContent = content || ''
+      this.showContentDialog = true
+    },
     truncateLines (str, linesCount) {
       const regex = /\r\n|\n|\r/g
       let count = 0
@@ -294,6 +300,19 @@ export default {
         </div>
       </template>
     </el-dialog>
+    <el-dialog
+      v-model="showContentDialog"
+      title="内容详情"
+      width="720px"
+      :close-on-click-modal="false"
+    >
+      <pre class="clipboard-table-content-dialog">{{ currentContent }}</pre>
+      <template v-slot:footer>
+        <div>
+          <el-button type="primary" @click="showContentDialog = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
     <!--      表格-->
     <div>
       <el-table
@@ -322,23 +341,26 @@ export default {
         >
           <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
-              <el-image :preview-src-list="[scope.row?.content]" style="max-width: 200px" :preview-teleport="true"
-                        :z-index="3000" crossorigin="anonymous"
-                        :src="scope.row?.content"></el-image>
+              <el-image
+                :preview-src-list="[scope.row?.content]"
+                style="max-width: 200px"
+                preview-teleported
+                :z-index="3000"
+                crossorigin="anonymous"
+                :src="scope.row?.content"
+              ></el-image>
             </div>
             <div v-else-if="scope.row?.type === 1">
-              <el-popover trigger="click" :content="scope.row?.content">
-                <pre>{{ scope.row?.content }}</pre>
-                <template v-slot:reference>
-                  <div style="cursor: pointer;display: inline-block">
-                  <pre class="clipboard-table-column-content"
-                       v-if="countLineBreaks(scope.row?.content) > 5">{{ truncateLines(scope.row?.content, 5) }}</pre>
-                    <pre class="clipboard-table-column-content"
-                         v-else-if="scope.row?.content.length > 300">{{ maxString(scope.row?.content, 300) }}</pre>
-                    <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
-                  </div>
-                </template>
-              </el-popover>
+              <div
+                style="cursor: pointer;display: inline-block"
+                @click="showContent(scope.row?.content)"
+              >
+                <pre class="clipboard-table-column-content"
+                     v-if="countLineBreaks(scope.row?.content) > 5">{{ truncateLines(scope.row?.content, 5) }}</pre>
+                <pre class="clipboard-table-column-content"
+                     v-else-if="scope.row?.content.length > 300">{{ maxString(scope.row?.content, 300) }}</pre>
+                <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -421,5 +443,13 @@ export default {
   justify-content: center;
   margin-left: 5px;
   cursor: pointer;
+}
+
+.clipboard-table-content-dialog {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 60vh;
+  overflow: auto;
 }
 </style>
