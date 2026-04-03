@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { nextTick } from 'vue'
 import MainPage from '../views/Main.vue'
+import { useConfigStore } from '../store/config'
 
 const routes = [
   {
@@ -186,6 +188,18 @@ const router = createRouter({
       return { top: 0 }
     }
   }
+})
+
+// After each navigation, apply a default TDK if the matched component doesn't define one
+router.afterEach((to) => {
+  nextTick(() => {
+    const hasTDK = to.matched.some((record) => record.instances?.default?.$options?.tdk)
+    if (!hasTDK) {
+      const configStore = useConfigStore()
+      const siteTitle = configStore.config?.title || 'leorain'
+      document.title = siteTitle
+    }
+  })
 })
 
 export default router
