@@ -235,7 +235,6 @@ export default {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
     delete_asset (assetId) {
       deleteDraw(assetId).then((response) => {
-        console.log(response)
         this.draw_list = this.draw_list.filter(item => item.asset_id !== assetId)
         this.$message.warning('已删除')
       })
@@ -260,6 +259,7 @@ export default {
         return
       }
       createDraw(this.new_asset_name).then((response) => {
+        console.log(response)
         this.asset_id = response.data.asset_id
         this.show_new_modal = false
         this.show_draw_list = true
@@ -300,7 +300,7 @@ export default {
      */
     get_default_dir () {
       assetsApi.getDefaultDir().then((response) => {
-        this.default_dir_asset_id = response.data.data.asset_id
+        this.default_dir_asset_id = response.data.asset_id
       })
     },
     /**
@@ -314,8 +314,8 @@ export default {
       // 获取预创建文件信息
       assetsApi.getUploadUrl(this.asset_id + '.png').then((response) => {
         // canvas 截图
-        const fileObject = response.data.url.object
-        const fileUrl = response.data.url.url
+        const fileObject = response.url.object
+        const fileUrl = response.url.url
         const dataURL = this.canvas.toDataURL('image/png')
         const blob = dataURLToBlob(dataURL)
         const file = new File([blob], this.asset_id + '.png', { type: blob.type })
@@ -343,11 +343,11 @@ export default {
         }).then((response) => {
           // 更新封面
           updateDraw(this.asset_id, {
-            cover_image_asset_id: response.data.data.asset_id
+            cover_image_asset_id: response.data.asset_id
           }).then((response) => {
             this.draw_list.forEach(item => {
               if (item.asset_id === this.asset_id) {
-                item.cover_image_asset_id = response.data.data.asset_id
+                item.cover_image_asset_id = response.data.asset_id
               }
             })
           })
