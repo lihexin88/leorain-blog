@@ -35,10 +35,10 @@
 export default {
   name: 'ServerError',
   methods: {
-    goHome() {
+    goHome () {
       this.$router.push('/')
     },
-    refresh() {
+    refresh () {
       window.location.reload()
     }
   }
