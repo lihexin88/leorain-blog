@@ -19,28 +19,16 @@
           在线剪切板同步
         </h4>
       </div>
-      <div class="clipboard-info-trigger">
-        <el-button type="primary" plain @click="showIntroDialog = true">
-          点击查看文本说明
-        </el-button>
-      </div>
-      <el-dialog
-          v-model="showIntroDialog"
-          title="在线剪切板同步"
-          width="720px"
-          :close-on-click-modal="false"
-          class="clipboard-intro-dialog"
-      >
-        <div class="clipboard-intro-content">
-          <div>
-            <el-divider>
-              版块设计初衷
-            </el-divider>
-            解决手机和电脑剪切板同步问题。某些设备无法安装例如：微信、飞书等工具，或者当前没有安装。需要同步一些简单的文字信息。
-          </div>
-          <div>
-            <el-divider>功能介绍</el-divider>
-            <markdown-parse content="
+      <div class="clipboard-intro-content">
+        <div>
+          <el-divider>
+            版块设计初衷
+          </el-divider>
+          解决手机和电脑剪切板同步问题。某些设备无法安装例如：微信、飞书等工具，或者当前没有安装。需要同步一些简单的文字信息。
+        </div>
+        <div>
+          <el-divider>功能介绍</el-divider>
+          <markdown-parse content="
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
@@ -48,26 +36,20 @@
 5. 重复新增的剪切板内容，会删除之前相同内容的条目
 6. 内容支持文字、图片
 "></markdown-parse>
-          </div>
-          <div>
-            <el-divider>tips</el-divider>
-            <i>公共剪切板注意隐私安全</i>
-          </div>
-          <div>
-            <el-divider>开发相关</el-divider>
-            <markdown-parse content="
+        </div>
+        <div>
+          <el-divider>tips</el-divider>
+          <i>公共剪切板注意隐私安全</i>
+        </div>
+        <div>
+          <el-divider>开发相关</el-divider>
+          <markdown-parse content="
 - 开发耗时:第一版迭代约5小时
 - 期待开发内容:
     - 各平台可直接运行的命令行工具
 "></markdown-parse>
-          </div>
         </div>
-        <template v-slot:footer>
-          <div class="dialog-footer">
-            <el-button type="primary" @click="showIntroDialog = false">我知道了</el-button>
-          </div>
-        </template>
-      </el-dialog>
+      </div>
     </div>
   </div>
 </template>
@@ -80,8 +62,7 @@ export default {
   components: { MarkdownParse, ClipboardTable },
   data () {
     return {
-      data_source_type: 'public',
-      showIntroDialog: false
+      data_source_type: 'public'
     }
   }
 }
@@ -102,12 +83,6 @@ export default {
   border-right: 1px solid #e7eaec;
   padding: 20px 10px 10px 10px;
   opacity: 1 !important;
-}
-
-.clipboard-info-trigger {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
 }
 
 .clipboard-content-box {
@@ -132,5 +107,6 @@ export default {
 
 .clipboard-intro-content {
   line-height: 1.7;
+  margin-top: 20px;
 }
 </style>
