@@ -216,6 +216,12 @@ export default {
         description: '钓鱼小游戏',
         href: '/tools/fish',
         image: 'https://images.leorain.cn/icons/tools/tool_fish.png'
+      },
+      {
+        text: 'Linux 在线终端',
+        description: '在浏览器中运行真实的 Linux 容器，支持完整终端交互',
+        href: '/tools/linux',
+        image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
       }
       ]
     }
