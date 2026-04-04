@@ -108,6 +108,11 @@ const routes = [
             path: 'coder',
             name: 'ToolCoder',
             component: () => import('../views/tools/ToolCoder.vue')
+          },
+          {
+            path: 'linux',
+            name: 'ToolLinux',
+            component: () => import('../views/tools/ToolLinux.vue')
           }
         ]
       },
