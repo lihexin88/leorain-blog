@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import authApi from '@/apis/auth'
 import userApi from '@/apis/user'
-import { dispatchUserLoginSuccess } from '@/utils/auth-events'
+import { dispatchUserLoginSuccess, dispatchUserLogoutSuccess } from '@/utils/auth-events'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -86,6 +86,7 @@ export const useUserStore = defineStore('user', {
       this.token = null
       localStorage.removeItem('user')
       localStorage.removeItem('token')
+      dispatchUserLogoutSuccess()
     }
   }
 })

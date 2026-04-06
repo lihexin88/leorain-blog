@@ -74,7 +74,7 @@
           <ul class="info-list">
             <li>点击「连接」获取一个独立的 Linux（Ubuntu）容器</li>
             <li>最多支持 <strong>3</strong> 个并发会话，超出后自动排队等待</li>
-            <li>会话有效期 <strong>30 分钟</strong>，到期前 5 分钟会收到提醒</li>
+            <li>会话有效期 <strong>10 分钟</strong>，到期前 5 分钟会收到提醒</li>
             <li>容器资源限制：1 CPU · 512 MB 内存 · 3 GB 存储</li>
             <li>断开连接后容器及其数据将被自动清除</li>
           </ul>
@@ -91,6 +91,7 @@ import '@xterm/xterm/css/xterm.css'
 import { markRaw } from 'vue'
 import { Connection, Close, Delete } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
+import { USER_LOGOUT_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   tdk: {
@@ -142,6 +143,9 @@ export default {
 
   mounted () {
     window.addEventListener('resize', this.onResize)
+    window.addEventListener(USER_LOGOUT_SUCCESS_EVENT, () => {
+      this.doDisconnect()
+    })
     this.initTerminal()
   },
 
@@ -152,7 +156,18 @@ export default {
       if (this._imeHandler && this.terminal.textarea) {
         this.terminal.textarea.removeEventListener('compositionend', this._imeHandler)
       }
-      this.terminal.dispose()
+      // dispose fitAddon first to avoid "addon not loaded" error when terminal.dispose() iterates addons
+      if (this.fitAddon) {
+        try {
+          this.fitAddon.dispose()
+        } catch (e) { /* ignore */
+        }
+        this.fitAddon = null
+      }
+      try {
+        this.terminal.dispose()
+      } catch (e) { /* ignore */
+      }
       this.terminal = null
     }
   },
@@ -211,7 +226,7 @@ export default {
     },
 
     onResize () {
-      if (this.fitAddon) this.fitAddon.fit()
+      if (this.fitAddon && this.terminal) this.fitAddon.fit()
     },
 
     /* ── 连接 / 断开 ── */
@@ -277,7 +292,8 @@ export default {
         type: 'warning'
       }).then(() => {
         this.doDisconnect()
-      }).catch(() => {})
+      }).catch(() => {
+      })
     },
 
     doDisconnect () {
