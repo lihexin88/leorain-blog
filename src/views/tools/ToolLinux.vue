@@ -271,12 +271,19 @@ export default {
     },
 
     disconnect () {
-      this.doDisconnect()
+      this.$confirm('断开连接后，容器及其所有数据将被清除，确定要断开吗？', '断开连接', {
+        confirmButtonText: '确定断开',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.doDisconnect()
+      }).catch(() => {})
     },
 
     doDisconnect () {
       if (this.ws) {
         this.ws.close()
+        this.terminal.writeln('\x1b\r\n[32m[容器已断开]\x1b[0m\r\n')
         this.ws = null
       }
       this.status = 'disconnected'
@@ -291,7 +298,7 @@ export default {
         case 'connected':
           this.status = 'connected'
           this.queuePosition = 0
-          this.terminal.writeln('\x1b[32m[容器已就绪，可以开始输入命令]\x1b[0m\r\n')
+          this.terminal.writeln('\x1b\r\n[32m[容器已就绪，可以开始输入命令]\x1b[0m\r\n')
           if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send('\r')
           }
