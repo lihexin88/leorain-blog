@@ -11,38 +11,45 @@
               <span :class="['status-dot', statusClass]"></span>
               <span class="status-label">{{ statusText }}</span>
             </div>
+            <div v-if="countdownMessage">
+              <span style="font-size: 14px; color: #959595;">
+              {{ countdownMessage }}
+              </span>
+            </div>
             <div class="status-right">
               <el-button
-                v-if="status === 'disconnected'"
-                type="primary"
-                :icon="Connection"
-                @click="connect"
-              >连接</el-button>
+                  v-if="status === 'disconnected'"
+                  type="primary"
+                  :icon="Connection"
+                  @click="connect"
+              >连接
+              </el-button>
               <el-button
-                v-else
-                type="danger"
-                :icon="Close"
-                @click="disconnect"
-              >断开</el-button>
+                  v-else
+                  type="danger"
+                  :icon="Close"
+                  @click="disconnect"
+              >断开
+              </el-button>
               <el-button :icon="Delete" @click="clearTerminal">清空</el-button>
             </div>
           </div>
 
           <el-alert
-            v-if="queuePosition > 0"
-            :title="`当前排队：第 ${queuePosition} 位，请稍候...`"
-            type="warning"
-            :closable="false"
-            show-icon
-            class="status-alert"
+              v-if="queuePosition > 0"
+              :title="`当前排队：第 ${queuePosition} 位，请稍候...`"
+              type="warning"
+              :closable="false"
+              show-icon
+              class="status-alert"
           />
           <el-alert
-            v-if="warnMessage"
-            :title="warnMessage"
-            type="warning"
-            :closable="false"
-            show-icon
-            class="status-alert"
+              v-if="warnMessage"
+              :title="warnMessage"
+              type="warning"
+              :closable="false"
+              show-icon
+              class="status-alert"
           />
         </el-card>
       </el-col>
@@ -103,7 +110,8 @@ export default {
       // disconnected | connecting | queued | connected
       status: 'disconnected',
       queuePosition: 0,
-      warnMessage: ''
+      warnMessage: '',
+      countdownMessage: ''
     }
   },
 
@@ -141,6 +149,9 @@ export default {
     window.removeEventListener('resize', this.onResize)
     this.doDisconnect()
     if (this.terminal) {
+      if (this._imeHandler && this.terminal.textarea) {
+        this.terminal.textarea.removeEventListener('compositionend', this._imeHandler)
+      }
       this.terminal.dispose()
       this.terminal = null
     }
@@ -189,6 +200,14 @@ export default {
           this.ws.send(data)
         }
       })
+
+      // xterm 不处理 IME 组合输入（中文/日文等），需手动监听 compositionend 补发
+      this._imeHandler = (e) => {
+        if (e.data && this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(e.data)
+        }
+      }
+      this.terminal.textarea.addEventListener('compositionend', this._imeHandler)
     },
 
     onResize () {
@@ -222,16 +241,22 @@ export default {
               this.handleControlMessage(msg)
               return
             }
-          } catch (e) { /* fall through */ }
+          } catch (e) { /* fall through */
+          }
         }
         // 普通终端输出
         this.terminal.write(data)
+      }
+      this.ws.onopen = () => {
+        this.terminal.focus()
       }
 
       this.ws.onclose = (event) => {
         const wasConnected = this.status !== 'disconnected'
         this.status = 'disconnected'
         this.queuePosition = 0
+        this.warnMessage = ''
+        this.countdownMessage = ''
         this.ws = null
         if (wasConnected) {
           this.terminal.writeln('\r\n\x1b[31m[连接已断开]\x1b[0m')
@@ -256,6 +281,8 @@ export default {
       }
       this.status = 'disconnected'
       this.queuePosition = 0
+      this.warnMessage = ''
+      this.countdownMessage = ''
     },
 
     /* ── 控制消息处理 ── */
@@ -265,12 +292,19 @@ export default {
           this.status = 'connected'
           this.queuePosition = 0
           this.terminal.writeln('\x1b[32m[容器已就绪，可以开始输入命令]\x1b[0m\r\n')
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send('\r')
+          }
           break
 
         case 'queue':
           this.status = 'queued'
           this.queuePosition = msg.position || 0
           this.terminal.writeln(`\x1b[33m[排队中，当前位置：第 ${msg.position} 位]\x1b[0m`)
+          break
+
+        case 'countdown':
+          this.countdownMessage = msg.message || `剩余时间：${msg.position} 秒`
           break
 
         case 'warn':
@@ -344,9 +378,18 @@ export default {
     height: 10px;
     border-radius: 50%;
 
-    &.dot-gray   { background: #909399; }
-    &.dot-yellow { background: #e6a23c; animation: blink 1s infinite; }
-    &.dot-green  { background: #67c23a; }
+    &.dot-gray {
+      background: #909399;
+    }
+
+    &.dot-yellow {
+      background: #e6a23c;
+      animation: blink 1s infinite;
+    }
+
+    &.dot-green {
+      background: #67c23a;
+    }
   }
 
   .status-label {
@@ -393,7 +436,11 @@ export default {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 </style>
