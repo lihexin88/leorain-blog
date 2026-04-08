@@ -112,7 +112,7 @@
           <el-tab-pane label="ASR 列表" name="asr">
             <div class="asr-tab-content">
               <div class="asr-search-bar">
-                <el-tag v-if="currentAsrAssetId" closable @close="clearAsrAssetIdAndSearch">{{ currentAsrAssetId }}</el-tag>
+                <el-tag v-if="currentAsrAsset" closable @close="clearAsrAssetIdAndSearch">{{ currentAsrAsset.name }}</el-tag>
                 <el-input
                     v-model="asrKeywords"
                     clearable
@@ -143,17 +143,19 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="封面" width="120">
+                <el-table-column label="封面" width="130">
                   <template v-slot="scope">
-                    <el-image
+                    <div style="display: flex;justify-content: center;align-items: center">
+                      <el-image
                         v-if="scope.row.asset_display_url"
                         style="width: 100px; height: 75px; border-radius: 4px;"
                         fit="cover"
                         :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
                         :preview-src-list="[getVideoSnapshotUrl(scope.row.asset_display_url)]"
                         preview-teleported
-                    ></el-image>
-                    <span v-else>-</span>
+                      ></el-image>
+                      <span v-else>-</span>
+                    </div>
                   </template>
                 </el-table-column>
                 <el-table-column label="资源名称" min-width="220">
@@ -1144,7 +1146,7 @@ export default {
     },
     handleAssetAsr (asset) {
       if (Number(asset?.has_asr) === 1) {
-        this.currentAsrAssetId = asset.asset_id
+        this.currentAsrAsset = asset
         this.asrPage = 1
         this.loadAsrList(true)
         return
@@ -1225,7 +1227,7 @@ export default {
       })
     },
     clearAsrAssetIdAndSearch(){
-      this.currentAsrAssetId = null
+      this.currentAsrAsset = null
       this.loadAsrList()
     },
     loadAsrList (resetPage = false) {
@@ -1235,7 +1237,7 @@ export default {
       api.get('/asr_list', {
         params: {
           page: this.asrPage,
-          asset_id: this.currentAsrAssetId,
+          asset_id: this.currentAsrAsset?.asset_id,
           keywords: this.asrKeywords
         }
       }).then((response) => {
@@ -1278,7 +1280,7 @@ export default {
       asrPerPage: 15,
       asrTotal: 0,
       asrKeywords: '',
-      currentAsrAssetId: null,
+      currentAsrAsset: null,
       asrPollingTimer: null,
       asrPollingCount: 0,
       smallWindowSize: false,
