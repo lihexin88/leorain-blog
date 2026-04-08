@@ -112,6 +112,7 @@
           <el-tab-pane label="ASR 列表" name="asr">
             <div class="asr-tab-content">
               <div class="asr-search-bar">
+                <el-tag v-if="currentAsrAssetId" closable @close="clearAsrAssetIdAndSearch">{{ currentAsrAssetId }}</el-tag>
                 <el-input
                     v-model="asrKeywords"
                     clearable
@@ -1142,9 +1143,9 @@ export default {
       this.asrPollingTimer = setTimeout(poll, 1000)
     },
     handleAssetAsr (asset) {
-      this.currentAsrAssetId = asset.asset_id
-      this.asrPage = 1
       if (Number(asset?.has_asr) === 1) {
+        this.currentAsrAssetId = asset.asset_id
+        this.asrPage = 1
         this.loadAsrList(true)
         return
       }
@@ -1222,6 +1223,10 @@ export default {
         syncUrlPaginate(urlParams)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       })
+    },
+    clearAsrAssetIdAndSearch(){
+      this.currentAsrAssetId = null
+      this.loadAsrList()
     },
     loadAsrList (resetPage = false) {
       if (resetPage) {
