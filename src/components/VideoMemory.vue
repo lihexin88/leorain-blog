@@ -25,7 +25,6 @@
               :src="videoInfo.m3u8_url"
               controls
               playsinline
-              autoplay
               class="video-memory-media"
               @loadedmetadata="seekToDefaultPosition"
               @timeupdate="savePlaybackProgress"
