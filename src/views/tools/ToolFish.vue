@@ -705,7 +705,7 @@ export default {
     <el-dialog v-model="showItemDialog" :close-on-click-modal="false" width="420px" center>
       <div class="item-dialog">
         <div class="item-dialog__title">恭喜获得{{ itemObj.name }}</div>
-        <el-image v-if="itemObj.cover_display" class="item-dialog__image" :src="`itemObj.cover_display`+''" fit="contain" />
+        <el-image v-if="itemObj.cover_display" class="item-dialog__image" :src="itemObj.cover_display" fit="contain" />
         <div class="item-dialog__description">{{ itemObj.description }}</div>
         <div class="item-dialog__price">市场估值 {{ itemObj.price }}</div>
       </div>

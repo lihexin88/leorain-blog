@@ -98,7 +98,7 @@
         </div>
       </el-card>
     </div>
-    <div class="info-div" style="overflow: hidden">
+    <div class="info-div" v-show="weather.show" style="overflow: hidden">
       <el-divider>天气</el-divider>
       <el-card class="info-div-card">
         <div

@@ -3,6 +3,7 @@ import axios from 'axios'
 export function getWeather () {
   return axios.get('https://wttr.in/?format=j1&lang=zh').then(response => {
     return {
+      show: true,
       temperature: response.data.current_condition[0].temp_C,
       temperature_feels_like: response.data.current_condition[0].FeelsLikeC,
       weather: response.data.current_condition[0].lang_zh[0].value,
