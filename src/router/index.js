@@ -113,6 +113,11 @@ const routes = [
             path: 'linux',
             name: 'ToolLinux',
             component: () => import('../views/tools/ToolLinux.vue')
+          },
+          {
+            path: 'sbti',
+            name: 'ToolSbti',
+            component: () => import('../views/tools/ToolSbti.vue')
           }
         ]
       },
