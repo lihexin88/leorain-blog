@@ -222,6 +222,12 @@ export default {
         description: '在浏览器中运行真实的 Linux 容器，支持完整终端交互',
         href: '/tools/linux',
         image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
+      },
+      {
+        text: 'SBTI 人格测试',
+        description: '娱乐向 SBTI 人格测试与维度分析',
+        href: '/tools/sbti',
+        image: '/images/logo.png'
       }
       ]
     }

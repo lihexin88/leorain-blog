@@ -147,7 +147,7 @@
                   <template v-slot="scope">
                     <div style="display: flex;justify-content: center;align-items: center">
                       <el-image
-                        v-if="scope.row.asset_display_url"
+                        v-if="scope.row.asset.type === 2"
                         style="width: 100px; height: 75px; border-radius: 4px;"
                         fit="cover"
                         :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
@@ -193,7 +193,7 @@
                     :page-size="asrPerPage"
                     layout="prev, pager, next"
                     :total="asrTotal"
-                    @current-change="loadAsrList"
+                    @current-change="loadAsrList()"
                 ></el-pagination>
               </div>
             </div>
@@ -1226,7 +1226,7 @@ export default {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       })
     },
-    clearAsrAssetIdAndSearch(){
+    clearAsrAssetIdAndSearch () {
       this.currentAsrAsset = null
       this.loadAsrList()
     },
@@ -1243,8 +1243,8 @@ export default {
       }).then((response) => {
         this.asrList = Array.isArray(response?.data) ? response.data.map(item => this.parseAsrItem(item)) : []
         this.asrTotal = response.meta.pagination?.total || 0
-        this.asrPerPage = Number(response?.per_page) || 15
-        this.asrPage = Number(response?.current_page) || 1
+        this.asrPerPage = Number(response.meta.pagination?.per_page) || 15
+        this.asrPage = Number(response.meta.pagination?.current_page) || 1
       }).catch(() => {
         this.asrList = []
         this.asrTotal = 0
