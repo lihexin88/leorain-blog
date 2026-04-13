@@ -1,16 +1,17 @@
 <template>
   <div class="info-container">
     <div class="info-div">
-      <el-divider>
-        关于我
-      </el-divider>
+      <el-divider> 关于我 </el-divider>
       <el-card class="info-div-card">
         <div>
           <div class="info-avatar">
             <el-avatar :size="70" shape="circle" src="/images/logo.png"></el-avatar>
           </div>
-          <div style="display: flex;justify-content: flex-start;padding-top: 10px;align-items: center;flex-wrap: wrap">
-            <div class="info-personal">邮箱:
+          <div
+            style="display: flex; justify-content: flex-start; padding-top: 10px; align-items: center; flex-wrap: wrap"
+          >
+            <div class="info-personal">
+              邮箱:
               <el-link type="primary" href="mailto:1678822783@qq.com">1678822783@qq.com</el-link>
             </div>
             <div class="info-personal">
@@ -34,9 +35,9 @@
         <div>
           <!--          info-->
           <h3 class="info-title">
-            <span class="info-title-span" v-for="(char,index) in configStore.title" :key="index">{{ char }}</span>
+            <span class="info-title-span" v-for="(char, index) in configStore.title" :key="index">{{ char }}</span>
           </h3>
-          <h5 style="display: flex;justify-content: center">{{ configStore.description }}</h5>
+          <h5 style="display: flex; justify-content: center">{{ configStore.description }}</h5>
         </div>
         <div v-if="configStore.quotaInfo" style="padding-bottom: 20px">
           <!--        quota-->
@@ -48,108 +49,104 @@
             <el-col :span="4">
               <div>
                 <el-statistic
-                    group-separator=","
-                    :precision="0"
-                    :value="systemInfo.article_count"
-                    title="文章"
+                  group-separator=","
+                  :precision="0"
+                  :value="systemInfo.article_count"
+                  title="文章"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                    group-separator=","
-                    :precision="0"
-                    :value="systemInfo.comment_count"
-                    title="评论"
+                  group-separator=","
+                  :precision="0"
+                  :value="systemInfo.comment_count"
+                  title="评论"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                    group-separator=","
-                    :precision="0"
-                    :value="systemInfo.guestbook_count"
-                    title="留言"
+                  group-separator=","
+                  :precision="0"
+                  :value="systemInfo.guestbook_count"
+                  title="留言"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="4">
               <div>
                 <el-statistic
-                    group-separator=","
-                    :precision="0"
-                    :value="systemInfo.game_count"
-                    title="游戏"
+                  group-separator=","
+                  :precision="0"
+                  :value="systemInfo.game_count"
+                  title="游戏"
                 ></el-statistic>
               </div>
             </el-col>
             <el-col :span="5">
               <div>
-                <el-statistic
-                    group-separator=","
-                    :precision="0"
-                    title="访问"
-                    :value="systemInfo.visitor_count"
-                >
+                <el-statistic group-separator="," :precision="0" title="访问" :value="systemInfo.visitor_count">
                 </el-statistic>
               </div>
             </el-col>
           </el-row>
-          <div style="padding-top: 10px">
-            运行时间: {{ served_time }}
-          </div>
-          <div>
-            主要技术: {{ systemInfo.technologies }}
-          </div>
+          <div style="padding-top: 10px">运行时间: {{ served_time }}</div>
+          <div>主要技术: {{ systemInfo.technologies }}</div>
         </div>
       </el-card>
     </div>
-    <div class="info-div" v-if="weather.show && false" style="height: 100px;overflow: hidden">
+    <div class="info-div" style="overflow: hidden">
       <el-divider>天气</el-divider>
       <el-card class="info-div-card">
         <div
-            style="width: 100%; background-image: linear-gradient(to right, aliceblue, lightblue, greenyellow, orange, orangered);">
-          <div id="weather_color_cursor" style="border: 2px solid wheat; width: 1.66%; margin-left: 2.93333%;">
-          </div>
+          style="
+            width: 100%;
+            background-image: linear-gradient(to right, aliceblue, lightblue, greenyellow, orange, orangered);
+          "
+        >
+          <div id="weather_color_cursor" style="border: 2px solid wheat; width: 1.66%; margin-left: 2.93333%"></div>
         </div>
         <div
-            style="background-image: linear-gradient(to right, rgb(255, 255, 255), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2),
-            rgba(255, 255, 255, 0)), url(https://images.leorain.cn/weather/2021/07/28/gmA6Jw3Jqp1RTKkhb9lZsIsDSrzgpvDgnHbyMvnD.jpg?x-oss-process=style/weather-background-img);">
+          style="
+            background-image:
+              linear-gradient(
+                to right,
+                rgb(255, 255, 255),
+                rgba(255, 255, 255, 0.9),
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0)
+              ),
+              url(https://images.leorain.cn/weather/2021/07/28/gmA6Jw3Jqp1RTKkhb9lZsIsDSrzgpvDgnHbyMvnD.jpg?x-oss-process=style/weather-background-img);
+          "
+        >
           当前时间：{{ weather.current_time }}
-          <hr class="weather_hr">
+          <hr class="weather_hr" />
           温度：{{ weather.temperature }}℃; 体感：{{ weather.temperature_feels_like }}℃ - 冷🥶
-          <hr class="weather_hr">
+          <hr class="weather_hr" />
           天气：{{ weather.weather }}
-          <hr class="weather_hr">
+          <hr class="weather_hr" />
           <div v-if="weather.wind_speed !== 0">
             风向：{{ weather.wind_direction }} °;速度：{{ weather.wind_speed }}m/s
           </div>
-          <div v-else>
-            风向： 无风
-          </div>
-          <hr class="weather_hr">
+          <div v-else>风向： 无风</div>
+          <hr class="weather_hr" />
         </div>
       </el-card>
     </div>
     <div class="info-div">
-      <el-divider>
-        词云
-      </el-divider>
+      <el-divider> 词云 </el-divider>
       <el-card class="info-div-card">
         <tag-cloud :tags="tags" />
       </el-card>
     </div>
     <div v-if="false" class="info-div">
-      <el-divider>
-        归档
-      </el-divider>
+      <el-divider> 归档 </el-divider>
     </div>
     <div class="info-div">
-      <el-divider>
-        git log
-      </el-divider>
+      <el-divider> git log </el-divider>
       <git-logs />
     </div>
     <div class="info-div">
@@ -162,7 +159,7 @@
     </div>
     <div class="info-div">
       <el-card class="travel-div">
-        <div style="font-size: .85em">
+        <div style="font-size: 0.85em">
           <i class="fa fa-satellite"></i>旅行者1号已旅行 {{ distance }} 千米,约 {{ light_year_count }} 光年
         </div>
       </el-card>
@@ -180,6 +177,7 @@ import TagCloud from '@/components/TagCloud.vue'
 import VideoMemory from '@/components/VideoMemory.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
+import { getWeather } from '@/utils/weather'
 import { systemInfoApi, tagApi } from '@/apis'
 import { useConfigStore } from '@/store/config'
 
@@ -257,12 +255,12 @@ export default {
       }
     },
     get_tag_cloud () {
-      tagApi.getTags().then((response) => {
+      tagApi.getTags().then(response => {
         this.tags = response
       })
     },
     get_system_info () {
-      systemInfoApi.getSystemInfo().then((response) => {
+      systemInfoApi.getSystemInfo().then(response => {
         this.systemInfo = response
         this.setTimeInterval()
       })
@@ -281,10 +279,15 @@ export default {
         this.light_year_count = this.distance / 9460730472580.8
         nowTimestamp++
       }, 1000)
+    },
+    get_weather () {
+      getWeather().then(response => {
+        this.weather = response
+      })
     }
   },
   mounted () {
-    // this.get_weather()
+    this.get_weather()
     this.get_tag_cloud()
     this.get_config()
     this.get_system_info()
@@ -306,17 +309,17 @@ export default {
 
   .info-title {
     display: flex;
-    justify-content: center
+    justify-content: center;
   }
 
   @keyframes infoAvatarRotate {
     0% {
       transform: rotate(0);
-      scale: 1.10;
+      scale: 1.1;
     }
     100% {
       transform: rotate(360deg);
-      scale: 1.00;
+      scale: 1;
     }
   }
 
