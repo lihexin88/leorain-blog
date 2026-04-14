@@ -1,6 +1,6 @@
 <template>
   <div style="padding-top: 3px;padding-left: 2px" @mouseover="show_replay=true" @mouseleave="!deletePopconfirmVisible && (show_replay=false)">
-    <el-card body-style="padding: 2px 0 0 6px;" class="box-card">
+    <el-card class="box-card">
       <div class="card-body">
         <div>
           <div class="card-title-area">
@@ -141,11 +141,19 @@ export default {
 }
 
 .card-title-area {
-  background: linear-gradient(90deg, rgba(0, 247, 222, 0.08), rgba(0, 247, 222, 0.03));
+  background: linear-gradient(135deg, rgba(0, 247, 222, 0.10), rgba(0, 200, 180, 0.04));
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(0, 247, 222, 0.1);
-  border-radius: 4px 4px 0 0;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 247, 222, 0.08);
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(0, 247, 222, 0.15), rgba(0, 200, 180, 0.06));
+  }
 }
 
 .card-content-area {
@@ -167,8 +175,10 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-right: 15px;
-  font-size: .9em;
+  padding-right: 12px;
+  font-size: .85em;
+  color: #666;
+  gap: 4px;
 }
 
 .box-card {

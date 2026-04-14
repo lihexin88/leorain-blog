@@ -70,7 +70,7 @@
                     </template>
                   </el-popconfirm>
                   <el-icon @click="reply(comment.username, comment.uid)">
-                    <Share/>
+                    <ChatDotRound/>
                   </el-icon>
                 </div>
               </div>
@@ -123,14 +123,14 @@ import { Picker } from 'emoji-mart'
 import { emojiI18n, emojiToImage, getEmojiData } from '@/services/customEmoji'
 import UserForm from './UserForm.vue'
 import { commentApi } from '@/apis'
-import { Plus, User, Clock, Location, Delete, Share, ChromeFilled } from '@element-plus/icons-vue'
+import { Plus, User, Clock, Location, Delete, ChatDotRound, ChromeFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { mapState } from 'pinia'
 import MD5 from 'crypto-js/md5'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
-  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, Share },
+  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, ChatDotRound },
   props: {
     contentWrapperClass: {
       type: String,
@@ -486,13 +486,21 @@ export default {
 }
 
 .comment-heading {
-  padding: 3px;
-  background: #ECF0F1;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #e8f4fd, rgb(255 255 255 / 0.16));
   display: flex;
   align-content: center;
+  align-items: center;
+  border-radius: 999px;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
 
   a {
-    color: #7F8C8D;
+    color: #6366f1;
   }
 }
 

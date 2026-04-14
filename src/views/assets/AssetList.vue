@@ -1383,7 +1383,6 @@ export default {
   grid-template-columns: repeat(auto-fill, 242px);
   justify-content: center;
   gap: 16px;
-  min-height: 80vh;
   @media screen and (max-aspect-ratio: 1/1) {
     min-height: 0;
   }
