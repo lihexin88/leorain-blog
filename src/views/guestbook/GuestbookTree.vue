@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-top: 3px;padding-left: 2px" @mouseover="show_replay=true" @mouseleave="!deletePopconfirmVisible && (show_replay=false)">
+  <div style="padding-top: 3px;padding-left: 2px;border-radius: 20px" @mouseover="show_replay=true" @mouseleave="!deletePopconfirmVisible && (show_replay=false)">
     <el-card class="box-card">
       <div class="card-body">
         <div>
