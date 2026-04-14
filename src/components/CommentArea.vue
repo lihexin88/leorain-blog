@@ -486,7 +486,7 @@ export default {
 }
 
 .comment-heading {
-  padding: 8px 12px;
+  padding: 8px;
   background: linear-gradient(135deg, #e8f4fd, rgb(255 255 255 / 0.16));
   display: flex;
   align-content: center;
@@ -501,6 +501,7 @@ export default {
 
   a {
     color: #6366f1;
+    display: flex;
   }
 }
 
