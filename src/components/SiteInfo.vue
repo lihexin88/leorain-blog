@@ -1,10 +1,11 @@
 <template>
   <div>
     <div class="settings-bar">
-      <el-button circle :type="button_type" :class="{ 'stats-flash': isStatsFlashing }" @click="switch_show_settings">
-        <span class="fa fa-gamepad"></span>
-        {{ stats.online }}
-      </el-button>
+      <div class="site-info-lines" @click="switch_show_settings" :class="{ 'stats-flash': isStatsFlashing }">
+        <div>online: {{ stats.online }}</div>
+        <div>cpu: {{ stats.load_average }}</div>
+        <div>mem: {{ stats.memory_usage }}</div>
+      </div>
     </div>
     <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
       <div class="settings-container">
