@@ -2,9 +2,15 @@
   <div>
     <div class="settings-bar">
       <div class="site-info-lines" @click="switch_show_settings" :class="{ 'stats-flash': isStatsFlashing }">
-        <div>online: {{ stats.online }}</div>
-        <div>cpu: {{ stats.load_average }}</div>
-        <div>mem: {{ stats.memory_usage }}</div>
+        <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
+        <div class="mini-progress">
+          <span>cpu:</span>
+          <el-progress :percentage="formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num * 100) : 0)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+        </div>
+        <div class="mini-progress">
+          <span>mem:</span>
+          <el-progress :percentage="formatNumber(stats.memory_usage)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+        </div>
       </div>
     </div>
     <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
@@ -29,37 +35,37 @@
           <div>
             系统负载:
             <el-progress :text-inside="true" :stroke-width="26"
-                         :percentage="stats.load_average / stats.cpu_num * 100"></el-progress>
+                         :percentage="stats.load_average / stats.cpu_num * 100" :format="formatProgress"></el-progress>
           </div>
           <div>
             内存用量:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.memory_usage"></el-progress>
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.memory_usage" :format="formatProgress"></el-progress>
           </div>
           <div>
             磁盘用量:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.disk_usage"></el-progress>
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.disk_usage" :format="formatProgress"></el-progress>
           </div>
           <div>
             交换分区:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.swap_usage"></el-progress>
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.swap_usage" :format="formatProgress"></el-progress>
           </div>
           <div>
             启动时间: {{ getHumanReadableDate(stats.uptime * 1000) }} s
           </div>
           <div>
-            在线人数: {{ stats.online }}
+            在线人数: {{ formatNumber(stats.online) }}
           </div>
           <div>
-            实时qps: {{ stats.qps }}
+            实时qps: {{ formatNumber(stats.qps) }}
           </div>
           <div>
-            最大qps: {{ stats.max_qps }}
+            最大qps: {{ formatNumber(stats.max_qps) }}
           </div>
           <div>
-            启动后访客: {{ stats.count }}
+            启动后访客: {{ formatNumber(stats.count) }}
           </div>
           <div>
-            今日访客: {{ stats.today_count }}
+            今日访客: {{ formatNumber(stats.today_count) }}
           </div>
         </div>
       </div>
@@ -111,6 +117,20 @@ export default {
   },
   methods: {
     getHumanReadableDate,
+    formatNumber (value) {
+      if (value === null || value === undefined || value === '') return value
+      const n = Number(value)
+      if (Number.isNaN(n)) return value
+      if (Number.isInteger(n)) return n
+      return n.toFixed(2)
+    },
+    formatProgress (percent) {
+      if (percent === null || percent === undefined || percent === '') return ''
+      const n = Number(percent)
+      if (Number.isNaN(n)) return String(percent) + '%'
+      if (Number.isInteger(n)) return String(n) + '%'
+      return n.toFixed(2) + '%'
+    },
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
     },
@@ -272,12 +292,29 @@ export default {
 .settings-bar {
   display: flex;
   justify-content: space-between;
-  width: 60px;
-  height: 40px;
   bottom: 50px;
   right: 20px;
   position: fixed;
   z-index: 1000;
+  .site-info-lines{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    .mini-progress{
+      font-size: 10px;
+      :deep(.el-progress__text){
+        span{
+          font-size: 10px;
+        }
+      }
+    }
+  }
 }
 
 .stats-flash {
@@ -286,15 +323,12 @@ export default {
 
 @keyframes stats-flash {
   0% {
-    transform: scale(1);
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
   }
   50% {
-    transform: scale(1.18);
     box-shadow: 0 0 12px rgba(64, 158, 255, .65);
   }
   100% {
-    transform: scale(1);
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
   }
 }
