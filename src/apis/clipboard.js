@@ -20,6 +20,15 @@ export default {
     const basePath = resolveBasePath(sourceType)
     return api.post(basePath, data)
   },
+  // 上传文件
+  getUploadUrl (fileName) {
+    return api.get('/api/assets_upload/upload', {
+      params: {
+        file_name: fileName,
+        strategy: 'clipboard'
+      }
+    })
+  },
 
   // 更新
   update (sourceType, id, data) {
