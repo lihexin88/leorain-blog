@@ -20,7 +20,8 @@ export default {
         id: null,
         content: null,
         star: null,
-        type: 1
+        type: 1,
+        file: null
       },
       loading: false
     }
@@ -39,6 +40,23 @@ export default {
       this.currentClipboard.type = 1
       this.currentClipboard.star = null
       this.currentClipboard.id = null
+      this.currentClipboard.file = null
+    },
+    uploadToOss (file, uploadUrl) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('PUT', uploadUrl, true)
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve()
+          } else {
+            reject(new Error('上传失败'))
+          }
+        }
+        xhr.onerror = () => reject(new Error('上传失败'))
+        xhr.setRequestHeader('Content-Type', '')
+        xhr.send(file)
+      })
     },
     async handleCopy (row) {
       const content = row.content
@@ -103,7 +121,7 @@ export default {
         console.error('复制失败:', err)
       }
     },
-    submit () {
+    async submit () {
       let postData = {
         data_source_type: this.getDateSourceInfo().id
       }
@@ -111,37 +129,53 @@ export default {
         // 创建时需要传 type
         postData.type = this.currentClipboard.type
       }
-      if (this.currentClipboard.content !== null) {
-        if (this.currentClipboard.content.length > 10485760) {
-          this.$message({
-            message: '图片太大',
-            type: 'error'
-          })
-          return
-        }
-        postData.content = this.currentClipboard.content
-      }
       if (this.currentClipboard.star !== null) {
         postData.star = this.currentClipboard.star
       }
 
-      const req = this.currentClipboard.id
-        ? clipboardApi.update(this.data_source_type, this.currentClipboard.id, postData)
-        : clipboardApi.create(this.data_source_type, postData)
+      const isNonText = this.currentClipboard.type !== 1
+      const hasFile = !!this.currentClipboard.file
 
-      req.then(() => {
+      try {
+        if (isNonText && hasFile) {
+          // 非文本类型：先把文件上传到 OSS，再用 object 作为 content 提交
+          const file = this.currentClipboard.file
+          const response = await clipboardApi.getUploadUrl(file.name || `clipboard_${Date.now()}`)
+          const uploadUrl = response?.url?.url
+          const uploadObject = response?.url?.object
+          if (!uploadUrl || !uploadObject) {
+            throw new Error('未获取到上传签名')
+          }
+          await this.uploadToOss(file, uploadUrl)
+          postData.content = uploadObject
+        } else if (this.currentClipboard.content !== null) {
+          if (this.currentClipboard.content.length > 10485760) {
+            this.$message({
+              message: '图片太大',
+              type: 'error'
+            })
+            return
+          }
+          postData.content = this.currentClipboard.content
+        }
+
+        const req = this.currentClipboard.id
+          ? clipboardApi.update(this.data_source_type, this.currentClipboard.id, postData)
+          : clipboardApi.create(this.data_source_type, postData)
+
+        await req
         this.$message({
           type: 'success',
           message: 'success'
         })
         this.show_popup = false
         this.getList()
-      }).catch(err => {
+      } catch (err) {
         this.$message({
           type: 'error',
           message: err?.message || '操作失败'
         })
-      })
+      }
     },
     async handlePaste (event) {
       event.preventDefault()
@@ -151,10 +185,22 @@ export default {
       if (firstItem.type.startsWith('image/')) {
         this.currentClipboard.type = 2
         const imageContent = firstItem.getAsFile()
+        this.currentClipboard.file = imageContent
         this.fileToBase64(imageContent)
       } else if (firstItem.type.startsWith('text/')) {
         this.currentClipboard.type = 1
+        this.currentClipboard.file = null
         this.currentClipboard.content = clipboardData.getData('text/plain')
+      } else {
+        // 其他非文本文件：保存原始文件，预览暂用文件名
+        this.currentClipboard.type = 2
+        const file = firstItem.getAsFile()
+        this.currentClipboard.file = file
+        if (file && file.type.startsWith('image/')) {
+          this.fileToBase64(file)
+        } else {
+          this.currentClipboard.content = file ? file.name : ''
+        }
       }
     },
     // 将File对象转为Base64
@@ -208,6 +254,8 @@ export default {
       this.show_popup = true
       this.currentClipboard.id = null
       this.currentClipboard.content = null
+      this.currentClipboard.file = null
+      this.currentClipboard.type = 1
     },
     showContent (content) {
       this.currentContent = content || ''
