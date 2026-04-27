@@ -395,7 +395,7 @@ export default {
                 preview-teleported
                 :z-index="3000"
                 crossorigin="anonymous"
-                :src="scope.row?.content"
+                :src="scope.row.content+ '?x-oss-process=style/gallery_thumbnail'"
               ></el-image>
             </div>
             <div v-else-if="scope.row?.type === 1">
