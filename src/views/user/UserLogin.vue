@@ -81,11 +81,11 @@
             </el-button>
           </el-form-item>
 
-          <div class="divider-container">
+          <div class="divider-container" v-if="authConfig.length > 2">
             <el-divider>or</el-divider>
           </div>
 
-          <el-form-item>
+          <el-form-item v-if="authConfig.github">
             <el-button class="github-button" @click="handleGithubLogin">
               <i class="fab fa-github"></i>&nbsp;GitHub 登录
             </el-button>
@@ -106,6 +106,7 @@ import HumanValidator from '@/components/HumanValidator.vue'
 import loginAnimation from '@/assets/animations/login.json'
 import { Vue3Lottie } from 'vue3-lottie'
 import { useUserStore } from '@/store/user'
+import authApi from '@/apis/auth.js'
 import { mapActions } from 'pinia'
 import { Message, Lock } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
@@ -148,7 +149,8 @@ export default {
           { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
         ]
       },
-      loading: false
+      loading: false,
+      authConfig: []
     }
   },
   methods: {
@@ -198,7 +200,7 @@ export default {
       })
     },
     handleGithubLogin () {
-      window.location.href = '/api/frontend/auth/github'
+      window.location.href = this.authConfig.github.auth_url
     },
     handleRegister () {
       if (this.isDialog) {
@@ -211,7 +213,15 @@ export default {
         this.setShowLoginDialog(false)
       }
       this.$router.push('/password/reset')
+    },
+    getAuthConfig () {
+      authApi.getConfig().then(res => {
+        this.authConfig = res
+      })
     }
+  },
+  mounted () {
+    this.getAuthConfig()
   }
 }
 </script>

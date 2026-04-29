@@ -6,6 +6,9 @@ const authApi = {
   },
   register (params) {
     return api.post('/auth/register', params)
+  },
+  getConfig () {
+    return api.get('/auth/config')
   }
 }
 

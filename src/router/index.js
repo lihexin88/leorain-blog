@@ -179,6 +179,23 @@ const routes = [
         name: 'Forbidden',
         component: () => import('../views/errors/Forbidden.vue')
       },
+      {
+        path: 'auth',
+        name: 'Auth',
+        children: [
+          {
+            path: 'callback',
+            name: 'Callback',
+            children: [
+              {
+                path: 'github',
+                name: 'GitHub',
+                component: () => import('../views/auth/callback/GithubCallback.vue')
+              }
+            ]
+          }
+        ]
+      },
       // 捕获所有未匹配的路由
       {
         path: '/:pathMatch(.*)*',
