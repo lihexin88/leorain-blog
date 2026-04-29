@@ -116,7 +116,7 @@
       </el-icon>
       <el-dropdown v-else trigger="click" @command="handleCommand">
         <div class="el-dropdown-link">
-          <el-avatar shape="square" :size="40" :src="userAvatar" class="user-avatar"/>
+          <el-avatar shape="square" :size="50" :src="userAvatar" class="user-avatar"/>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
