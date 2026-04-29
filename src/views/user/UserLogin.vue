@@ -10,13 +10,11 @@
       <div class="login-content" :class="{ 'is-dialog': isDialog }">
         <div class="login-animation-panel">
           <div class="login-animation-card">
-            <Vue3Lottie
+            <AnimatedCharacters
               class="login-animation"
-              :animation-data="loginAnimation"
-              :height="280"
-              :width="280"
-              :loop="true"
-              :auto-play="true"
+              :is-typing="isInputFocused"
+              :password-visible="passwordVisible"
+              :password-length="loginForm.password.length"
             />
             <div class="animation-copy">
               <h3>欢迎回来</h3>
@@ -39,6 +37,8 @@
               placeholder="请输入邮箱"
               clearable
               autofocus
+              @focus="isInputFocused = true"
+              @blur="isInputFocused = false"
             >
               <template #prefix>
                 <el-icon><Message /></el-icon>
@@ -52,10 +52,15 @@
           <el-form-item label="密码" prop="password">
             <el-input
               v-model="loginForm.password"
-              type="password"
+              :type="passwordVisible ? 'text' : 'password'"
               placeholder="请输入密码"
-              show-password
             >
+              <template #suffix>
+                <el-icon style="cursor: pointer" @click="passwordVisible = !passwordVisible">
+                  <ViewIcon v-if="!passwordVisible" />
+                  <HideIcon v-else />
+                </el-icon>
+              </template>
               <template #prefix>
                 <el-icon><Lock /></el-icon>
               </template>
@@ -103,21 +108,22 @@
 
 <script>
 import HumanValidator from '@/components/HumanValidator.vue'
-import loginAnimation from '@/assets/animations/login.json'
-import { Vue3Lottie } from 'vue3-lottie'
+import AnimatedCharacters from '@/components/AnimatedCharacters.vue'
 import { useUserStore } from '@/store/user'
 import authApi from '@/apis/auth.js'
 import { mapActions } from 'pinia'
-import { Message, Lock } from '@element-plus/icons-vue'
+import { Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
 
 export default {
   name: 'UserLogin',
   components: {
     Validator: HumanValidator,
-    Vue3Lottie,
+    AnimatedCharacters,
     Lock,
-    Message
+    Message,
+    ViewIcon,
+    HideIcon
   },
   props: {
     isDialog: {
@@ -129,11 +135,14 @@ export default {
     return {
       Message,
       Lock,
-      loginAnimation
+      ViewIcon,
+      HideIcon
     }
   },
   data () {
     return {
+      isInputFocused: false,
+      passwordVisible: false,
       loginForm: {
         email: '',
         password: '',
@@ -269,9 +278,6 @@ export default {
 }
 
 .login-animation-panel {
-  padding: 36px 28px;
-  background: linear-gradient(180deg, rgba(80, 134, 255, 0.08) 0%, rgba(80, 134, 255, 0.03) 100%);
-  border-right: 1px solid #ebeef5;
 }
 
 .login-animation-card {
@@ -286,7 +292,6 @@ export default {
 
 .login-animation {
   width: 100%;
-  max-width: 280px;
 }
 
 .animation-copy {
@@ -373,7 +378,6 @@ export default {
   }
 
   .login-animation-panel {
-    padding: 28px 20px 12px;
     border-right: none;
     border-bottom: 1px solid #ebeef5;
   }
