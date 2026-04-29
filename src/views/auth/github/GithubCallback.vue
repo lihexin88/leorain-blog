@@ -18,7 +18,7 @@ onMounted(async () => {
     await oauthStore.loginWithGithub(code)
     router.push('/')
   } catch (error) {
-    console.error('GitHub callback failed:', error)
+    console.error('GitHub github failed:', error)
   }
 })
 </script>
