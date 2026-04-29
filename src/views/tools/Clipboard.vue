@@ -15,27 +15,25 @@
     <div class="clipboard-info-box">
       <!--      信息区域-->
       <div style="text-align: center">
-        <h4>
-          在线剪切板同步
-        </h4>
+        <h4>在线剪切板同步</h4>
       </div>
       <div class="clipboard-intro-content">
         <div>
-          <el-divider>
-            版块设计初衷
-          </el-divider>
+          <el-divider> 版块设计初衷 </el-divider>
           解决手机和电脑剪切板同步问题。某些设备无法安装例如：微信、飞书等工具，或者当前没有安装。需要同步一些简单的文字信息。
         </div>
         <div>
           <el-divider>功能介绍</el-divider>
-          <markdown-parse content="
+          <markdown-parse
+            content="
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
 4. 每个版块最多支持 50 个剪切板内容
 5. 重复新增的剪切板内容，会删除之前相同内容的条目
 6. 内容支持文字、图片
-"></markdown-parse>
+"
+          ></markdown-parse>
         </div>
         <div>
           <el-divider>tips</el-divider>
@@ -43,24 +41,26 @@
         </div>
         <div>
           <el-divider>开发相关</el-divider>
-          <markdown-parse content="
+          <markdown-parse
+            content="
 - 开发耗时:第一版迭代约5小时
-- 期待开发内容:
-    - 各平台可直接运行的命令行工具
-"></markdown-parse>
+- 各平台可直接运行的命令行工具(done)
+  - [win: cloudClip.exe](https://home.leorain.cn:9888/storage/download/cloudClip.exe)
+  - [linux-gui: cloudClip](https://home.leorain.cn:9888/storage/download/cloudClip)
+"
+          ></markdown-parse>
         </div>
       </div>
     </div>
   </div>
 </template>
 <script>
-
 import ClipboardTable from './particals/ClipboardTable.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
   components: { MarkdownParse, ClipboardTable },
-  data () {
+  data() {
     return {
       data_source_type: 'public'
     }
@@ -72,7 +72,7 @@ export default {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
-  background: rgba(249, 249, 251, .5);
+  background: rgba(249, 249, 251, 0.5);
   justify-content: center;
 }
 
@@ -93,7 +93,7 @@ export default {
   padding: 20px 10px 10px 10px;
 }
 
-@media screen and (max-aspect-ratio: .7/1) {
+@media screen and (max-aspect-ratio: 0.7/1) {
   .clipboard-content-box {
     width: 100%;
     min-height: 0;

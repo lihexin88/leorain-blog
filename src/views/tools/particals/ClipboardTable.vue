@@ -2,6 +2,7 @@
 import moment from 'moment'
 import { maxString, paginateLayouts } from '@/utils/helpers'
 import { clipboardApi } from '@/apis'
+import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   data () {
@@ -287,6 +288,10 @@ export default {
     }
   },
   mounted () {
+    window.addEventListener(USER_LOGIN_SUCCESS_EVENT, () => {
+      // 登录成功后刷新当前列表
+      this.getList()
+    })
     const paginateStyle = paginateLayouts()
     this.smallWindowSize = paginateStyle.smallWindowSize
     this.layout = paginateStyle.layout
