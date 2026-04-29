@@ -327,11 +327,6 @@ export default {
   justify-content: flex-start;
   align-items: flex-end;
   backdrop-filter: blur(16px);
-  background: linear-gradient(145deg,
-      rgba(255, 255, 255, 0.72) 0%,
-      rgba(228, 240, 255, 0.58) 42%,
-      rgba(247, 225, 239, 0.6) 100%,
-  );
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -357,9 +352,6 @@ export default {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 36%),
-      radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.18), transparent 34%);
     opacity: 0.85;
     z-index: 0;
   }
@@ -401,7 +393,7 @@ export default {
     radial-gradient(circle at 18% 18%, rgba(96, 165, 250, 0.28), transparent 30%),
     radial-gradient(circle at 84% 0%, rgba(244, 114, 182, 0.24), transparent 26%);
   filter: blur(18px);
-  opacity: 0.9;
+  opacity: 0.5;
 }
 
 .article-card-grid {
@@ -434,11 +426,6 @@ export default {
 
 .article-item:hover {
   transform: perspective(1200px) translateY(-12px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg)) !important;
-  background: linear-gradient(145deg,
-      rgba(255, 255, 255, 0.84) 0%,
-      rgba(224, 236, 255, 0.72) 42%,
-      rgba(253, 232, 243, 0.72) 100%,
-  );
   border-color: rgba(255, 255, 255, 0.82);
   z-index: 10;
 
