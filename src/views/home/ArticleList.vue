@@ -4,7 +4,8 @@
       <div class="article-list">
         <el-card
           v-for="(article, index) in articles"
-          class="media article-item"
+          class="media article-item pointer"
+          @click="openArticle(article.slug)"
           :key="index"
         >
           <!-- 封面媒体 -->
@@ -13,7 +14,6 @@
               v-if="article.page_image"
               class="article-item-link"
               :title="article.slug"
-              @click="openArticle(article.slug)"
             >
               <img
                 v-if="mediaType(article.page_image) === 'image'"
@@ -55,6 +55,7 @@
 
             <div
               class="article-description"
+              v-if="article.meta_description || article.subtitle"
               @click="openArticle(article.slug)"
               :title="article.slug"
             >
@@ -308,7 +309,36 @@ export default {
     }
   }
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: -70%;
+    left: -70%;
+    width: 240%;
+    height: 240%;
+    background: conic-gradient(
+      transparent 0deg,
+      rgba(244, 114, 182, 0.8) 60deg,
+      rgba(96, 165, 250, 0.8) 120deg,
+      rgba(99, 102, 241, 0.8) 180deg,
+      rgba(236, 72, 153, 0.8) 240deg,
+      rgba(96, 165, 250, 0.8) 300deg,
+      transparent 360deg
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+    border-radius: inherit;
+    animation: rotateBorder 3s linear infinite;
+  }
+
   &:hover {
+    border-color: transparent;
+
+    &::after {
+      opacity: 1;
+    }
+
     .article-media {
       transform: translateZ(42px) scale(1.08) rotate(1.6deg);
       box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
@@ -434,6 +464,7 @@ export default {
 }
 
 .article-heading {
+  margin-top: auto;
   cursor: pointer;
 }
 
@@ -468,7 +499,6 @@ export default {
 }
 
 .article-extra {
-  margin-top: auto;
   margin-bottom: 5px;
   position: relative;
   z-index: 1;
@@ -514,7 +544,7 @@ export default {
   &:hover {
     transform: translateZ(36px) scale(1.08) translateY(-2px);
     background: linear-gradient(135deg, rgba(244, 114, 182, 0.36) 0%, rgba(96, 165, 250, 0.34) 100%);
-    border-color: rgba(255, 255, 255, 0.72);
+    border-color: transparent;
     box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
       0 4px 10px rgba(236, 72, 153, 0.12);
     color: #7c3aed !important;
@@ -598,6 +628,15 @@ export default {
 
   .article-item::before {
     opacity: 0 !important;
+  }
+}
+
+@keyframes rotateBorder {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
