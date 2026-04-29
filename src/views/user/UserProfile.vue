@@ -276,6 +276,35 @@ export default {
 .profile-avatar {
   border: 4px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: visible !important;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #409eff;
+    border-right-color: #67c23a;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: none;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    animation: spin-border 1s linear infinite;
+  }
+}
+
+@keyframes spin-border {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .profile-content {

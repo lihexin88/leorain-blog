@@ -344,6 +344,11 @@ export default {
 
 .user-avatar {
   border: 1px solid #eee;
+  transition: all .3s ease-in-out;
+  &:hover {
+    border-color: #409eff;
+    scale: 1.05;
+  }
 }
 
 .menu-icon {

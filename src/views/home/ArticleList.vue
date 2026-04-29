@@ -2,29 +2,39 @@
   <div class="container list article-list-container" id="container-left">
     <div class="row">
       <div class="article-list">
-        <el-card v-for="(article, index) in articles"
-                 class="media article-item"
-                 :style="getCardStyle(index)"
-                 :key="index"
-                 @mousemove="handleCardMove($event, index)"
-                 @mouseleave="resetCardTransform(index)"
+        <el-card
+          v-for="(article, index) in articles"
+          class="media article-item"
+          :key="index"
         >
-          <div class="article-card-glow"></div>
-          <div class="article-card-grid"></div>
-          <div class="article-card-shine"></div>
+          <!-- 封面媒体 -->
           <div>
-            <a v-if="article.page_image" class="article-item-link"
-               :title="article.slug"
-               @click="openArticle(article.slug)"
+            <a
+              v-if="article.page_image"
+              class="article-item-link"
+              :title="article.slug"
+              @click="openArticle(article.slug)"
             >
-              <!--             图片 -->
-              <img v-if="mediaType(article.page_image) === 'image'" class="article-media" :alt="article.slug"
-                   :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
-                   data-holder-rendered="true">
-              <!--            视频-->
-              <video v-else-if="mediaType(article.page_image) === 'video'" class="article-media" muted autoplay
-                     playsinline="true" webkit-playsinline="true"
-                     :src="article.page_image"></video>
+              <img
+                v-if="mediaType(article.page_image) === 'image'"
+                class="article-media"
+                :alt="article.slug"
+                :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
+              >
+              <video
+                v-else-if="mediaType(article.page_image) === 'video'"
+                class="article-media"
+                muted autoplay
+                playsinline="true"
+                webkit-playsinline="true"
+                :src="article.page_image"
+              ></video>
+              <img
+                v-else-if="article.page_image !== undefined"
+                class="article-media"
+                :alt="article.slug"
+                src="https://images.leorain.cn/icons/assets/pure_article.png"
+              >
             </a>
             <a v-else class="article-item-link"
                @click="openArticle(article.slug)"
@@ -34,49 +44,55 @@
                    data-holder-rendered="true">
             </a>
           </div>
+
+          <!-- 文章内容 -->
           <div class="media-body article-body">
-            <div class="media-heading" style="cursor: pointer">
-              <a @click="openArticle(article.slug)" :title="article.title">
-                <span class="article-title">
-                  {{ article.title }}
-                </span>
+            <div class="media-heading article-heading" @click="openArticle(article.slug)">
+              <a :title="article.title">
+                <span class="article-title">{{ article.title }}</span>
               </a>
             </div>
-            <div class="article-description" style="cursor: pointer"
-                 :style="getTransform(index, 'description')"
+
+            <div
+              class="article-description"
+              @click="openArticle(article.slug)"
+              :title="article.slug"
             >
-              <div @click="openArticle(article.slug)" :title="article.slug">
-                <span>
-                  {{ article.meta_description ?? article.subtitle }}
-                </span>
-              </div>
+              <span>{{ article.meta_description ?? article.subtitle }}</span>
             </div>
+
             <div class="article-extra">
-              <div style="display: flex; flex-wrap: wrap;">
-                <el-tag v-for="(tag, index) in article.tags" class="article-tag" style="cursor: pointer" :key="index"
-                        @click="open_tag(tag.tag)"
-                        :title="tag.tag" type="info">
-                  {{
-                    tag.tag
-                  }}
+              <div class="article-tags-wrap">
+                <el-tag
+                  v-for="(tag, tagIndex) in article.tags"
+                  class="article-tag"
+                  :key="tagIndex"
+                  @click="open_tag(tag.tag)"
+                  :title="tag.tag"
+                  type="info"
+                >
+                  {{ tag.tag }}
                 </el-tag>
               </div>
 
-              <div class="info" style="color: grey; font-size: .8em">
-                <i class="fas fa-user" @click="go_user(article.user.uid)" style="cursor: pointer">
+              <div class="info">
+                <i class="fas fa-user info-clickable" @click="go_user(article.user.uid)">
                   {{ article.user.name ?? 'null' }}
                 </i>
-                <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
+                <i
+                  :title="moment(article.published_at).format('Y-M-D H:m:s')"
+                  :id="index"
+                  class="fas fa-clock"
+                >
                   {{ getFriendlyDate(moment(article.published_at).format("Y-M-D H:m:s")) }}
                 </i>
-                <i class="fas fa-eye">
-                  {{ article.view_count }}
-                </i>
-                <i class="fas fa-comments">
-                  {{ article.comments_count }}
-                </i>
-                <a @click="openArticle(article.slug)" class="float-right" style="cursor: pointer"
-                   :title="article.slug">
+                <i class="fas fa-eye">{{ article.view_count }}</i>
+                <i class="fas fa-comments">{{ article.comments_count }}</i>
+                <a
+                  @click="openArticle(article.slug)"
+                  class="float-right info-clickable"
+                  :title="article.slug"
+                >
                   More
                   <i class="fas fa-chevron-right"></i>
                 </a>
@@ -85,16 +101,17 @@
           </div>
         </el-card>
       </div>
-      <div style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 10px">
+
+      <div class="pagination-wrap">
         <el-pagination
-            v-model:page-size="per_page"
-            :page-sizes="[18, 21, 36]"
-            v-model:current-page="page"
-            @current-change="load"
-            background
-            :small="smallWindowSize"
-            :layout="layout"
-            :total="total"
+          v-model:page-size="per_page"
+          :page-sizes="[18, 21, 36]"
+          v-model:current-page="page"
+          @current-change="load"
+          background
+          :small="smallWindowSize"
+          :layout="layout"
+          :total="total"
         ></el-pagination>
       </div>
     </div>
@@ -136,58 +153,6 @@ export default {
     getFriendlyDate,
     mediaType,
     syncUrlPaginate,
-    getTransform (index, type) {
-      const rotation = this.currentRotations[index] || { x: 0, y: 0 }
-      const move = this.currentRotations[index] || { x: 0, y: 0 }
-
-      let moveX = move.x
-      let moveY = move.y
-      let transform = `transform: perspective(800px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`
-
-      if (type) {
-        if (type === 'image') {
-          moveX *= 1.5 // 图片移动更明显
-          moveY *= 1.5
-        } else if (type === 'title') {
-          moveX *= 0.5 // 标题移动较小
-          moveY *= 0.5
-        } else if (type === 'description') {
-          moveX *= 0.7 // 描述稍微偏移
-          moveY *= 0.7
-        } else if (type === 'footer') {
-          moveX *= 0.9 // 描述稍微偏移
-          moveY *= 0.9
-        }
-        transform += ` translate(${moveX}px, ${moveY}px);`
-      }
-      return transform
-    },
-    getCardStyle (index) {
-      const rotation = this.currentRotations[index] || { x: 0, y: 0 }
-      return {
-        transform: `perspective(1200px) translateY(0) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-        willChange: 'transform',
-        '--card-rotate-x': `${rotation.x}deg`,
-        '--card-rotate-y': `${rotation.y}deg`
-      }
-    },
-    handleCardMove (event, index) {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return
-      }
-      const rect = event.currentTarget.getBoundingClientRect()
-      const offsetX = (event.clientX - rect.left) / rect.width
-      const offsetY = (event.clientY - rect.top) / rect.height
-      const rotateY = (offsetX - 0.5) * 8
-      const rotateX = (0.5 - offsetY) * 8
-      this.currentRotations.splice(index, 1, {
-        x: Number(rotateX.toFixed(2)),
-        y: Number(rotateY.toFixed(2))
-      })
-    },
-    resetCardTransform (index) {
-      this.currentRotations.splice(index, 1, { x: 0, y: 0 })
-    },
     go_user (uid) {
       this.$router.push({
         name: 'UserProfile',
@@ -270,32 +235,23 @@ export default {
     } else {
       this.page = 1
     }
-    // 如果是竖屏，设置windowSize为6
     this.smallWindowSize = articlePaginateLayouts.smallWindowSize
     this.layout = articlePaginateLayouts.layout
-    // 加载首页数据
     this.load()
   }
 }
 </script>
-<style scoped lang="scss">
 
+<style scoped lang="scss">
 .article-list-container {
   padding-top: 10px;
   width: 100%;
   max-width: 100%;
-}
 
-@media screen and (max-aspect-ratio: 1/.7) {
-  .article-list-container {
+  @media screen and (max-aspect-ratio: 1/.7) {
     padding-left: 3px !important;
     padding-right: 3px !important;
   }
-}
-
-.article-body {
-  font-size: 1em;
-  max-height: 100%;
 }
 
 .article-list {
@@ -305,14 +261,15 @@ export default {
   padding-left: 8%;
   padding-right: 2%;
   padding-top: 20px;
+
+  &:last-child {
+    justify-content: start;
+  }
+
   @media screen and (max-aspect-ratio: 1/1) {
     padding: 5px !important;
     grid-template-columns: 1fr;
   }
-}
-
-.article-list:last-child {
-  justify-content: start;
 }
 
 .article-item {
@@ -331,29 +288,35 @@ export default {
   overflow: hidden;
   isolation: isolate;
   transform-style: preserve-3d;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background-clip: padding-box;
+  margin: 0;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12),
+    0 16px 34px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition: background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+  will-change: transform, box-shadow;
+  z-index: 1;
+  animation: slideInUp 0.6s ease-out backwards;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -35%;
-    background: linear-gradient(
-            120deg,
-            rgba(255, 255, 255, 0) 28%,
-            rgba(255, 255, 255, 0.3) 48%,
-            rgba(255, 255, 255, 0) 68%
-    );
-    transform: translateX(-120%) skewX(-20deg);
-    opacity: 0;
-    transition: transform 0.8s ease, opacity 0.8s ease;
-    z-index: 0;
+  @for $i from 1 through 50 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
   }
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.85;
-    z-index: 0;
+  &:hover {
+    .article-media {
+      transform: translateZ(42px) scale(1.08) rotate(1.6deg);
+      box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
+        0 8px 20px rgba(236, 72, 153, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.88);
+      filter: saturate(1.08);
+    }
   }
 
   @media screen and (max-aspect-ratio: 1/.7) {
@@ -364,19 +327,6 @@ export default {
     margin-right: 5px;
     margin-left: 5px;
   }
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background-clip: padding-box;
-  margin: 0;
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12),
-  0 16px 34px rgba(15, 23, 42, 0.1),
-  inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  transition: transform 0.35s ease,
-  background 0.35s ease,
-  border-color 0.35s ease,
-  box-shadow 0.35s ease;
-  will-change: transform, box-shadow;
-  z-index: 1;
 }
 
 .article-card-glow,
@@ -424,34 +374,6 @@ export default {
   }
 }
 
-.article-item:hover {
-  transform: perspective(1200px) translateY(-12px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg)) !important;
-  border-color: rgba(255, 255, 255, 0.82);
-  z-index: 10;
-
-  &::before {
-    opacity: 1;
-    transform: translateX(120%) skewX(-20deg);
-  }
-
-  box-shadow: 0 22px 48px rgba(99, 102, 241, 0.2),
-  0 24px 60px rgba(15, 23, 42, 0.16),
-  0 0 28px rgba(236, 72, 153, 0.12),
-  inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.article-item:hover .article-card-glow {
-  opacity: 1;
-}
-
-.article-item:hover .article-card-grid {
-  opacity: 0.3;
-}
-
-.article-item:hover .article-card-shine {
-  box-shadow: 0 0 24px rgba(255, 255, 255, 0.5);
-}
-
 .article-item-link {
   display: flex;
   padding: 5px !important;
@@ -462,6 +384,7 @@ export default {
   z-index: 1;
   cursor: pointer;
   transform-style: preserve-3d;
+
   @media screen and (max-aspect-ratio: 1/1) {
     display: block;
     width: 100%;
@@ -477,28 +400,41 @@ export default {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.66);
   box-shadow: 0 12px 28px rgba(59, 130, 246, 0.12),
-  0 12px 20px rgba(15, 23, 42, 0.08),
-  inset 0 1px 0 rgba(255, 255, 255, 0.38);
-  @media screen and (max-aspect-ratio: 1/1) {
-    max-width: 1500px;
-  }
+    0 12px 20px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-  box-shadow 0.4s ease,
-  border-color 0.4s ease,
-  filter 0.4s ease;
+    box-shadow 0.4s ease,
+    border-color 0.4s ease,
+    filter 0.4s ease;
   transform-origin: center;
   position: relative;
   z-index: 1;
   transform: translateZ(26px) scale(1) rotate(0deg);
+
+  @media screen and (max-aspect-ratio: 1/1) {
+    max-width: 1500px;
+  }
 }
 
-.article-item:hover .article-media {
-  transform: translateZ(42px) scale(1.08) rotate(1.6deg);
-  box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
-  0 8px 20px rgba(236, 72, 153, 0.16),
-  inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-color: rgba(255, 255, 255, 0.88);
-  filter: saturate(1.08);
+.article-body {
+  font-size: 1em;
+  max-height: 100%;
+  margin: 2px;
+  position: relative;
+  z-index: 1;
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  @media screen and (max-aspect-ratio: 1/1) {
+    width: 100%;
+    padding-top: 5px;
+  }
+}
+
+.article-heading {
+  cursor: pointer;
 }
 
 .article-title {
@@ -508,17 +444,6 @@ export default {
   display: inline-block;
   transform: translateZ(26px);
   text-shadow: 0 8px 22px rgba(99, 102, 241, 0.08);
-}
-
-.article-body {
-  margin: 2px;
-  position: relative;
-  z-index: 1;
-  transform-style: preserve-3d;
-  @media screen and (max-aspect-ratio: 1/1) {
-    width: 100%;
-    padding-top: 5px;
-  }
 }
 
 .article-description {
@@ -532,6 +457,7 @@ export default {
   align-items: flex-end;
   position: relative;
   z-index: 1;
+  cursor: pointer;
   transition: color 0.3s ease, text-shadow 0.3s ease;
   transform: translateZ(18px);
 
@@ -542,11 +468,16 @@ export default {
 }
 
 .article-extra {
-  margin-top: 5px;
+  margin-top: auto;
   margin-bottom: 5px;
   position: relative;
   z-index: 1;
   transform: translateZ(18px);
+}
+
+.article-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .article-tag {
@@ -554,15 +485,16 @@ export default {
   margin-bottom: 5px;
   border-radius: 999px;
   padding: 4px 12px;
+  cursor: pointer;
   background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(96, 165, 250, 0.2) 100%);
   border: 1px solid rgba(255, 255, 255, 0.42);
   color: #4b5563;
   font-weight: 500;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-  background 0.3s ease,
-  border-color 0.3s ease,
-  box-shadow 0.3s ease,
-  color 0.3s ease;
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    color 0.3s ease;
   position: relative;
   overflow: hidden;
   transform: translateZ(30px) scale(1) translateY(0);
@@ -584,7 +516,7 @@ export default {
     background: linear-gradient(135deg, rgba(244, 114, 182, 0.36) 0%, rgba(96, 165, 250, 0.34) 100%);
     border-color: rgba(255, 255, 255, 0.72);
     box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
-    0 4px 10px rgba(236, 72, 153, 0.12);
+      0 4px 10px rgba(236, 72, 153, 0.12);
     color: #7c3aed !important;
   }
 }
@@ -596,15 +528,19 @@ export default {
   background: transparent;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-// 添加信息图标的动画
 .info {
+  color: grey;
+  font-size: .8em;
+
   i {
     transition: transform 0.3s ease,
-    background 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
+      background 0.3s ease,
+      color 0.3s ease,
+      box-shadow 0.3s ease;
     padding: 3px 6px;
     border-radius: 999px;
     transform: translateZ(22px) scale(1);
@@ -619,9 +555,9 @@ export default {
 
   a {
     transition: transform 0.3s ease,
-    background 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
+      background 0.3s ease,
+      color 0.3s ease,
+      box-shadow 0.3s ease;
     padding: 4px 10px;
     border-radius: 999px;
     transform: translateZ(24px) translateX(0) scale(1);
@@ -633,6 +569,18 @@ export default {
       color: #db2777 !important;
     }
   }
+}
+
+.info-clickable {
+  cursor: pointer;
+}
+
+.pagination-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -653,7 +601,6 @@ export default {
   }
 }
 
-// 添加加载动画增强
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -662,16 +609,6 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-.article-item {
-  animation: slideInUp 0.6s ease-out backwards;
-
-  @for $i from 1 through 50 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{$i * 0.05}s;
-    }
   }
 }
 </style>
