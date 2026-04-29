@@ -184,13 +184,13 @@ const routes = [
         name: 'Auth',
         children: [
           {
-            path: 'callback',
-            name: 'Callback',
+            path: 'github',
+            name: 'GitHub',
             children: [
               {
-                path: 'github',
-                name: 'GitHub',
-                component: () => import('../views/auth/callback/GithubCallback.vue')
+                path: 'callback',
+                name: 'Callback',
+                component: () => import('../views/auth/github/GithubCallback.vue')
               }
             ]
           }
