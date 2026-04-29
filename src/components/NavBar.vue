@@ -1,111 +1,129 @@
 <template>
-    <el-menu
-        :default-active="activeIndex"
-        class="nav-el-menu"
-        mode="horizontal"
-        :router="true"
-        :ellipsis="false"
-        menu-trigger="click"
-        @select="handleSelect"
-    >
+  <el-menu
+      :default-active="activeIndex"
+      class="nav-el-menu"
+      mode="horizontal"
+      :router="true"
+      :ellipsis="false"
+      menu-trigger="click"
+      @select="handleSelect"
+  >
     <el-menu-item index="/">
-      <img src="/images/logo.png" class="menu-icon" />
+      <img src="/images/logo.png" class="menu-icon"/>
       <span>首页</span>
     </el-menu-item>
 
     <!-- 移动端折叠菜单 -->
     <el-sub-menu index="more" class="mobile-more-menu">
       <template #title>
-        <el-icon class="menu-icon"><MoreFilled /></el-icon>
+        <el-icon class="menu-icon">
+          <MoreFilled/>
+        </el-icon>
         <span>更多</span>
       </template>
       <el-sub-menu index="/tools-mobile">
         <template #title>
-          <el-icon class="menu-icon"><Operation /></el-icon>
+          <el-icon class="menu-icon">
+            <Operation/>
+          </el-icon>
           <span>工具箱</span>
         </template>
         <el-menu-item v-for="(tool,index) in tools" :key="index" :index="tool.href">
-          <img :src="tool.image" class="menu-icon" />
+          <img :src="tool.image" class="menu-icon"/>
           <span>{{ tool.text }}</span>
         </el-menu-item>
       </el-sub-menu>
       <el-menu-item index="/assets">
-        <el-icon class="menu-icon"><Search /></el-icon>
+        <el-icon class="menu-icon">
+          <Search/>
+        </el-icon>
         <span>智能媒体</span>
       </el-menu-item>
       <el-menu-item index="/topics">
-        <el-icon class="menu-icon"><EditPen /></el-icon>
+        <el-icon class="menu-icon">
+          <EditPen/>
+        </el-icon>
         <span>测验</span>
       </el-menu-item>
       <el-menu-item index="/guestbook">
-        <el-icon class="menu-icon"><ChatLineRound /></el-icon>
+        <el-icon class="menu-icon">
+          <ChatLineRound/>
+        </el-icon>
         <span>留言板</span>
       </el-menu-item>
       <el-menu-item index="/games">
-        <el-icon class="menu-icon"><Trophy /></el-icon>
+        <el-icon class="menu-icon">
+          <Trophy/>
+        </el-icon>
         <span>童年游戏</span>
       </el-menu-item>
       <el-menu-item index="/links">
-        <el-icon class="menu-icon"><LinkIcon /></el-icon>
+        <el-icon class="menu-icon">
+          <LinkIcon/>
+        </el-icon>
         <span>友情链接</span>
       </el-menu-item>
-      </el-sub-menu>
+    </el-sub-menu>
 
     <el-sub-menu index="/tools" class="desktop-menu">
       <template #title>
-        <el-icon class="menu-icon"><Operation /></el-icon>
+        <el-icon class="menu-icon">
+          <Operation/>
+        </el-icon>
         <span>工具箱</span>
       </template>
       <el-menu-item v-for="(tool,index) in tools" :key="index" :index="tool.href">
-        <img :src="tool.image" class="menu-icon" />
+        <img :src="tool.image" class="menu-icon"/>
         <span>{{ tool.text }}</span>
       </el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/assets" class="desktop-menu">
-      <el-icon class="menu-icon"><Search /></el-icon>
+      <el-icon class="menu-icon">
+        <Search/>
+      </el-icon>
       <span>智能媒体</span>
     </el-menu-item>
     <el-menu-item index="/topics" class="desktop-menu">
-      <el-icon class="menu-icon"><EditPen /></el-icon>
+      <el-icon class="menu-icon">
+        <EditPen/>
+      </el-icon>
       <span>测验</span>
     </el-menu-item>
     <el-menu-item index="/guestbook" class="desktop-menu">
-      <el-icon class="menu-icon"><ChatLineRound /></el-icon>
+      <el-icon class="menu-icon">
+        <ChatLineRound/>
+      </el-icon>
       <span>留言板</span>
     </el-menu-item>
     <el-menu-item index="/games" class="desktop-menu">
-      <el-icon class="menu-icon"><Sugar /></el-icon>
+      <el-icon class="menu-icon">
+        <Sugar/>
+      </el-icon>
       <span>童年游戏</span>
     </el-menu-item>
     <el-menu-item index="/links" class="desktop-menu">
-      <el-icon class="menu-icon"><LinkIcon /></el-icon>
+      <el-icon class="menu-icon">
+        <LinkIcon/>
+      </el-icon>
       <span>友情链接</span>
     </el-menu-item>
 
     <div class="flex-grow"></div>
 
     <div class="user-menu-container">
-      <el-dropdown trigger="click" @command="handleCommand">
+      <el-icon class="login-icon" v-if="!isLoggedIn" @click="setShowLoginDialog(true)" :size="36">
+        <User/>
+      </el-icon>
+      <el-dropdown v-else trigger="click" @command="handleCommand">
         <div class="el-dropdown-link">
-          <template v-if="isLoggedIn">
-            <el-avatar shape="square" :size="40" :src="userAvatar" class="user-avatar" />
-          </template>
-          <template v-else>
-            <el-icon :size="24"><User /></el-icon>
-          </template>
+          <el-avatar shape="square" :size="40" :src="userAvatar" class="user-avatar"/>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <template v-if="!isLoggedIn">
-              <el-dropdown-item command="/login">登录</el-dropdown-item>
-              <el-dropdown-item command="/register">注册</el-dropdown-item>
-            </template>
-            <template v-else>
-              <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
-              <el-dropdown-item command="https://frontend.leorain.cn/dashboard">面板</el-dropdown-item>
-              <el-dropdown-item command="clear-cache">清除缓存</el-dropdown-item>
-              <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
-            </template>
+            <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
+            <el-dropdown-item command="https://frontend.leorain.cn/dashboard">面板</el-dropdown-item>
+            <el-dropdown-item command="clear-cache">清除缓存</el-dropdown-item>
+            <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -333,5 +351,11 @@ export default {
   height: 24px;
   margin-right: 8px;
   object-fit: contain;
+}
+.login-icon {
+  cursor: pointer;
+  &:hover{
+    color: #409eff;
+  }
 }
 </style>
