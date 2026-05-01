@@ -225,4 +225,8 @@ export default {
     transform: translateY(-10px);
   }
 }
+:deep(.markdown pre)
+{
+  background-color: aliceblue;
+}
 </style>
