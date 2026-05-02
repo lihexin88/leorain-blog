@@ -34,7 +34,7 @@
                   backgroundRepeat: 'no-repeat'
                 }"
               >
-                <div class="links-item-container">
+                <div class="links-item-container" :class="{ 'links-item-inactive': link.status === 2 }">
                   <div class="links-item-left">
                     <el-avatar :src="link.image"></el-avatar>
                   </div>
@@ -71,6 +71,9 @@
                     <div>
                       <b>响应时间：</b>
                       {{ link.response_time }}ms
+                    </div>
+                    <div v-if="link.status === 2" class="links-item-status-inactive">
+                      <i class="fas fa-unlink"></i> 当前链接不活跃
                     </div>
                   </div>
                 </div>
@@ -447,6 +450,17 @@ export default {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+}
+
+.links-item-inactive {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.links-item-status-inactive {
+  margin-top: 4px;
+  color: #909399;
+  font-weight: 600;
 }
 
 .links-item-left {
