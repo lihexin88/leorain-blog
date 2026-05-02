@@ -309,6 +309,15 @@ export default {
     }
   }
 
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    background: inherit;
+    border-radius: 16px;
+    z-index: -1;
+  }
+
   &::after {
     content: '';
     position: absolute;
@@ -327,7 +336,7 @@ export default {
     );
     opacity: 0;
     transition: opacity 0.4s ease;
-    z-index: -1;
+    z-index: -2;
     border-radius: inherit;
     animation: rotateBorder 3s linear infinite;
   }
