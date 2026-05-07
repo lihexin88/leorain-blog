@@ -277,7 +277,7 @@ export default {
   :deep(.el-card__body) {
     overflow: hidden;
     border-radius: 15px;
-    background-color: rgb(255 255 255 / 0.81);
+    background-color: var(--article-item-bg, rgba(255,255,255,0.81));
   }
 
   padding: 5px !important;
@@ -289,13 +289,11 @@ export default {
   overflow: hidden;
   isolation: isolate;
   transform-style: preserve-3d;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--article-border, rgba(255, 255, 255, 0.55));
   background-clip: padding-box;
   margin: 0;
   border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12),
-    0 16px 34px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow: var(--article-box-shadow, 0 10px 30px rgba(99, 102, 241, 0.12), 0 16px 34px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.55));
   transition: background 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease;

@@ -148,6 +148,8 @@ export default {
   margin: 0;
   max-width: 100vw;
   overflow-x: hidden;
+  background-color: var(--header-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .header h1 {
@@ -167,6 +169,9 @@ export default {
   text-align: center;
   bottom: 0;
   width: 100%;
+  background-color: var(--footer-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: var(--footer-text-color);
 }
 
 :deep(.login-dialog) {
