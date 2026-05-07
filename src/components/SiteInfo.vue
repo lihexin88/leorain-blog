@@ -290,61 +290,61 @@ export default {
     handleThemeClick (theme, e) {
       // create a fullscreen-expanding circle from the click position and apply theme
       try {
-        const color = this.themeColors && this.themeColors[theme] ? this.themeColors[theme] : '#000';
-        const ripple = document.createElement('div');
-        const x = e.clientX;
-        const y = e.clientY;
-        ripple.className = 'theme-ripple';
+        const color = this.themeColors && this.themeColors[theme] ? this.themeColors[theme] : '#000'
+        const ripple = document.createElement('div')
+        const x = e.clientX
+        const y = e.clientY
+        ripple.className = 'theme-ripple'
         // position center at click
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
+        ripple.style.left = x + 'px'
+        ripple.style.top = y + 'px'
         // compute the diameter needed to reach the farthest corner
-        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-        const cx = x;
-        const cy = y;
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+        const cx = x
+        const cy = y
         const distances = [
           Math.hypot(cx - 0, cy - 0),
           Math.hypot(cx - vw, cy - 0),
           Math.hypot(cx - 0, cy - vh),
           Math.hypot(cx - vw, cy - vh)
-        ];
-        const maxDist = Math.max(...distances);
-        const diameter = Math.ceil(maxDist * 2);
-        ripple.style.width = diameter + 'px';
-        ripple.style.height = diameter + 'px';
-        // stronger but still semi-transparent fill so effect is obvious
-        ripple.style.background = this.hexToRgba(color, 0.28);
-        ripple.style.transform = 'translate(-50%, -50%) scale(0)';
-        ripple.style.opacity = '1';
-        ripple.style.position = 'fixed';
-        ripple.style.pointerEvents = 'none';
-        ripple.style.zIndex = '2000';
-        ripple.style.transition = 'transform 0.9s cubic-bezier(0.2,0.8,0.2,1), opacity 0.9s ease';
-        document.body.appendChild(ripple);
+        ]
+        const maxDist = Math.max(...distances)
+        const diameter = Math.ceil(maxDist * 2)
+        ripple.style.width = diameter + 'px'
+        ripple.style.height = diameter + 'px'
+        const alpha = theme === 'white' ? 0.16 : 0.28
+        ripple.style.background = this.hexToRgba(color, alpha)
+        ripple.style.transform = 'translate(-50%, -50%) scale(0)'
+        ripple.style.opacity = '1'
+        ripple.style.position = 'fixed'
+        ripple.style.pointerEvents = 'none'
+        ripple.style.zIndex = '2000'
+        ripple.style.transition = 'transform 0.9s cubic-bezier(0.2,0.8,0.2,1), opacity 0.9s ease'
+        document.body.appendChild(ripple)
         // apply theme immediately so variables take effect during animation
-        this.applyTheme(theme);
+        this.applyTheme(theme)
         // trigger animation to expand and fade
         requestAnimationFrame(() => {
-          ripple.style.transform = 'translate(-50%, -50%) scale(1)';
-          ripple.style.opacity = '0';
-        });
+          ripple.style.transform = 'translate(-50%, -50%) scale(1)'
+          ripple.style.opacity = '0'
+        })
         setTimeout(() => {
-          ripple.remove();
-        }, 900);
+          ripple.remove()
+        }, 900)
       } catch (err) {
-        console.error(err);
-        this.applyTheme(theme);
+        console.error(err)
+        this.applyTheme(theme)
       }
     },
 
     hexToRgba (hex, alpha) {
-      const c = hex.replace('#','');
-      const num = parseInt(c.length === 3 ? c.split('').map(ch=>ch+ch).join('') : c, 16);
-      const r = (num >> 16) & 255;
-      const g = (num >> 8) & 255;
-      const b = num & 255;
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      const c = hex.replace('#', '')
+      const num = parseInt(c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c, 16)
+      const r = (num >> 16) & 255
+      const g = (num >> 8) & 255
+      const b = num & 255
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`
     },
     applyTheme (theme) {
       if (!theme) return

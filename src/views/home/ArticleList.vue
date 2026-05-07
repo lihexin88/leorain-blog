@@ -336,7 +336,6 @@ export default {
     transition: opacity 0.4s ease;
     z-index: -2;
     border-radius: inherit;
-    animation: rotateBorder 3s linear infinite;
   }
 
   &:hover {
@@ -344,6 +343,7 @@ export default {
 
     &::after {
       opacity: 1;
+      animation: rotateBorder 2s linear infinite;
     }
 
     .article-media {
