@@ -68,6 +68,27 @@
             今日访客: {{ formatNumber(stats.today_count) }}
           </div>
         </div>
+        <div>
+          <el-divider> 主题颜色 </el-divider>
+          <div class="theme-picker">
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='pink'}" @click="handleThemeClick('pink',$event)" title="粉色" style="background: #f472b6"></div>
+              <div>粉色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='purple'}" @click="handleThemeClick('purple',$event)" title="紫色" style="background: #7c3aed"></div>
+              <div>紫色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='white'}" @click="handleThemeClick('white',$event)" title="白色" style="background: #ffffff; border:1px solid #ddd"></div>
+              <div>白色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='orange'}" @click="handleThemeClick('orange',$event)" title="桔黄色" style="background: #f59e0b"></div>
+              <div>桔黄色</div>
+            </div>
+          </div>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -112,6 +133,20 @@ export default {
         cpu_num: 1,
         today_count: 0,
         online: 0
+      },
+      // theme state
+      currentTheme: 'white',
+      themes: [
+        { id: 'pink', label: '粉色' },
+        { id: 'purple', label: '紫色' },
+        { id: 'white', label: '白色' },
+        { id: 'orange', label: '桔黄色' }
+      ],
+      themeColors: {
+        pink: '#f472b6',
+        purple: '#7c3aed',
+        white: '#ffffff',
+        orange: '#f59e0b'
       }
     }
   },
@@ -248,6 +283,78 @@ export default {
       }
 
       this.stompClient.activate() // 激活连接
+    },
+    setTheme (theme) {
+      this.applyTheme(theme)
+    },
+    handleThemeClick (theme, e) {
+      // create a fullscreen-expanding circle from the click position and apply theme
+      try {
+        const color = this.themeColors && this.themeColors[theme] ? this.themeColors[theme] : '#000';
+        const ripple = document.createElement('div');
+        const x = e.clientX;
+        const y = e.clientY;
+        ripple.className = 'theme-ripple';
+        // position center at click
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        // compute the diameter needed to reach the farthest corner
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        const cx = x;
+        const cy = y;
+        const distances = [
+          Math.hypot(cx - 0, cy - 0),
+          Math.hypot(cx - vw, cy - 0),
+          Math.hypot(cx - 0, cy - vh),
+          Math.hypot(cx - vw, cy - vh)
+        ];
+        const maxDist = Math.max(...distances);
+        const diameter = Math.ceil(maxDist * 2);
+        ripple.style.width = diameter + 'px';
+        ripple.style.height = diameter + 'px';
+        // stronger but still semi-transparent fill so effect is obvious
+        ripple.style.background = this.hexToRgba(color, 0.28);
+        ripple.style.transform = 'translate(-50%, -50%) scale(0)';
+        ripple.style.opacity = '1';
+        ripple.style.position = 'fixed';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.zIndex = '2000';
+        ripple.style.transition = 'transform 0.9s cubic-bezier(0.2,0.8,0.2,1), opacity 0.9s ease';
+        document.body.appendChild(ripple);
+        // apply theme immediately so variables take effect during animation
+        this.applyTheme(theme);
+        // trigger animation to expand and fade
+        requestAnimationFrame(() => {
+          ripple.style.transform = 'translate(-50%, -50%) scale(1)';
+          ripple.style.opacity = '0';
+        });
+        setTimeout(() => {
+          ripple.remove();
+        }, 900);
+      } catch (err) {
+        console.error(err);
+        this.applyTheme(theme);
+      }
+    },
+
+    hexToRgba (hex, alpha) {
+      const c = hex.replace('#','');
+      const num = parseInt(c.length === 3 ? c.split('').map(ch=>ch+ch).join('') : c, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    },
+    applyTheme (theme) {
+      if (!theme) return
+      try {
+        document.documentElement.setAttribute('data-theme', theme)
+        this.currentTheme = theme
+        localStorage.setItem('site_theme', theme)
+      } catch (e) {
+        console.error('设置主题失败', e)
+      }
     }
   },
   beforeCreate () {
@@ -255,6 +362,15 @@ export default {
     this.show_visitor = showVisitor === 'true'
   },
   beforeMount () {
+    // restore theme
+    try {
+      const saved = localStorage.getItem('site_theme') || 'white'
+      this.currentTheme = saved
+      document.documentElement.setAttribute('data-theme', saved)
+    } catch (e) {
+      // ignore
+    }
+
     if (this.show_visitor) {
       this.connectWebSocket()
     }
@@ -331,5 +447,42 @@ export default {
   100% {
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
   }
+}
+
+.theme-picker {
+  display: flex;
+  gap: 8px;
+  padding: 8px 4px;
+  align-items: center;
+}
+
+.theme-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  border: 2px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.theme-swatch:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.theme-swatch.selected {
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+</style>
+<style lang="scss">
+.theme-ripple {
+  position: fixed;
+  border-radius: 50%;
+  transform-origin: center center;
+  pointer-events: none;
+  will-change: transform, opacity;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
 }
 </style>
