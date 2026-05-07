@@ -2,7 +2,7 @@
   <div class="info-container">
     <div class="info-div">
       <el-divider> 关于我 </el-divider>
-      <el-card class="info-div-card">
+      <el-card shadow="hover" class="info-div-card">
         <div>
           <div class="info-avatar">
             <el-avatar :size="70" shape="circle" src="/images/logo.png"></el-avatar>
@@ -31,7 +31,7 @@
     </div>
     <div class="info-div">
       <el-divider>关于本站</el-divider>
-      <el-card class="info-div-card">
+      <el-card shadow="hover" class="info-div-card">
         <div>
           <!--          info-->
           <h3 class="info-title">
@@ -100,7 +100,7 @@
     </div>
     <div class="info-div" v-show="weather.show" style="overflow: hidden">
       <el-divider>天气</el-divider>
-      <el-card class="info-div-card">
+      <el-card shadow="hover" class="info-div-card">
         <div
           style="
             width: 100%;
@@ -138,7 +138,7 @@
     </div>
     <div class="info-div">
       <el-divider> 词云 </el-divider>
-      <el-card class="info-div-card">
+      <el-card shadow="hover" class="info-div-card">
         <tag-cloud :tags="tags" />
       </el-card>
     </div>
