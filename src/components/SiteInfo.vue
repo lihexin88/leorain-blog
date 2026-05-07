@@ -13,7 +13,7 @@
         </div>
       </div>
     </div>
-    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360" :lock-scroll="false">
+    <el-drawer v-model="show_settings_draw" class="site-info-drawer" direction="rtl" :with-header="false" :size="360" :lock-scroll="false">
       <div class="settings-container">
         <div>
           <el-divider>
@@ -403,6 +403,10 @@ export default {
 .settings-container {
   padding: 10px;
   width: 320px;
+  min-height: 100%;
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
+  color: var(--text-color, #111827);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .settings-bar {
@@ -418,9 +422,11 @@ export default {
     gap: 10px;
     padding: 5px 10px;
     border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--header-bg, rgba(255, 255, 255, 0.1));
+    color: var(--text-color, #111827);
     backdrop-filter: blur(10px);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
     cursor: pointer;
     .mini-progress{
       font-size: 10px;
@@ -477,6 +483,13 @@ export default {
 
 </style>
 <style lang="scss">
+.site-info-drawer,
+.site-info-drawer .el-drawer__body {
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
+  color: var(--text-color, #111827);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .theme-ripple {
   position: fixed;
   border-radius: 50%;
