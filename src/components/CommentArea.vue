@@ -69,7 +69,7 @@
                       </el-icon>
                     </template>
                   </el-popconfirm>
-                  <el-icon @click="reply(comment.username, comment.uid)">
+                  <el-icon @click="reply(comment.uid)">
                     <ChatDotRound/>
                   </el-icon>
                 </div>
@@ -339,9 +339,47 @@ export default {
     }
   },
   methods: {
+    focusEditor (cursor) {
+      const editor = this.simplemde?.codemirror
+
+      if (!editor) {
+        return
+      }
+
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          editor.focus()
+          editor.setCursor(cursor)
+        })
+      })
+    },
+    replaceEditorValue (value, shouldFocus = false) {
+      const editor = this.simplemde.codemirror
+      const doc = editor.getDoc()
+      const lastLine = doc.lastLine()
+
+      doc.replaceRange(value, {
+        line: doc.firstLine(),
+        ch: 0
+      }, {
+        line: lastLine,
+        ch: doc.getLine(lastLine).length
+      })
+
+      const cursor = doc.posFromIndex(value.length)
+      editor.setCursor(cursor)
+
+      if (shouldFocus) {
+        this.focusEditor(cursor)
+      }
+    },
     addEmoji (emoji) {
       const emojiContent = emoji.native || `:${emoji.id}:`
-      this.simplemde.value(this.simplemde.value() + emojiContent)
+      const editor = this.simplemde.codemirror
+
+      editor.replaceSelection(emojiContent)
+      this.focusEditor(editor.getCursor())
+      this.show_emoji_picker = false
     },
     handleCommentAreaClick () {
       if (!this.isLoggedIn) {
@@ -385,7 +423,7 @@ export default {
 
           this.comments.push(comment)
           this.content = ''
-          this.simplemde.value('')
+          this.replaceEditorValue('')
           this.isSubmiting = false
         }).catch(({ response }) => {
           this.isSubmiting = false
@@ -398,10 +436,8 @@ export default {
           }
         })
     },
-    reply (name, uid) {
-      this.simplemde.value('@' + uid + ' ')
-      this.simplemde.codemirror.focus()
-      this.simplemde.codemirror.setCursor(this.simplemde.codemirror.lineCount(), 0)
+    reply (uid) {
+      this.replaceEditorValue('@' + uid + ' ', true)
     },
     commentDelete (index, id) {
       commentApi.deleteComment(id)
@@ -511,11 +547,15 @@ export default {
 }
 
 ::v-deep .CodeMirror-scroll {
-  margin-top: 25px;
+  margin-top: 0;
+}
+
+::v-deep .CodeMirror-lines {
+  padding-top: 25px;
 }
 
 ::v-deep .editor-preview-side {
-  margin-top: 25px;
+  padding-top: 25px;
 }
 
 .emoji-picker-container {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <el-card class="info-div-card">
+      <el-card shadow="hover" class="info-div-card">
         <div class="git-logs-box">
           <div class="git-logs-item" v-for="item in git_logs_first_page" :key="item.id">
             {{ item.comment }}

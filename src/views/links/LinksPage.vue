@@ -336,6 +336,9 @@ export default {
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 32px);
+  :deep(.el-card__body) {
+    overflow: hidden;
+  }
 }
 
 .rss-header {

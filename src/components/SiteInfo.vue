@@ -5,15 +5,15 @@
         <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
         <div class="mini-progress">
           <span>cpu:</span>
-          <el-progress :percentage="formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num * 100) : 0)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+          <el-progress :percentage="parseFloat(formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num * 100) : 0),2)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
         </div>
         <div class="mini-progress">
           <span>mem:</span>
-          <el-progress :percentage="formatNumber(stats.memory_usage)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+          <el-progress :percentage="parseFloat(formatNumber(stats.memory_usage))" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
         </div>
       </div>
     </div>
-    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360">
+    <el-drawer v-model="show_settings_draw" direction="rtl" :with-header="false" :size="360" :lock-scroll="false">
       <div class="settings-container">
         <div>
           <el-divider>
