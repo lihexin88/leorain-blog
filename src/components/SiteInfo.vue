@@ -85,7 +85,27 @@
             </div>
             <div class="theme-item">
               <div class="theme-swatch" :class="{selected: currentTheme==='orange'}" @click="handleThemeClick('orange',$event)" title="桔黄色" style="background: #f59e0b"></div>
-              <div>桔黄色</div>
+              <div>桔色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='blue'}" @click="handleThemeClick('blue',$event)" title="蓝色" style="background: #3b82f6"></div>
+              <div>蓝色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='green'}" @click="handleThemeClick('green',$event)" title="绿色" style="background: #10b981"></div>
+              <div>绿色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='red'}" @click="handleThemeClick('red',$event)" title="红色" style="background: #ef4444"></div>
+              <div>红色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='cyan'}" @click="handleThemeClick('cyan',$event)" title="青色" style="background: #06b6d4"></div>
+              <div>青色</div>
+            </div>
+            <div class="theme-item">
+              <div class="theme-swatch" :class="{selected: currentTheme==='dark'}" @click="handleThemeClick('dark',$event)" title="暗黑" style="background: #1e293b"></div>
+              <div>暗黑</div>
             </div>
           </div>
         </div>
@@ -140,13 +160,23 @@ export default {
         { id: 'pink', label: '粉色' },
         { id: 'purple', label: '紫色' },
         { id: 'white', label: '白色' },
-        { id: 'orange', label: '桔黄色' }
+        { id: 'orange', label: '桔黄色' },
+        { id: 'blue', label: '蓝色' },
+        { id: 'green', label: '绿色' },
+        { id: 'red', label: '红色' },
+        { id: 'cyan', label: '青色' },
+        { id: 'dark', label: '暗黑' }
       ],
       themeColors: {
         pink: '#f472b6',
         purple: '#7c3aed',
         white: '#ffffff',
-        orange: '#f59e0b'
+        orange: '#f59e0b',
+        blue: '#3b82f6',
+        green: '#10b981',
+        red: '#ef4444',
+        cyan: '#06b6d4',
+        dark: '#1e293b'
       }
     }
   },
@@ -359,7 +389,7 @@ export default {
   },
   beforeCreate () {
     let showVisitor = localStorage.getItem('visitor_switch')
-    this.show_visitor = showVisitor === 'true'
+    // this.show_visitor = showVisitor === 'true'
   },
   beforeMount () {
     // restore theme
@@ -403,10 +433,6 @@ export default {
 .settings-container {
   padding: 10px;
   width: 320px;
-  min-height: 100%;
-  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
-  color: var(--text-color, #111827);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .settings-bar {
@@ -422,11 +448,9 @@ export default {
     gap: 10px;
     padding: 5px 10px;
     border-radius: 5px;
-    background-color: var(--header-bg, rgba(255, 255, 255, 0.1));
-    color: var(--text-color, #111827);
+    background-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, color 0.3s ease;
     cursor: pointer;
     .mini-progress{
       font-size: 10px;
@@ -457,6 +481,7 @@ export default {
 
 .theme-picker {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 4px;
   align-items: center;
@@ -480,12 +505,16 @@ export default {
   border-color: rgba(0,0,0,0.12);
   box-shadow: 0 6px 18px rgba(0,0,0,0.18);
 }
+:deep(.el-progress-bar__innerText){
+  color: #000000;
+}
 
 </style>
 <style lang="scss">
 .site-info-drawer,
 .site-info-drawer .el-drawer__body {
-  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.15))!important;
+  backdrop-filter: blur(12px) saturate(180%);
   color: var(--text-color, #111827);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
