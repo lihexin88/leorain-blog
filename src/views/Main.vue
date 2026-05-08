@@ -29,7 +29,7 @@
     </header>
 
     <main class="body">
-      <site-info v-if="configStore.showSiteInfo"/>
+      <site-info/>
       <!-- 子组件将在这里渲染 -->
       <router-view></router-view>
     </main>
@@ -161,6 +161,7 @@ export default {
 .body {
   flex: 1;
   min-height: calc(100vh - 150px);
+  background-color: var(--body-bg);
 }
 
 .footer {
