@@ -18,6 +18,14 @@ const userApi = {
   },
   getUserItemDetail (userItemId, params) {
     return api.get(`/user-items/${userItemId}`, { params })
+  },
+  getUploadUrl (fileName) {
+    return api.get('/api/assets_upload/upload', {
+      params: {
+        file_name: fileName,
+        strategy: 'avatar'
+      }
+    })
   }
 }
 

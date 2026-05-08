@@ -424,6 +424,7 @@ import {
   paginateLayouts,
   syncUrlPaginate
 } from '@/utils/helpers'
+import { uploadToOss } from '@/utils/oss-file'
 import moment from 'moment'
 import assetsApi from '@/apis/assets'
 import api from '@/apis/base'
@@ -852,28 +853,6 @@ export default {
         return this.defaultDirAssetId
       })
     },
-    uploadToOss (file, uploadUrl) {
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('PUT', uploadUrl, true)
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            this.uploadProgress = Math.min(99, Math.round((event.loaded / event.total) * 100))
-          }
-        }
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            this.uploadProgress = 100
-            resolve()
-          } else {
-            reject(new Error('上传失败'))
-          }
-        }
-        xhr.onerror = () => reject(new Error('上传失败'))
-        xhr.setRequestHeader('Content-Type', '')
-        xhr.send(file)
-      })
-    },
     async loadFFmpeg () {
       if (this.ffmpegLoaded && this.ffmpeg) {
         return this.ffmpeg
@@ -1029,7 +1008,9 @@ export default {
         if (!fileUrl || !fileObject) {
           throw new Error('未获取到上传签名')
         }
-        await this.uploadToOss(uploadFile, fileUrl)
+        await uploadToOss(uploadFile, fileUrl, (process) => {
+          this.uploadProgress = process
+        })
         await assetsApi.createAsset({
           type: this.getFileType(uploadFile),
           name: uploadFile.name,
