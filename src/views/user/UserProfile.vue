@@ -3,7 +3,8 @@
     <div class="user-header-jumbotron" v-if="userInfo">
       <el-row :gutter="20" justify="center" align="middle" class="container">
         <el-col :xs="24" :sm="6" class="text-center">
-          <el-avatar :size="120" :src="userInfo.avatar || defaultAvatar" class="profile-avatar" />
+          <el-avatar :size="120" :src="userInfo.avatar || defaultAvatar" class="profile-avatar" shape="circle" fit="cover" :class="{ clickable: isMyProfile }" @click="isMyProfile && $refs.avatarInput.click()" />
+          <input v-if="isMyProfile" ref="avatarInput" type="file" accept="image/*" style="display:none" @change="handleAvatarUpload" />
         </el-col>
         <el-col :xs="24" :sm="10" class="profile-content">
           <h1 class="nickname">昵称: {{ userInfo.nickname || userInfo.name }}</h1>
@@ -134,6 +135,7 @@
 import { useUserStore } from '@/store/user'
 import { mapState, mapActions } from 'pinia'
 import userApi from '@/apis/user'
+import { uploadToOss } from '@/utils/oss-file'
 import UserItems from '@/components/UserItems.vue'
 
 export default {
@@ -209,6 +211,22 @@ export default {
         email_notify_enabled: profile.email_notify_enabled === 'yes' ? 'yes' : 'no'
       }
       this.editDialogVisible = true
+    },
+    async handleAvatarUpload (e) {
+      const file = e.target.files[0]
+      if (!file) return
+      try {
+        const res = await userApi.getUploadUrl(file.name)
+        const url = res.url
+        await uploadToOss(file, url.url)
+        await userApi.updateUserInfo({ avatar: url.object })
+        this.$message.success('头像更新成功')
+        await Promise.all([this.fetchData(), this.fetchUserInfo()])
+      } catch (error) {
+        this.$message.error('头像上传失败')
+      } finally {
+        e.target.value = ''
+      }
     },
     async submitEditProfile () {
       this.editSubmitting = true
@@ -300,6 +318,16 @@ export default {
     opacity: 1;
     animation: spin-border 1s linear infinite;
   }
+
+  &.clickable {
+    cursor: pointer;
+  }
+}
+/* 穿透到 el-avatar 内部，找到 img 标签 */
+.profile-avatar :deep(img) {
+  /* 强制图片本身变成圆形 */
+  border-radius: 50%;
+  /* 理论上这就够了，因为 img 标签本身变圆了，就不需要容器剪裁了 */
 }
 
 @keyframes spin-border {

@@ -29,10 +29,10 @@
         <el-table-column label="状态" width="120">
           <template v-slot="scope">
             <template v-if="scope.row.status === 1">
-              <el-button v-if="scope.row.type === 'lottery'" type="primary" size="mini"
+              <el-button v-if="scope.row.type === 'lottery'" type="primary" size="small"
                          @click="openExistingLottery(scope.row)">刮开
               </el-button>
-              <el-button v-else-if="scope.row.type === 'fish'" type="success" size="mini"
+              <el-button v-else-if="scope.row.type === 'fish'" type="success" size="small"
                          @click="exchange(scope.row.id)">兑换
               </el-button>
             </template>
