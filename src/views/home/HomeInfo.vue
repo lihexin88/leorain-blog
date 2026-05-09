@@ -24,7 +24,7 @@
             </div>
           </div>
           <div v-if="configStore.config?.about_me">
-            <parse :content="configStore.config.about_me"></parse>
+            <parse class="about-me-parser" :content="configStore.config.about_me"></parse>
           </div>
         </div>
       </el-card>
@@ -345,5 +345,10 @@ export default {
   background-size: 100% 100%;
   background-position: center;
   color: white;
+}
+.about-me-parser {
+  :deep(.markdown){
+    background: transparent;
+  }
 }
 </style>
