@@ -349,13 +349,26 @@ pre:hover .copy-button {
 
 .markdown pre {
   padding: 10px; /* 添加内边距 */
+  border: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
   border-radius: 4px; /* 圆角边框 */
-  transition: box-shadow 0.1s ease; /* 光晕效果渐变 */
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
+  color: var(--card-text-color, #111827);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.1s ease, color 0.3s ease; /* 光晕效果渐变 */
 }
 
 .markdown pre code {
   overflow-wrap: break-word;
   white-space: pre-wrap; /* 自动换行 */
+}
+
+.markdown .hljs {
+  background-color: transparent;
+  color: var(--card-text-color, #111827);
+}
+
+.markdown code:not(.hljs) {
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
+  color: var(--card-text-color, #111827);
 }
 
 .markdown pre:hover {
@@ -378,6 +391,29 @@ pre:hover .copy-button {
 .markdown {
   padding-left: 10px;
   padding-right: 10px;
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
+  color: var(--card-text-color, #111827);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.markdown p,
+.markdown li,
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6,
+.markdown blockquote,
+.markdown table,
+.markdown th,
+.markdown td {
+  color: var(--card-text-color, #111827);
+}
+
+.markdown a,
+.markdown strong {
+  color: var(--theme-accent-color, #7c3aed);
 }
 
 .executor-button:hover {

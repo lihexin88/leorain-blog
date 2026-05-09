@@ -225,8 +225,8 @@ export default {
     transform: translateY(-10px);
   }
 }
-:deep(.markdown pre)
-{
-  background-color: aliceblue;
+:deep(.markdown pre) {
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
+  color: var(--card-text-color, #111827);
 }
 </style>
