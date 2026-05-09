@@ -114,16 +114,28 @@
       <el-icon class="login-icon" v-if="!isLoggedIn" @click="setShowLoginDialog(true)" :size="36">
         <User/>
       </el-icon>
-      <el-dropdown v-else trigger="click" @command="handleCommand">
+      <el-dropdown v-else trigger="click" @command="handleCommand" popper-class="user-dropdown-popper">
         <div class="el-dropdown-link">
           <el-avatar shape="square" :size="50" :src="userAvatar" class="user-avatar"/>
         </div>
         <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/user/profile">个人中心</el-dropdown-item>
-            <el-dropdown-item command="https://api.leorain.cn/dashboard">面板</el-dropdown-item>
-            <el-dropdown-item command="clear-cache">清除缓存</el-dropdown-item>
-            <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+          <el-dropdown-menu class="user-dropdown-menu">
+            <el-dropdown-item command="/user/profile">
+              <el-icon><User/></el-icon>
+              <span>个人中心</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="https://api.leorain.cn/dashboard">
+              <el-icon><Operation/></el-icon>
+              <span>面板</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="clear-cache">
+              <el-icon><Delete/></el-icon>
+              <span>清除缓存</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="logout" divided>
+              <el-icon><SwitchButton/></el-icon>
+              <span>退出登录</span>
+            </el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -144,7 +156,9 @@ import {
   ChatLineRound,
   Link as LinkIcon,
   Trophy,
-  Sugar
+  Sugar,
+  Delete,
+  SwitchButton
 } from '@element-plus/icons-vue'
 
 export default {
@@ -158,7 +172,9 @@ export default {
     EditPen,
     ChatLineRound,
     LinkIcon,
-    Trophy
+    Trophy,
+    Delete,
+    SwitchButton
   },
   data () {
     return {
@@ -361,6 +377,65 @@ export default {
   cursor: pointer;
   &:hover{
     color: #409eff;
+  }
+}
+</style>
+
+<style lang="scss">
+.user-dropdown-popper {
+  .el-dropdown-menu {
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--theme-el-border-color-lighter, #ebeef5);
+    background: var(--theme-el-bg-color-overlay, #ffffff);
+    backdrop-filter: blur(12px) saturate(180%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    min-width: 160px;
+  }
+
+  .el-dropdown-menu__item {
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin: 2px 0;
+    font-size: 14px;
+    color: var(--text-color, #111827);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .el-icon {
+      font-size: 16px;
+      color: var(--muted-text-color, #6b7280);
+      transition: color 0.2s ease;
+    }
+
+    &:hover, &:focus {
+      background-color: var(--theme-primary-light-9, #e8f6fd);
+      color: var(--theme-accent-color, #0ea5e9);
+
+      .el-icon {
+        color: var(--theme-accent-color, #0ea5e9);
+      }
+    }
+
+    &.is-disabled {
+      opacity: 0.5;
+    }
+  }
+
+  .el-dropdown-menu__item--divided {
+    margin-top: 6px;
+    border-top: 1px solid var(--theme-el-border-color-extra-light, #f2f6fc);
+    padding-top: 10px;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .el-popper__arrow {
+    display: none;
   }
 }
 </style>

@@ -13,7 +13,7 @@
               留言开始吧，别害羞！🌟
             </div>
             <div>
-              <parse content="**友链申请规则**
+              <parse class="links-description" content="**友链申请规则**
 - 博客内容应遵循合法、健康、积极向上的原则，禁止包含政治敏感、暴力、色情等内容。
 - 博客内容应保持一定的原创性和更新频率，避免长期不更新。
 - 站点SEO友好，设计风格应简洁、整洁、易于阅读，页面响应时间不宜过长
@@ -22,6 +22,7 @@
   - 描述：一个对技术和生活充满热爱的文艺型技术青年
   - 头像：https://www.leorain.cn/images/logo.png
   - 网址：https://www.leorain.cn
+  - 订阅：https://frontend.leorain.cn/rss
 *点击->留言->生成友链申请*
 "></parse>
             </div>
@@ -271,6 +272,11 @@ export default {
 @media screen and (max-aspect-ratio: 1/1) {
   ::v-deep .modal-body {
     padding: 5px;
+  }
+}
+.links-description{
+  :deep(.markdown){
+    background: transparent;
   }
 }
 </style>

@@ -63,7 +63,7 @@
                 </router-link>
                 <span class="meta"> in {{ comment.created_at_human }}</span>
               </div>
-              <div class="item-content" v-html="renderComment(comment)"></div>
+              <markdown-parse :content="renderComment(comment)"></markdown-parse>
             </div>
           </div>
           <div v-else class="nothing">暂无数据</div>
@@ -137,10 +137,12 @@ import { mapState, mapActions } from 'pinia'
 import userApi from '@/apis/user'
 import { uploadToOss } from '@/utils/oss-file'
 import UserItems from '@/components/UserItems.vue'
+import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
   name: 'UserProfile',
   components: {
+    MarkdownParse,
     UserItems
   },
   data () {
@@ -255,7 +257,7 @@ export default {
     renderComment (comment) {
       try {
         const content = JSON.parse(comment.content)
-        return content.raw || comment.content
+        return content.html || comment.raw
       } catch (e) {
         return comment.content
       }
