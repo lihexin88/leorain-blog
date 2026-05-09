@@ -352,7 +352,7 @@ export default {
     }
 
     .article-media {
-      transform: translateZ(42px) scale(1.08) rotate(1.6deg);
+      transform: translateZ(42px) scale(1.12) rotate(0deg);
       box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
         0 8px 20px rgba(236, 72, 153, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -426,6 +426,8 @@ export default {
   z-index: 1;
   cursor: pointer;
   transform-style: preserve-3d;
+  overflow: hidden;
+  border-radius: 14px;
 
   @media screen and (max-aspect-ratio: 1/1) {
     display: block;
@@ -444,7 +446,7 @@ export default {
   box-shadow: 0 12px 28px rgba(59, 130, 246, 0.12),
     0 12px 20px rgba(15, 23, 42, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.38);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     box-shadow 0.4s ease,
     border-color 0.4s ease,
     filter 0.4s ease;

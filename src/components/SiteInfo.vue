@@ -462,7 +462,7 @@ export default {
     gap: 10px;
     padding: 5px 10px;
     border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 1);
     backdrop-filter: blur(10px);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     cursor: pointer;
@@ -521,8 +521,10 @@ export default {
 }
 
 .theme-swatch.selected {
-  border-color: rgba(0,0,0,0.12);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  border-color: var(--el-color-primary, #409eff);
+  box-shadow: 0 0 0 2px var(--el-color-primary, #409eff), 0 6px 18px rgba(0,0,0,0.18);
+  transform: translateY(-2px) scale(1.08);
+  transition: all 0.18s ease;
 }
 :deep(.el-progress-bar__innerText){
   color: #000000;
