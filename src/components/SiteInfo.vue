@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="settings-bar">
-      <div class="site-info-lines" @click="switch_show_settings" :class="{ 'stats-flash': isStatsFlashing }">
+      <div
+        class="site-info-lines"
+        @click="handleSettingsClick"
+        @touchend.prevent="handleSettingsTouch"
+        :class="{ 'stats-flash': isStatsFlashing }"
+      >
         <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
         <div class="mini-progress">
           <span>cpu:</span>
@@ -114,6 +119,7 @@ export default {
       button_type: 'info',
       isStatsFlashing: false,
       statsFlashTimer: null,
+      lastSettingsTouchAt: 0,
       connection_retried: 0,
       stats: {
         load_average: 0,
@@ -172,6 +178,14 @@ export default {
       if (Number.isNaN(n)) return String(percent) + '%'
       if (Number.isInteger(n)) return String(n) + '%'
       return n.toFixed(2) + '%'
+    },
+    handleSettingsTouch () {
+      this.lastSettingsTouchAt = Date.now()
+      this.switch_show_settings()
+    },
+    handleSettingsClick () {
+      if (Date.now() - this.lastSettingsTouchAt < 700) return
+      this.switch_show_settings()
     },
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
@@ -466,6 +480,9 @@ export default {
     backdrop-filter: blur(10px);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
     .mini-progress{
       font-size: 10px;
       :deep(.el-progress__text){
