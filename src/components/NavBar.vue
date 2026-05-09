@@ -340,6 +340,7 @@ export default {
 
 .user-menu-container {
   margin-left: 20px;
+  margin-right: 12px;
   display: flex;
   align-items: center;
   height: 100%;
@@ -347,7 +348,7 @@ export default {
   outline: none;
 
   @media (min-width: 768px) {
-    margin-right: 20px;
+    margin-right: 24px;
   }
 }
 
