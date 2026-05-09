@@ -32,8 +32,8 @@
             </div>
           </div>
           <div class="card-content-area">
-            <div style="width: 95%">
-              <markdown-parse :content="guestbook.content"></markdown-parse>
+            <div style="width: 100%">
+              <markdown-parse class="guestbook-tree-parser" :content="guestbook.content"></markdown-parse>
             </div>
           </div>
           <div v-show="isReplayActive">
@@ -149,6 +149,7 @@ export default {
   padding: 6px;
   border-radius: 999px;
   border: 1px solid rgba(0, 247, 222, 0.08);
+  border-right: none;
   transition: background 0.3s ease;
 
   &:hover {
@@ -159,7 +160,7 @@ export default {
 .card-content-area {
   display: flex;
   flex-wrap: wrap;
-  padding-left: 10px;
+  padding: 5px  0 5px 10px;
   width: 100%;
 }
 
@@ -192,6 +193,10 @@ export default {
   &:hover {
     box-shadow: 0 4px 20px rgba(0, 247, 222, 0.15), 0 2px 8px rgba(0, 0, 0, 0.06);
     transform: translateY(-2px);
+
+    > :deep(.el-card__body) > .card-body > div > .card-title-area {
+      background: linear-gradient(135deg, rgba(0, 247, 222, 0.15), rgba(0, 200, 180, 0.06));
+    }
   }
 }
 
@@ -232,5 +237,10 @@ export default {
 :deep(.markdown pre) {
   background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
   color: var(--card-text-color, #111827);
+}
+.guestbook-tree-parser{
+  :deep(.markdown) {
+    padding: 5px 0 5px 10px;
+  }
 }
 </style>
