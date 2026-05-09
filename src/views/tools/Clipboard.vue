@@ -19,13 +19,14 @@
       </div>
       <div class="clipboard-intro-content">
         <div>
-          <el-divider> 版块设计初衷 </el-divider>
+          <el-divider> 版块设计初衷</el-divider>
           解决手机和电脑剪切板同步问题。某些设备无法安装例如：微信、飞书等工具，或者当前没有安装。需要同步一些简单的文字信息。
         </div>
         <div>
           <el-divider>功能介绍</el-divider>
           <markdown-parse
-            content="
+              class="clipboard-info-container"
+              content="
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
@@ -42,7 +43,8 @@
         <div>
           <el-divider>开发相关</el-divider>
           <markdown-parse
-            content="
+              class="clipboard-info-container"
+              content="
 - 开发耗时:第一版迭代约5小时
 - 各平台可直接运行的命令行工具(done)
   - [win: cloudClip.exe](https://home.leorain.cn:9888/storage/download/cloudClip.exe)
@@ -79,7 +81,7 @@ export default {
 .clipboard-info-box {
   width: 20%;
   min-height: 100vh;
-  background: rgba(249, 249, 251, 1);
+  background: var(--theme-el-bg-color);
   border-right: 1px solid #e7eaec;
   padding: 20px 10px 10px 10px;
   opacity: 1 !important;
@@ -88,7 +90,7 @@ export default {
 .clipboard-content-box {
   width: 60%;
   min-height: 100vh;
-  background: rgba(249, 249, 251, 1);
+  background: var(--theme-el-bg-color);
   border-right: 1px solid #e7eaec;
   padding: 20px 10px 10px 10px;
 }
@@ -108,5 +110,10 @@ export default {
 .clipboard-intro-content {
   line-height: 1.7;
   margin-top: 20px;
+}
+:deep(.clipboard-info-container) {
+  .markdown{
+    background: transparent;
+  }
 }
 </style>
