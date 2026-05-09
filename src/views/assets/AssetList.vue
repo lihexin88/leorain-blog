@@ -1350,7 +1350,7 @@ export default {
   flex-shrink: 0;
   padding: 16px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, .9);
+  background: var(--theme-el-bg-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -1375,7 +1375,7 @@ export default {
   max-height: 300px;
   padding: 8px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, .9);
+  background: var(--theme-el-bg-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: transform .2s ease, box-shadow .2s ease;
   display: flex;
@@ -1494,7 +1494,7 @@ export default {
 .asset-info {
   margin-top: 6px;
   font-size: .85em;
-  color: #606266;
+  color: var(--card-text-color);
   display: flex;
   justify-content: center;
   gap: 5px;
