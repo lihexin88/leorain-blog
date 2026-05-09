@@ -71,41 +71,15 @@
         <div>
           <el-divider> 主题颜色 </el-divider>
           <div class="theme-picker">
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='pink'}" @click="handleThemeClick('pink',$event)" title="粉色" style="background: #f472b6"></div>
-              <div>粉色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='purple'}" @click="handleThemeClick('purple',$event)" title="紫色" style="background: #7c3aed"></div>
-              <div>紫色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='white'}" @click="handleThemeClick('white',$event)" title="白色" style="background: #ffffff; border:1px solid #ddd"></div>
-              <div>白色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='orange'}" @click="handleThemeClick('orange',$event)" title="桔黄色" style="background: #f59e0b"></div>
-              <div>桔色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='blue'}" @click="handleThemeClick('blue',$event)" title="蓝色" style="background: #3b82f6"></div>
-              <div>蓝色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='green'}" @click="handleThemeClick('green',$event)" title="绿色" style="background: #10b981"></div>
-              <div>绿色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='red'}" @click="handleThemeClick('red',$event)" title="红色" style="background: #ef4444"></div>
-              <div>红色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='cyan'}" @click="handleThemeClick('cyan',$event)" title="青色" style="background: #06b6d4"></div>
-              <div>青色</div>
-            </div>
-            <div class="theme-item">
-              <div class="theme-swatch" :class="{selected: currentTheme==='dark'}" @click="handleThemeClick('dark',$event)" title="暗黑" style="background: #1e293b"></div>
-              <div>暗黑</div>
+            <div v-for="theme in themes" :key="theme.id" class="theme-item">
+              <div
+                class="theme-swatch"
+                :class="{ selected: currentTheme === theme.id, 'system-theme-swatch': theme.id === 'system' }"
+                :style="getThemeSwatchStyle(theme)"
+                :title="theme.label"
+                @click="handleThemeClick(theme.id, $event)"
+              ></div>
+              <div>{{ theme.label }}</div>
             </div>
           </div>
         </div>
@@ -157,10 +131,11 @@ export default {
       // theme state
       currentTheme: 'white',
       themes: [
+        { id: 'system', label: '系统' },
         { id: 'pink', label: '粉色' },
         { id: 'purple', label: '紫色' },
         { id: 'white', label: '白色' },
-        { id: 'orange', label: '桔黄色' },
+        { id: 'orange', label: '桔色' },
         { id: 'blue', label: '蓝色' },
         { id: 'green', label: '绿色' },
         { id: 'red', label: '红色' },
@@ -177,7 +152,9 @@ export default {
         red: '#ef4444',
         cyan: '#06b6d4',
         dark: '#1e293b'
-      }
+      },
+      systemThemeQuery: null,
+      systemThemeChangeHandler: null
     }
   },
   methods: {
@@ -283,7 +260,7 @@ export default {
       }
 
       // 4. 错误处理
-      this.stompClient.onStompError = (frame) => {
+      this.stompClient.onStompError = () => {
         console.log('错误')
       }
       this.stompClient.onWebSocketClose = (frame) => {
@@ -317,18 +294,39 @@ export default {
     setTheme (theme) {
       this.applyTheme(theme)
     },
+    getThemeSwatchStyle (theme) {
+      if (theme.id === 'system') return {}
+      const style = {
+        background: this.themeColors[theme.id]
+      }
+      if (theme.id === 'white') {
+        style.border = '1px solid #ddd'
+      }
+      return style
+    },
+    resolveTheme (theme) {
+      if (theme !== 'system') return theme
+      const query = this.systemThemeQuery || (window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null)
+      return query && query.matches ? 'dark' : 'white'
+    },
+    isSupportedTheme (theme) {
+      return this.themes.some(item => item.id === theme)
+    },
+    getRippleColor (theme) {
+      const resolvedTheme = this.resolveTheme(theme)
+      return this.themeColors[theme] || this.themeColors[resolvedTheme] || '#000000'
+    },
     handleThemeClick (theme, e) {
-      // create a fullscreen-expanding circle from the click position and apply theme
       try {
-        const color = this.themeColors && this.themeColors[theme] ? this.themeColors[theme] : '#000'
+        const color = this.getRippleColor(theme)
         const ripple = document.createElement('div')
         const x = e.clientX
         const y = e.clientY
         ripple.className = 'theme-ripple'
-        // position center at click
         ripple.style.left = x + 'px'
         ripple.style.top = y + 'px'
-        // compute the diameter needed to reach the farthest corner
         const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
         const cx = x
@@ -343,7 +341,7 @@ export default {
         const diameter = Math.ceil(maxDist * 2)
         ripple.style.width = diameter + 'px'
         ripple.style.height = diameter + 'px'
-        const alpha = theme === 'white' ? 0.16 : 0.28
+        const alpha = this.resolveTheme(theme) === 'white' ? 0.16 : 0.28
         ripple.style.background = this.hexToRgba(color, alpha)
         ripple.style.transform = 'translate(-50%, -50%) scale(0)'
         ripple.style.opacity = '1'
@@ -352,9 +350,7 @@ export default {
         ripple.style.zIndex = '2000'
         ripple.style.transition = 'transform 0.9s cubic-bezier(0.2,0.8,0.2,1), opacity 0.9s ease'
         document.body.appendChild(ripple)
-        // apply theme immediately so variables take effect during animation
         this.applyTheme(theme)
-        // trigger animation to expand and fade
         requestAnimationFrame(() => {
           ripple.style.transform = 'translate(-50%, -50%) scale(1)'
           ripple.style.opacity = '0'
@@ -379,26 +375,43 @@ export default {
     applyTheme (theme) {
       if (!theme) return
       try {
-        document.documentElement.setAttribute('data-theme', theme)
-        this.currentTheme = theme
-        localStorage.setItem('site_theme', theme)
+        const selectedTheme = this.isSupportedTheme(theme) ? theme : 'white'
+        document.documentElement.setAttribute('data-theme', this.resolveTheme(selectedTheme))
+        this.currentTheme = selectedTheme
+        localStorage.setItem('site_theme', selectedTheme)
       } catch (e) {
         console.error('设置主题失败', e)
       }
+    },
+    setupSystemThemeListener () {
+      if (!window.matchMedia) return
+      this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+      this.systemThemeChangeHandler = () => {
+        if (this.currentTheme === 'system') {
+          document.documentElement.setAttribute('data-theme', this.resolveTheme('system'))
+        }
+      }
+      if (this.systemThemeQuery.addEventListener) {
+        this.systemThemeQuery.addEventListener('change', this.systemThemeChangeHandler)
+      } else {
+        this.systemThemeQuery.addListener(this.systemThemeChangeHandler)
+      }
+    },
+    removeSystemThemeListener () {
+      if (!this.systemThemeQuery || !this.systemThemeChangeHandler) return
+      if (this.systemThemeQuery.removeEventListener) {
+        this.systemThemeQuery.removeEventListener('change', this.systemThemeChangeHandler)
+      } else {
+        this.systemThemeQuery.removeListener(this.systemThemeChangeHandler)
+      }
     }
   },
-  beforeCreate () {
-    let showVisitor = localStorage.getItem('visitor_switch')
-    // this.show_visitor = showVisitor === 'true'
-  },
   beforeMount () {
-    // restore theme
     try {
-      const saved = localStorage.getItem('site_theme') || 'white'
-      this.currentTheme = saved
-      document.documentElement.setAttribute('data-theme', saved)
+      this.setupSystemThemeListener()
+      this.applyTheme(localStorage.getItem('site_theme') || 'white')
     } catch (e) {
-      // ignore
+      this.applyTheme('white')
     }
 
     if (this.show_visitor) {
@@ -409,6 +422,7 @@ export default {
     if (this.statsFlashTimer) {
       clearTimeout(this.statsFlashTimer)
     }
+    this.removeSystemThemeListener()
   },
   watch: {
     show_visitor (newValue) {
@@ -495,6 +509,11 @@ export default {
   box-shadow: 0 2px 6px rgba(0,0,0,0.12);
   border: 2px solid transparent;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.theme-swatch.system-theme-swatch {
+  background: linear-gradient(135deg, #ffffff 0 50%, #1e293b 50% 100%);
+  border: 1px solid #cbd5e1;
 }
 
 .theme-swatch:hover {
