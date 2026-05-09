@@ -278,6 +278,8 @@ export default {
     overflow: hidden;
     border-radius: 15px;
     background-color: var(--article-item-bg, rgba(255,255,255,0.81));
+    color: var(--card-text-color, #111827);
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   padding: 5px !important;
@@ -290,11 +292,14 @@ export default {
   isolation: isolate;
   transform-style: preserve-3d;
   border: 1px solid var(--article-border, rgba(255, 255, 255, 0.55));
+  background-color: var(--article-item-bg, rgba(255,255,255,0.81));
   background-clip: padding-box;
+  color: var(--card-text-color, #111827);
   margin: 0;
   border-radius: 18px;
   box-shadow: var(--article-box-shadow, 0 10px 30px rgba(99, 102, 241, 0.12), 0 16px 34px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.55));
-  transition: background 0.35s ease,
+  transition: background-color 0.35s ease,
+    color 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease;
   will-change: transform, box-shadow;
@@ -479,9 +484,11 @@ export default {
   position: relative;
   z-index: 1;
   font-size: 1.3em;
+  color: var(--card-text-color, #111827);
   display: inline-block;
   transform: translateZ(26px);
   text-shadow: 0 8px 22px rgba(99, 102, 241, 0.08);
+  transition: color 0.3s ease;
 }
 
 .article-description {
@@ -489,7 +496,7 @@ export default {
   font-size: .8em;
   height: 40px;
   line-height: 1.4285em;
-  color: #5b6476;
+  color: var(--muted-text-color, #5b6476);
   overflow-y: hidden;
   display: flex;
   align-items: flex-end;
@@ -500,7 +507,7 @@ export default {
   transform: translateZ(18px);
 
   &:hover {
-    color: #364152;
+    color: var(--theme-accent-color, #364152);
     text-shadow: 0 6px 16px rgba(99, 102, 241, 0.08);
   }
 }
@@ -525,7 +532,7 @@ export default {
   cursor: pointer;
   background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(96, 165, 250, 0.2) 100%);
   border: 1px solid rgba(255, 255, 255, 0.42);
-  color: #4b5563;
+  color: var(--card-text-color, #4b5563);
   font-weight: 500;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     background 0.3s ease,
@@ -554,7 +561,7 @@ export default {
     border-color: transparent;
     box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
       0 4px 10px rgba(236, 72, 153, 0.12);
-    color: #7c3aed !important;
+    color: var(--theme-accent-color, #7c3aed) !important;
   }
 }
 
@@ -570,8 +577,9 @@ export default {
 }
 
 .info {
-  color: grey;
+  color: var(--muted-text-color, grey);
   font-size: .8em;
+  transition: color 0.3s ease;
 
   i {
     transition: transform 0.3s ease,
@@ -586,7 +594,7 @@ export default {
       background: linear-gradient(135deg, rgba(244, 114, 182, 0.22) 0%, rgba(96, 165, 250, 0.24) 100%);
       transform: translateZ(30px) scale(1.08);
       box-shadow: 0 8px 18px rgba(99, 102, 241, 0.14);
-      color: #7c3aed !important;
+      color: var(--theme-accent-color, #7c3aed) !important;
     }
   }
 
@@ -603,7 +611,7 @@ export default {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.18) 100%);
       transform: translateZ(32px) translateX(6px) scale(1.03);
       box-shadow: 0 10px 18px rgba(99, 102, 241, 0.14);
-      color: #db2777 !important;
+      color: var(--theme-accent-color, #db2777) !important;
     }
   }
 }
