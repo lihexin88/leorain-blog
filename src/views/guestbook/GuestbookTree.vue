@@ -141,7 +141,7 @@ export default {
 }
 
 .card-title-area {
-  background: linear-gradient(135deg, rgba(0, 247, 222, 0.10), rgba(0, 200, 180, 0.04));
+  background: linear-gradient(135deg, var(--theme-primary-light-8), rgba(0, 200, 180, 0.04));
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -159,6 +159,7 @@ export default {
 .card-content-area {
   display: flex;
   flex-wrap: wrap;
+  padding-left: 10px;
   width: 100%;
 }
 
@@ -184,6 +185,9 @@ export default {
 .box-card {
   transition: box-shadow 0.3s ease, transform 0.25s ease;
   border-radius: 6px;
+  :deep(.el-card__body) {
+    padding: 10px 5px;
+  }
 
   &:hover {
     box-shadow: 0 4px 20px rgba(0, 247, 222, 0.15), 0 2px 8px rgba(0, 0, 0, 0.06);
