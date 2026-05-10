@@ -352,16 +352,20 @@ export default {
     }
 
     .article-media {
-      transform: translateZ(42px) scale(1.22) rotate(0deg);
-      box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
-        0 8px 20px rgba(236, 72, 153, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
-      border-color: rgba(255, 255, 255, 0.88);
+      transform: scale(1.1);
       filter: saturate(1.08);
     }
+    .article-body {
+      background: transparent;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    .article-title,
+    .article-description,
+    .article-extra {
+      transform: translateY(150px);
+    }
   }
-
-  @media screen and (max-aspect-ratio: 1/.7) {
+  @include mobile {
     width: 100%;
     padding: 5px !important;
     height: auto !important;
@@ -415,60 +419,45 @@ export default {
 }
 
 .article-item-link {
-  display: flex;
-  padding: 5px !important;
-  justify-content: center;
-  width: 200px;
-  margin: auto;
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   cursor: pointer;
-  transform-style: preserve-3d;
   overflow: hidden;
   border-radius: 14px;
-
-  @media screen and (max-aspect-ratio: 1/1) {
-    display: block;
-    width: 100%;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .article-media {
   width: 100%;
-  max-width: 200px;
-  max-height: 190px;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 14px;
   transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    box-shadow 0.4s ease,
-    border-color 0.4s ease,
     filter 0.4s ease;
   transform-origin: center;
-  position: relative;
-  z-index: 1;
-  transform: translateZ(26px) scale(1) rotate(0deg);
-
-  @media screen and (max-aspect-ratio: 1/1) {
-    max-width: 1500px;
-  }
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: scale(1);
 }
 
 .article-body {
   font-size: 1em;
-  max-height: 100%;
-  margin: 2px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
   transform-style: preserve-3d;
   display: flex;
   flex-direction: column;
   flex: 1;
-
-  @media screen and (max-aspect-ratio: 1/1) {
-    width: 100%;
-    padding-top: 5px;
-  }
+  padding: 8px;
+  background: linear-gradient(to top, var(--article-item-bg) 0%, var(--article-item-bg-transparent) 60%, transparent 100%);
+  border-radius: 0 0 14px 14px;
+  margin-top: auto;
+  color: #fff;
+  transition: background-color 0.35s ease, color 0.35s ease, text-shadow 0.35s ease;
 }
 
 .article-heading {
@@ -484,7 +473,7 @@ export default {
   display: inline-block;
   transform: translateZ(26px);
   text-shadow: 0 8px 22px rgba(99, 102, 241, 0.08);
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform .3s ease-in-out;
 }
 
 .article-description {
@@ -499,7 +488,7 @@ export default {
   position: relative;
   z-index: 1;
   cursor: pointer;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transition: color 0.3s ease, text-shadow 0.3s ease, transform .3s ease-in-out;
   transform: translateZ(18px);
 
   &:hover {
@@ -513,6 +502,7 @@ export default {
   position: relative;
   z-index: 1;
   transform: translateZ(18px);
+  transition: transform .3s ease-in-out;
 }
 
 .article-tags-wrap {
@@ -562,9 +552,10 @@ export default {
 }
 
 :deep(.el-card__body) {
-  padding: 12px;
+  padding: 0;
   width: 100%;
   height: 100%;
+  min-height: 260px;
   background: transparent;
   position: relative;
   z-index: 1;
