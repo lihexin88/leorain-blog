@@ -73,7 +73,7 @@
         <div class="row container-text-overflow-wrap article-content-container">
           <div class="article-content">
             <div v-if="article.is_markdown">
-              <parse v-if="article.content" id="article-show-content" :content="article.content"></parse>
+              <parse class="article-parser" v-if="article.content" id="article-show-content" :content="article.content"></parse>
             </div>
             <div v-else id="article-show-content" v-html="article.content"></div>
             <div class="offset-lg-1">
@@ -102,7 +102,7 @@
       </div>
     </div>
     <div class="article-page-right">
-      <recommend-article v-if="article.title" :query="article.title" :article_id="article.id"></recommend-article>
+      <recommend-article ref="recommendArticle" v-if="article.title" :query="article.title" :article_id="article.id"></recommend-article>
     </div>
   </div>
 </template>
@@ -238,6 +238,7 @@ export default {
           this.article.id = null
           this.slug = newSlug
           this.fetchArticle()
+          this.$refs.recommendArticle.getRecommendArticles()
         }
       }
     }
@@ -370,6 +371,7 @@ export default {
 }
 
 :deep(.markdown) {
+  background-color: rgb(0 0 0 / 0);
   img {
     max-width: 100%;
   }
