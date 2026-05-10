@@ -8,13 +8,13 @@
           </div>
         </div>
         <div v-if="total > 20" style="display: flex;justify-content: flex-end;padding-top: 10px;align-items: center">
-          <a @click="show_history_list" class="fas info-category pointer-style">查看更多</a>
+          <a @click="show_history_list" class="fas info-category pointer-style pointer">查看更多</a>
         </div>
       </el-card>
     </div>
     <div>
       <!-- Element Plus 兼容：使用 v-model 绑定可见性，使用 header 槽替代已废弃的 title 槽 -->
-      <el-dialog v-model="show" width="60%" @close="show = false">
+      <el-dialog v-model="show" width="60%" @close="show = false" append-to-body :lock-scroll="false">
         <template v-slot:header>
           <span>git提交日志</span>
         </template>
