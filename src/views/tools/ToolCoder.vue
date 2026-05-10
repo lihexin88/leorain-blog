@@ -55,6 +55,9 @@
 
         <!-- MD5 哈希 -->
         <el-button type="danger" @click="generateMd5">MD5 Hash</el-button>
+
+        <!-- 生成二维码 -->
+        <el-button type="success" @click="generateQrCode">生成二维码</el-button>
       </div>
       <div class="extra-tools">
         <el-row :gutter="20">
@@ -98,13 +101,18 @@
             placeholder="处理后的结果将在这里显示..."
         />
       </div>
+
+      <div v-show="qrVisible" class="qr-code-container">
+        <canvas ref="qrCanvas"></canvas>
+      </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import CryptoJS from 'crypto-js'
+import QRCode from 'qrcode'
 import { ElMessage } from 'element-plus'
 
 const inputText = ref('')
@@ -112,6 +120,8 @@ const outputText = ref('')
 const subString = ref('')
 const passLength = ref(16)
 const passOptions = ref(['digits', 'letters'])
+const qrVisible = ref(false)
+const qrCanvas = ref(null)
 
 const wordCount = computed(() => {
   if (!inputText.value) return 0
@@ -257,6 +267,21 @@ const generatePassword = () => {
   outputText.value = result
 }
 
+// 生成二维码
+const generateQrCode = async () => {
+  if (!inputText.value) {
+    ElMessage.warning('请先输入内容')
+    return
+  }
+  qrVisible.value = true
+  await nextTick()
+  try {
+    await QRCode.toCanvas(qrCanvas.value, inputText.value, { width: 300, margin: 2 })
+  } catch (e) {
+    ElMessage.error('生成二维码失败: ' + e.message)
+  }
+}
+
 // 复制到剪贴板
 const copyToClipboard = () => {
   if (!outputText.value) {
@@ -328,6 +353,12 @@ const copyToClipboard = () => {
         flex-wrap: wrap;
       }
     }
+  }
+
+  .qr-code-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
   }
 
   .button-grid {
