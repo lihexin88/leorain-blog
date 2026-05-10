@@ -48,7 +48,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern-compiler' // 使用现代 Sass API
+        api: 'modern-compiler', // 使用现代 Sass API
+        additionalData: '@use "@/assets/styles/_mixins.scss" as *;\n'
       }
     }
   }

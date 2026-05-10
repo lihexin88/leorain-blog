@@ -420,7 +420,7 @@ export default {
   gap: 10px;
 }
 
-@media (max-width: 768px) {
+@include mobile {
   .card-col {
     margin-bottom: 20px;
   }

@@ -352,7 +352,7 @@ export default {
 }
 
 /* 响应式调整 */
-@media (max-width: 768px) {
+@include mobile {
   .game-container {
     flex-direction: column;
   }

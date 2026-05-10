@@ -670,7 +670,7 @@ export default {
   padding: 10px 20px 30px 20px;
 }
 
-@media (max-width: 991px) {
+@include tablet {
   .records-card {
     margin-top: 1.5rem;
   }

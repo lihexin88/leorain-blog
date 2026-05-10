@@ -704,7 +704,7 @@ export default {
   gap: 30px;
   align-items: flex-start;
 
-  @media screen and (max-width: 992px) {
+  @include tablet {
     flex-direction: column;
     gap: 20px;
   }

@@ -889,7 +889,7 @@ export default {
 }
 
 // 响应式对话框宽度
-@media (max-width: 768px) {
+@include mobile {
   ::v-deep .el-dialog {
     width: 90% !important;
   }
