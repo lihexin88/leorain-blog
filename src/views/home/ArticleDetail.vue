@@ -275,7 +275,7 @@ export default {
   min-width: 0;
   border-radius: 10px;
   padding: 20px;
-  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 1));
   color: var(--card-text-color, #111827);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
