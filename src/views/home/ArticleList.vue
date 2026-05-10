@@ -366,8 +366,6 @@ export default {
     padding: 5px !important;
     height: auto !important;
     display: block;
-    margin-right: 5px;
-    margin-left: 5px;
   }
 }
 
