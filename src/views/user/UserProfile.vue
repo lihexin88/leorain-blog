@@ -470,7 +470,7 @@ export default {
 }
 
 /* 响应式调整 */
-@media (max-width: 768px) {
+@include mobile {
   .user-header-jumbotron {
     padding: 30px 20px;
     text-align: center;

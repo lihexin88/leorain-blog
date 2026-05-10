@@ -481,7 +481,7 @@ export default {
 }
 
 /* 响应式设计 */
-@media screen and (max-width: 768px) {
+@include mobile {
   .topic-container {
     padding: 20px 16px;
     border-radius: 8px;

@@ -190,6 +190,9 @@ export default {
 .home-container {
   padding: 20px 0;
   position: relative;
+  @include tablet {
+    padding: 0;
+  }
 }
 
 .home-layout {
@@ -331,7 +334,7 @@ export default {
 .main-content {
   width: 70%;
 
-  @media screen and (max-width: 992px) {
+  @include tablet {
     width: 100%;
   }
 }
@@ -341,7 +344,7 @@ export default {
   padding-left: 20px;
   padding-right: 100px;
 
-  @media screen and (max-width: 992px) {
+  @include tablet {
     width: 100%;
     padding-left: 0;
     padding-right: 0;
@@ -349,7 +352,7 @@ export default {
   }
 }
 
-@media screen and (max-width: 992px) {
+@include tablet {
   .home-splash-content {
     padding: 24px 20px;
   }

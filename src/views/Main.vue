@@ -113,7 +113,7 @@ export default {
   max-width: 920px;
 }
 
-@media (min-width: 769px) {
+@include pc {
   :deep(.el-dialog) {
     max-width: 500px;
   }

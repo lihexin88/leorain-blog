@@ -325,7 +325,7 @@ export default {
   display: none;
 }
 
-@media (max-width: 767px) {
+@include mobile {
   .desktop-menu {
     display: none !important;
   }
@@ -347,7 +347,7 @@ export default {
   padding: 0 10px;
   outline: none;
 
-  @media (min-width: 768px) {
+  @include pc {
     margin-right: 24px;
   }
 }

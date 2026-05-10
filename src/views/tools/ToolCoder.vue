@@ -347,7 +347,7 @@ const copyToClipboard = () => {
 }
 
 /* 适配移动端 */
-@media (max-width: 768px) {
+@include mobile {
   .button-grid {
     flex-direction: column;
     align-items: stretch;

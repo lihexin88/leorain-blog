@@ -1187,7 +1187,7 @@ export default {
 }
 
 // 响应式设计
-@media (max-width: 768px) {
+@include mobile {
   .cpu-simulator-container {
     .input-section {
       flex-direction: column;

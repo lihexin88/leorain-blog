@@ -124,7 +124,7 @@ export default {
   }
 }
 
-@media screen and (max-width: 768px) {
+@include mobile {
   .error-code {
     font-size: 80px;
   }

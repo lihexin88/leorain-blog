@@ -1324,7 +1324,7 @@ export default {
 }
 
 /* 移动端：面包屑独占一行 */
-@media (max-width: 768px) {
+@include mobile {
   .asset-header {
     justify-content: flex-start;
   }
@@ -1570,7 +1570,7 @@ export default {
   }
 }
 
-@media (max-width: 768px) {
+@include mobile {
   .asset-item-container {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;

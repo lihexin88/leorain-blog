@@ -258,7 +258,7 @@ export default {
 .article-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 5px;
   padding-left: 8%;
   padding-right: 2%;
   padding-top: 20px;
