@@ -114,7 +114,7 @@ export default {
             targets: '.home-splash-orb',
             opacity: [0, 0.72],
             scale: [0.94, 1.02],
-            duration: 1100,
+            duration: 300,
             delay: anime.stagger(140)
           })
           .add({
@@ -160,7 +160,7 @@ export default {
             opacity: [1, 0],
             scale: [1, 1.015],
             translateY: [0, -16],
-            duration: 760,
+            duration: 160,
             easing: 'easeInOutSine',
             complete: () => {
               this.showSplash = false
