@@ -374,10 +374,20 @@ export default {
   background-color: rgb(0 0 0 / 0);
   img {
     max-width: 100%;
+    cursor: pointer;
+    transition: all .3s ease-in-out;
+    &:hover{
+      scale: 1.02;
+    }
   }
 
   video {
     max-width: 100%;
+    cursor: pointer;
+    transition: all .3s ease-in-out;
+    &:hover{
+      scale: 1.02;
+    }
   }
 }
 </style>
