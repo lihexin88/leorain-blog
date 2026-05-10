@@ -229,8 +229,9 @@ export default {
 .game-play-wrapper {
   width: 100%;
   min-height: calc(100vh - 60px);
-  background-color: #faebd7; // antiquewhite
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
   padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .game-container {
@@ -240,20 +241,21 @@ export default {
 }
 
 .sidebar {
-  background-color: #faebd7; // antiquewhite
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
   padding: 15px;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease;
 
   .sidebar-header {
-    border-bottom: 1px solid #e0d5c1;
+    border-bottom: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
     margin-bottom: 15px;
     padding-bottom: 5px;
 
     h5 {
       margin: 0;
       font-size: 1.1rem;
-      color: #5d4037;
+      color: var(--card-text-color, #111827);
     }
   }
 }
@@ -271,29 +273,31 @@ export default {
     margin-top: 10px;
 
     th, td {
-      border: 1px solid #d7ccc8;
+      border: 1px solid var(--el-border-color-light, #e4e7ed);
       padding: 8px;
       text-align: center;
       font-size: 0.9rem;
+      color: var(--text-color, #111827);
     }
 
     th {
-      background-color: #efebe9;
-      color: #4e342e;
+      background-color: var(--el-fill-color-light, #f5f7fa);
+      color: var(--card-text-color, #111827);
     }
 
     td {
-      background-color: #fff9f0;
+      background-color: var(--el-fill-color-blank, #ffffff);
     }
   }
 }
 
 .main-content {
-  background-color: #faebd7; // antiquewhite
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.9));
   padding: 10px;
   display: flex;
   justify-content: center;
   align-items: stretch;
+  transition: background-color 0.3s ease;
 
   .game-box {
     width: 100%;
@@ -306,11 +310,11 @@ export default {
     position: relative;
     width: 100%;
     max-width: 100%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--article-box-shadow, 0 4px 15px rgba(0, 0, 0, 0.2));
     background: #000;
     line-height: 0;
-
-    /* 由 :width/:height 明确指定像素尺寸，避免与 100% !important 冲突 */
+    border-radius: 4px;
+    overflow: hidden;
 
     .show-fps {
       position: absolute;
@@ -340,9 +344,10 @@ export default {
   .comment-container {
     flex: 1;
     overflow-y: auto;
-    background-color: #faebd7;
+    background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
     border-radius: 4px;
     padding: 10px;
+    transition: background-color 0.3s ease;
   }
 }
 
@@ -360,7 +365,6 @@ export default {
     min-height: 300px;
   }
 
-  /* 小屏时维持 4:3 宽度自适应 */
   .game-viewport {
     width: 100%;
   }

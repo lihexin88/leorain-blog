@@ -69,13 +69,13 @@
                       </el-icon>
                     </template>
                   </el-popconfirm>
-                  <el-icon @click="reply(comment.uid)">
+                  <el-icon class="pointer" @click="reply(comment.uid)">
                     <ChatDotRound/>
                   </el-icon>
                 </div>
               </div>
             </div>
-            <markdown-parse v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''"
+            <markdown-parse class="comment-content" v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''"
                             :content="comment.content_html"></markdown-parse>
           </div>
         </div>
@@ -492,6 +492,7 @@ export default {
 <style scoped>
 .comment-heading-tips {
   padding-right: 15px;
+  color: var(--text-color);
 }
 
 .comment-heading-tips-week {
@@ -523,7 +524,7 @@ export default {
 
 .comment-heading {
   padding: 8px;
-  background: linear-gradient(135deg, #e8f4fd, rgb(255 255 255 / 0.16));
+  background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / .16));
   display: flex;
   align-content: center;
   align-items: center;
@@ -532,12 +533,19 @@ export default {
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
   }
 
   a {
     color: #6366f1;
     display: flex;
+  }
+}
+:deep(.comment-content){
+  .markdown{
+    margin: 0 25px 5px 25px;
+    padding: 10px 0 10px 20px;
+    background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / .16));
+    border-radius: 0 0 5px 5px;
   }
 }
 
