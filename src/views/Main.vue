@@ -43,7 +43,8 @@
     <el-dialog
       v-model="userStore.showLoginDialog"
       title="登录"
-      width="1080px"
+      :width="layoutsStore.isMobile ? '95%' : '1080px'"
+      :lock-scroll="false"
       :append-to-body="true"
       destroy-on-close
       class="login-dialog"
@@ -58,6 +59,7 @@ import NavBar from '@/components/NavBar.vue'
 import ScrollProgress from '@/components/ScrollProgress.vue'
 import { useConfigStore } from '@/store/config'
 import { useUserStore } from '@/store/user'
+import { useLayoutsStore } from '@/store/layouts'
 import FooterBar from '@/components/FooterBar.vue'
 import SiteInfo from '@/components/SiteInfo.vue'
 import UserLogin from '@/views/user/UserLogin.vue'
@@ -74,6 +76,7 @@ export default {
   setup () {
     const configStore = useConfigStore()
     const userStore = useUserStore()
+    const layoutsStore = useLayoutsStore()
 
     // 判断URL是否为视频
     const isVideo = (url) => {
@@ -86,6 +89,7 @@ export default {
     return {
       configStore,
       userStore,
+      layoutsStore,
       isVideo
     }
   },
