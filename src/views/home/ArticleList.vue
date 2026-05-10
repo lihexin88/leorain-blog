@@ -352,7 +352,7 @@ export default {
     }
 
     .article-media {
-      transform: translateZ(42px) scale(1.12) rotate(0deg);
+      transform: translateZ(42px) scale(1.22) rotate(0deg);
       box-shadow: 0 18px 34px rgba(99, 102, 241, 0.24),
         0 8px 20px rgba(236, 72, 153, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -440,7 +440,6 @@ export default {
   height: 100%;
   object-fit: contain;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.66);
   transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     box-shadow 0.4s ease,
     border-color 0.4s ease,
