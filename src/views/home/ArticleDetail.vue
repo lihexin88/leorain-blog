@@ -57,7 +57,7 @@
               {{ formatDate(article.published_at) }}
               <el-link :href="`#article-comment-area`" class="comment-link">
                 <el-icon>
-                  <Clock/>
+                  <Comment/>
                 </el-icon>
                 {{ article.comment_count ?? 0 }}
               </el-link>
@@ -82,7 +82,7 @@
                 <i>以上就是本文的全部内容啦，有什么疑问欢迎在下方评论区留言嗷，收到通知会及时回复~</i>
               </div>
               <div class="content article-tips">
-                <i>本文已被浏览: {{ article.visitors ?? 0 }} (有延迟)</i>
+                <i>本文已被浏览: {{ article.visitors ?? 0 }}</i>
               </div>
             </div>
           </div>
@@ -115,7 +115,7 @@ import RecommendArticle from '@/components/RecommendArticle.vue'
 import { useConfigStore } from '@/store/config'
 import moment from 'moment'
 import { articleApi } from '@/apis'
-import { Clock } from '@element-plus/icons-vue'
+import { Clock, Comment } from '@element-plus/icons-vue'
 
 export default {
   name: 'ArticleDetail',
@@ -127,6 +127,7 @@ export default {
     }
   },
   components: {
+    Comment,
     Clock,
     ArticleContents,
     Parse: MarkdownParse,
