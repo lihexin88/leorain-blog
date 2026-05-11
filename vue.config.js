@@ -6,7 +6,7 @@ module.exports = defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://blog.leorain.cn',
+        target: process.env.API_HOST || 'http://localhost:8000',
         changeOrigin: true,
         pathRewrite: {
           '^/api': '/api'

@@ -11,6 +11,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+coverage
 *.local
 
 # Editor directories and files
@@ -29,6 +30,12 @@ dist-ssr
 .env.local
 .env.*.local
 .js.env
+
+# Tool caches
+.eslintcache
+.stylelintcache
+
+yarn.lock
 
 # Claude Code
 .claude/
