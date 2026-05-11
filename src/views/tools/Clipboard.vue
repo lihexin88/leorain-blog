@@ -25,8 +25,8 @@
         <div>
           <el-divider>功能介绍</el-divider>
           <markdown-parse
-              class="clipboard-info-container"
-              content="
+            class="clipboard-info-container"
+            content="
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
@@ -43,12 +43,10 @@
         <div>
           <el-divider>开发相关</el-divider>
           <markdown-parse
-              class="clipboard-info-container"
-              content="
+            class="clipboard-info-container"
+            content="
 - 开发耗时:第一版迭代约5小时
-- 各平台可直接运行的命令行工具(done)
-  - [win: cloudClip.exe](https://home.leorain.cn:9888/storage/download/cloudClip.exe)
-  - [linux-gui: cloudClip](https://home.leorain.cn:9888/storage/download/cloudClip)
+- 命令行工具下载地址请在自己的部署环境或 GitHub Releases 中配置
 "
           ></markdown-parse>
         </div>
@@ -62,7 +60,7 @@ import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
   components: { MarkdownParse, ClipboardTable },
-  data () {
+  data() {
     return {
       data_source_type: 'private'
     }
@@ -112,7 +110,7 @@ export default {
   margin-top: 20px;
 }
 :deep(.clipboard-info-container) {
-  .markdown{
+  .markdown {
     background: transparent;
   }
 }
