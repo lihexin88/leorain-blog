@@ -60,7 +60,7 @@ import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
   components: { MarkdownParse, ClipboardTable },
-  data() {
+  data () {
     return {
       data_source_type: 'private'
     }
