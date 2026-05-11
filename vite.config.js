@@ -25,7 +25,18 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      'codemirror/addon/edit/continuelist.js': resolve(__dirname, 'node_modules/codemirror/addon/edit/continuelist.js'),
+      'codemirror/addon/display/fullscreen.js': resolve(__dirname, 'node_modules/codemirror/addon/display/fullscreen.js'),
+      'codemirror/mode/markdown/markdown.js': resolve(__dirname, 'node_modules/codemirror/mode/markdown/markdown.js'),
+      'codemirror/addon/mode/overlay.js': resolve(__dirname, 'node_modules/codemirror/addon/mode/overlay.js'),
+      'codemirror/addon/display/placeholder.js': resolve(__dirname, 'node_modules/codemirror/addon/display/placeholder.js'),
+      'codemirror/addon/selection/mark-selection.js': resolve(
+        __dirname,
+        'node_modules/codemirror/addon/selection/mark-selection.js'
+      ),
+      'codemirror/mode/gfm/gfm.js': resolve(__dirname, 'node_modules/codemirror/mode/gfm/gfm.js'),
+      'codemirror/mode/xml/xml.js': resolve(__dirname, 'node_modules/codemirror/mode/xml/xml.js')
     }
   },
   server: {
