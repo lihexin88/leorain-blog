@@ -11,7 +11,7 @@
   - 描述：一个对技术和生活充满热爱的文艺型技术青年
   - 头像：https://www.leorain.cn/images/logo.png
   - 网址：https://www.leorain.cn
-  - 订阅：https://frontend.leorain.cn/rss
+  - 订阅：https://www.leorain.cn/rss
 "></parse>
         <div class="rules-action">
           <el-button @click="$router.push('/guestbook')">点击留言</el-button>

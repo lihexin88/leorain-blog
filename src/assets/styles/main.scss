@@ -1,4 +1,9 @@
 // 全局样式
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -27,6 +32,16 @@
 body{
   margin: 0;
   color: var(--text-color);
+}
+
+body.el-popup-parent--hidden {
+  padding-right: 0 !important;
+  width: 100% !important;
+}
+
+.el-overlay,
+.el-image-viewer__wrapper {
+  overscroll-behavior: contain;
 }
 
 :root {

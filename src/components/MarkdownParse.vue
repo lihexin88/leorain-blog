@@ -33,13 +33,13 @@
       </template>
     </el-dialog>
     <el-image
-        v-if="currentImage"
-        ref="elImage"
-        style="width: 0; height: 0; display: block"
-        :src="currentImage"
-        :preview-src-list="[currentImage]"
-        :preview-teleport="true"
-        @close="closePreview"
+      v-if="currentImage"
+      ref="elImage"
+      class="markdown-preview-trigger"
+      :src="currentImage"
+      :preview-src-list="[currentImage]"
+      :preview-teleport="true"
+      @close="closePreview"
     >
     </el-image>
   </div>
@@ -326,7 +326,21 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.markdown-preview-trigger {
+  position: fixed;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.markdown-preview-trigger :deep(.el-image__inner) {
+  display: block;
+  width: 0;
+  height: 0;
+}
+
 .copy-button {
   cursor: pointer;
   background-color: #4d5155;
