@@ -6,6 +6,7 @@
           v-for="(article, index) in articles"
           class="media article-item pointer"
           @click="openArticle(article.slug)"
+          @touchend="openArticle(article.slug)"
           :key="index"
         >
           <!-- 封面媒体 -->
