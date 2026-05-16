@@ -193,6 +193,17 @@ const routes = [
                 component: () => import('../views/auth/github/GithubCallback.vue')
               }
             ]
+          },
+          {
+            path: 'gitee',
+            name: 'Gitee',
+            children: [
+              {
+                path: 'callback',
+                name: 'Callback',
+                component: () => import('../views/auth/gitee/GiteeCallback.vue')
+              }
+            ]
           }
         ]
       },

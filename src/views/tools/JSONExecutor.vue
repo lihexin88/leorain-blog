@@ -1,32 +1,40 @@
 <template>
   <div class="json-executor">
-    <div class="json-panel raw-panel">
+    <section class="json-panel">
       <div class="panel-header">
-        <span class="panel-title">原始数据</span>
+        <div>
+          <div class="panel-title">原始数据</div>
+          <div class="panel-subtitle">输入 JSON 或转义后的 JSON 字符串</div>
+        </div>
+        <span class="status-text" :class="{ 'status-error': jsonError }">
+          {{ jsonError ? '解析失败' : '已同步' }}
+        </span>
       </div>
       <div class="editor-wrap">
-        <textarea ref="rawEditor"></textarea>
+        <textarea ref="sourceEditor"></textarea>
       </div>
-    </div>
+    </section>
 
-    <div class="json-panel formatted-panel">
+    <section class="json-panel result-panel">
       <div class="panel-header">
-        <div class="panel-info">
-          <span class="panel-title">格式化结果</span>
-          <span v-if="errorMessage" class="parse-error">{{ errorMessage }}</span>
+        <div>
+          <div class="panel-title">格式化结果</div>
+          <div class="panel-subtitle">点击行号旁箭头折叠或展开节点</div>
         </div>
         <div class="panel-actions">
-          <el-button size="small" type="primary" plain @click="compressJson">压缩</el-button>
-          <el-button size="small" type="primary" plain @click="escapeJson">转义</el-button>
-          <el-button size="small" type="primary" plain @click="unescapeJson">去除转义</el-button>
-          <el-button size="small" type="primary" plain @click="foldAllJsonFolds">全部折叠</el-button>
-          <el-button size="small" type="primary" plain @click="unfoldAllJsonFolds">全部展开</el-button>
+          <el-button size="small" @click="compressJson">压缩</el-button>
+          <el-button size="small" @click="escapeJson">转义</el-button>
+          <el-button size="small" @click="unescapeJson">去除转义</el-button>
         </div>
       </div>
       <div class="editor-wrap">
-        <textarea ref="formattedEditor"></textarea>
+        <textarea ref="resultEditor"></textarea>
       </div>
-    </div>
+      <div v-if="largeResultMode" class="large-data-message">
+        大数据模式：已关闭右侧折叠栏以降低卡顿。
+      </div>
+      <div v-if="jsonError" class="error-message">{{ jsonError }}</div>
+    </section>
   </div>
 </template>
 
@@ -35,473 +43,401 @@ import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/mdn-like.css'
 import 'codemirror/mode/javascript/javascript'
+import 'codemirror/addon/edit/matchbrackets'
+import 'codemirror/addon/fold/foldcode'
+import 'codemirror/addon/fold/foldgutter'
+import 'codemirror/addon/fold/brace-fold'
+import 'codemirror/addon/fold/foldgutter.css'
+
+const CHANGE_DEBOUNCE_TIME = 300
+const LARGE_CHANGE_DEBOUNCE_TIME = 700
+const LARGE_TEXT_LENGTH = 300000
+const LARGE_LINE_COUNT = 5000
 
 export default {
   data () {
     return {
-      rawEditor: null,
-      formattedEditor: null,
-      rawValue: '',
-      formattedValue: '',
-      errorMessage: '',
-      updatingFromRaw: false,
-      updatingFromFormatted: false,
-      updatingFoldDisplay: false,
-      foldRanges: {},
-      foldedLines: {},
-      displayLineToOriginalLine: [],
-      renderedFoldMarkerLines: {},
-      foldRefreshTimer: null,
-      foldRenderTimer: null,
-      editorRefreshTimer: null,
-      delayedEditorRefreshTimer: null
+      sourceEditorInstance: null,
+      resultEditorInstance: null,
+      sourceText: '',
+      resultText: '',
+      jsonError: '',
+      syncing: false,
+      sourceChangeTimer: null,
+      resultChangeTimer: null,
+      foldGutterEnabled: true,
+      largeResultMode: false
     }
   },
   mounted () {
     this.initEditors()
   },
-  activated () {
-    this.refreshCodeMirrorEditors()
-  },
   beforeUnmount () {
-    clearTimeout(this.foldRefreshTimer)
-    clearTimeout(this.foldRenderTimer)
-    clearTimeout(this.editorRefreshTimer)
-    clearTimeout(this.delayedEditorRefreshTimer)
-    this.clearJsonFolds()
-    this.rawEditor?.toTextArea()
-    this.formattedEditor?.toTextArea()
+    this.clearPendingSync()
+    if (this.sourceEditorInstance) {
+      this.sourceEditorInstance.off('changes', this.handleSourceChange)
+      this.sourceEditorInstance.toTextArea()
+    }
+    if (this.resultEditorInstance) {
+      this.resultEditorInstance.off('changes', this.handleResultChange)
+      this.resultEditorInstance.toTextArea()
+    }
   },
   methods: {
     initEditors () {
-      this.rawEditor = CodeMirror.fromTextArea(this.$refs.rawEditor, {
+      const commonOptions = {
         lineNumbers: true,
-        lineWrapping: true,
-        mode: 'application/json',
-        theme: 'mdn-like'
-      })
-
-      this.formattedEditor = CodeMirror.fromTextArea(this.$refs.formattedEditor, {
-        lineNumbers: true,
-        lineWrapping: true,
         mode: 'application/json',
         theme: 'mdn-like',
-        gutters: ['CodeMirror-linenumbers', 'json-fold-gutter'],
+        tabSize: 2,
+        matchBrackets: true,
+        lineWrapping: false,
+        viewportMargin: 20,
+        workTime: 80,
+        workDelay: 120,
+        maxHighlightLength: 10000
+      }
+
+      this.sourceEditorInstance = CodeMirror.fromTextArea(this.$refs.sourceEditor, commonOptions)
+      this.resultEditorInstance = CodeMirror.fromTextArea(this.$refs.resultEditor, {
+        ...commonOptions,
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
         extraKeys: {
-          'Ctrl-Q': cm => this.toggleJsonFold(cm.getCursor().line)
+          'Ctrl-Q': cm => cm.foldCode(cm.getCursor())
         }
       })
 
-      this.rawEditor.on('changes', () => {
-        if (this.updatingFromFormatted) return
-        this.handleRawChanges(this.rawEditor.getValue())
-      })
-
-      this.formattedEditor.on('changes', () => {
-        if (this.updatingFromRaw || this.updatingFoldDisplay) return
-        this.foldedLines = {}
-        this.handleFormattedChanges(this.formattedEditor.getValue())
-      })
-
-      this.formattedEditor.on('beforeChange', (cm, change) => {
-        if (!this.hasActiveFolds() || this.updatingFromRaw || this.updatingFoldDisplay) return
-
-        change.cancel()
-        this.unfoldAllJsonFolds()
-      })
-
-      this.formattedEditor.on('viewportChange', () => {
-        this.scheduleJsonFoldRender()
-      })
-
-      this.formattedEditor.on('gutterClick', (cm, line, gutter, event) => {
-        if (gutter !== 'json-fold-gutter') return
-        event?.preventDefault()
-        this.toggleJsonFold(line)
-      })
-
-      this.rawEditor.setValue(this.rawValue)
-      this.formattedEditor.setValue(this.formattedValue)
-      this.rebuildJsonFoldRanges(this.formattedValue)
-      this.applyFormattedDisplayValue()
-      this.refreshCodeMirrorEditors()
+      this.sourceEditorInstance.on('changes', this.handleSourceChange)
+      this.resultEditorInstance.on('changes', this.handleResultChange)
     },
-    handleRawChanges (value) {
-      this.rawValue = value
-
-      if (!value.trim()) {
-        this.errorMessage = ''
-        this.setFormattedValue('')
+    handleSourceChange (editor) {
+      if (this.syncing) {
         return
       }
 
-      const parsed = this.parseInputJson(value)
+      this.scheduleSourceFormat(editor)
+    },
+    handleResultChange (editor) {
+      if (this.syncing) {
+        return
+      }
+
+      this.scheduleResultSync(editor)
+    },
+    scheduleSourceFormat (editor) {
+      window.clearTimeout(this.sourceChangeTimer)
+
+      if (editor.lineCount() === 1 && !editor.getLine(0).trim()) {
+        this.sourceText = ''
+        this.formatFromSource()
+        return
+      }
+
+      this.sourceChangeTimer = window.setTimeout(() => {
+        this.sourceText = this.getSourceValue()
+        this.formatFromSource()
+      }, this.getEditorDebounceTime(editor))
+    },
+    scheduleResultSync (editor) {
+      window.clearTimeout(this.resultChangeTimer)
+      this.resultChangeTimer = window.setTimeout(() => {
+        this.resultText = this.getResultValue()
+        this.syncSourceFromResult()
+      }, this.getEditorDebounceTime(editor))
+    },
+    syncSourceFromResult () {
+      this.setEditorValue(this.sourceEditorInstance, this.resultText)
+      this.sourceText = this.resultText
+      this.validateResultText()
+    },
+    formatFromSource () {
+      this.sourceText = this.getSourceValue()
+      const rawText = this.sourceText.trim()
+      if (!rawText) {
+        this.jsonError = ''
+        this.resultText = ''
+        this.setEditorValue(this.resultEditorInstance, '')
+        return
+      }
+
+      const parsed = this.parseJsonText(rawText)
       if (!parsed.valid) {
-        this.errorMessage = this.formatError(parsed.error)
+        this.jsonError = parsed.message
         return
       }
 
-      this.errorMessage = ''
-      this.setFormattedValue(JSON.stringify(parsed.value, null, 2))
+      this.jsonError = ''
+      this.resultText = this.stringifyJson(parsed.value, 2)
+      this.setEditorValue(this.resultEditorInstance, this.resultText)
     },
-    handleFormattedChanges (value) {
-      this.formattedValue = value
-
-      if (!value.trim()) {
-        this.errorMessage = ''
-        this.setRawValue('')
+    validateResultText () {
+      const text = this.resultText.trim()
+      if (!text) {
+        this.jsonError = ''
         return
       }
 
-      const parsed = this.parseInputJson(value)
+      const parsed = this.parseJsonText(text)
+      this.jsonError = parsed.valid ? '' : parsed.message
+    },
+    compressJson () {
+      this.clearPendingSync()
+      const parsed = this.parseCurrentSource()
+      if (!parsed) {
+        return
+      }
+
+      const compactText = this.stringifyJson(parsed.value)
+      const formattedText = this.stringifyJson(parsed.value, 2)
+      this.updateBothEditors(compactText, formattedText)
+      this.showMessage('success', '已压缩')
+    },
+    escapeJson () {
+      this.clearPendingSync()
+      const parsed = this.parseCurrentSource()
+      if (!parsed) {
+        return
+      }
+
+      const formattedText = this.stringifyJson(parsed.value, 2)
+      const escapedText = this.escapeText(formattedText)
+      this.updateBothEditors(escapedText, formattedText)
+      this.showMessage('success', '已转义')
+    },
+    unescapeJson () {
+      this.clearPendingSync()
+      const sourceText = this.getSourceValue().trim()
+      if (!sourceText) {
+        this.updateBothEditors('', '')
+        return
+      }
+
+      const unescapedText = this.unescapeText(sourceText)
+      const parsed = this.parseJsonText(unescapedText)
       if (!parsed.valid) {
-        this.errorMessage = this.formatError(parsed.error)
+        this.updateBothEditors(unescapedText, '')
+        this.jsonError = parsed.message
+        this.showMessage('error', parsed.message)
         return
       }
 
-      this.errorMessage = ''
-      const formatted = JSON.stringify(parsed.value, null, 2)
-      this.setRawValue(formatted)
-      this.formattedValue = value
-      this.rebuildJsonFoldRanges(value)
-      this.applyFormattedDisplayValue()
+      const formattedText = this.stringifyJson(parsed.value, 2)
+      this.updateBothEditors(formattedText, formattedText)
+      this.showMessage('success', '已去除转义')
     },
-    parseInputJson (value) {
+    parseCurrentSource () {
+      const text = this.getSourceValue().trim()
+      if (!text) {
+        this.jsonError = ''
+        this.showMessage('warning', '请输入 JSON 数据')
+        return null
+      }
+
+      const parsed = this.parseJsonText(text)
+      if (!parsed.valid) {
+        this.jsonError = parsed.message
+        this.showMessage('error', parsed.message)
+        return null
+      }
+
+      return parsed
+    },
+    parseJsonText (text) {
+      const directResult = this.tryParse(text)
+      if (directResult.valid) {
+        return this.parseNestedJsonString(directResult.value)
+      }
+
+      const unescapedText = this.unescapeText(text)
+      if (unescapedText !== text) {
+        const unescapedResult = this.tryParse(unescapedText)
+        if (unescapedResult.valid) {
+          return this.parseNestedJsonString(unescapedResult.value)
+        }
+      }
+
+      return directResult
+    },
+    parseNestedJsonString (value) {
+      if (typeof value !== 'string') {
+        return {
+          valid: true,
+          value
+        }
+      }
+
+      const trimmedValue = value.trim()
+      if (!this.looksLikeJson(trimmedValue)) {
+        return {
+          valid: true,
+          value
+        }
+      }
+
+      const nestedResult = this.tryParse(trimmedValue)
+      return nestedResult.valid ? nestedResult : {
+        valid: true,
+        value
+      }
+    },
+    tryParse (text) {
       try {
         return {
           valid: true,
-          value: this.parseNestedJsonValue(JSON.parse(value))
+          value: JSON.parse(text)
         }
-      } catch (firstError) {
-        if (!this.hasJsonEscape(value)) {
-          return {
-            valid: false,
-            error: firstError
-          }
-        }
-
-        try {
-          const unescapedValue = JSON.parse(this.wrapAsEscapedJsonString(value))
-          return {
-            valid: true,
-            value: this.parseNestedJsonValue(unescapedValue)
-          }
-        } catch (secondError) {
-          return {
-            valid: false,
-            error: firstError
-          }
+      } catch (error) {
+        return {
+          valid: false,
+          message: `JSON 解析错误：${error.message}`
         }
       }
     },
-    parseNestedJsonValue (value) {
-      if (typeof value !== 'string') return value
-
-      const trimmedValue = value.trim()
-      if (!trimmedValue.startsWith('{') && !trimmedValue.startsWith('[')) return value
-
+    stringifyJson (value, space = 0) {
+      return JSON.stringify(value, null, space)
+    },
+    looksLikeJson (text) {
+      return /^[[{]/.test(text) || /^-?\d/.test(text) || /^(true|false|null)($|\s)/.test(text)
+    },
+    escapeText (text) {
+      return text
+        .replace(/\\/g, '\\\\')
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n')
+        .replace(/\t/g, '\\t')
+        .replace(/"/g, '\\"')
+    },
+    unescapeText (text) {
       try {
-        return JSON.parse(trimmedValue)
-      } catch (e) {
-        return value
+        const parsed = JSON.parse(text)
+        if (typeof parsed === 'string') {
+          return parsed
+        }
+      } catch (error) {
+        // 不是完整 JSON 字符串时，按普通转义文本处理。
       }
-    },
-    hasJsonEscape (value) {
-      return /\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})/.test(value)
-    },
-    wrapAsEscapedJsonString (value) {
-      return '"' + value.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"'
-    },
-    setRawValue (value) {
-      if (this.rawEditor && this.rawEditor.getValue() !== value) {
-        this.updatingFromFormatted = true
-        this.rawEditor.setValue(value)
-        this.updatingFromFormatted = false
-        this.scheduleEditorRefresh()
-      }
-      this.rawValue = value
-    },
-    setFormattedValue (value) {
-      this.formattedValue = value
-      this.foldedLines = {}
-      this.rebuildJsonFoldRanges(value)
-      this.applyFormattedDisplayValue()
-    },
-    applyValueToBothEditors (value) {
-      this.errorMessage = ''
-      this.setRawValue(value)
-      this.setFormattedValue(value)
-    },
-    getParsedLeftJson () {
-      const parsed = this.parseInputJson(this.rawValue)
-      if (!parsed.valid) {
-        this.$message.error('左侧内容不是有效的 JSON')
-        return undefined
-      }
-      return parsed.value
-    },
-    compressJson () {
-      const parsedValue = this.getParsedLeftJson()
-      if (typeof parsedValue === 'undefined') return
 
-      const compressed = JSON.stringify(parsedValue)
-      this.applyValueToBothEditors(compressed)
+      return text
+        .replace(/\\r/g, '\r')
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\')
     },
-    escapeJson () {
-      const parsedValue = this.getParsedLeftJson()
-      if (typeof parsedValue === 'undefined') return
-
-      const formatted = JSON.stringify(parsedValue, null, 2)
-      const escaped = JSON.stringify(formatted)
-      this.applyValueToBothEditors(escaped)
+    updateBothEditors (sourceText, resultText) {
+      this.sourceText = sourceText
+      this.resultText = resultText
+      this.jsonError = ''
+      this.setEditorValue(this.sourceEditorInstance, sourceText)
+      this.setEditorValue(this.resultEditorInstance, resultText)
     },
-    unescapeJson () {
-      const parsed = this.parseInputJson(this.rawValue)
-      if (!parsed.valid) {
-        this.$message.error('左侧内容不是有效的 JSON 字符串')
+    setEditorValue (editor, value) {
+      if (!editor || editor.getValue() === value) {
         return
       }
 
-      const formatted = JSON.stringify(parsed.value, null, 2)
-      this.applyValueToBothEditors(formatted)
-    },
-    formatError (error) {
-      return error?.message ? 'JSON 解析失败: ' + error.message : 'JSON 解析失败'
-    },
-    scheduleJsonFoldRender () {
-      clearTimeout(this.foldRenderTimer)
-      this.foldRenderTimer = setTimeout(() => {
-        this.renderVisibleFoldMarkers()
-      }, 60)
-    },
-    scheduleEditorRefresh () {
-      clearTimeout(this.editorRefreshTimer)
-      this.editorRefreshTimer = setTimeout(() => {
-        this.refreshCodeMirrorEditors()
-      }, 0)
-    },
-    refreshCodeMirrorEditors () {
-      this.$nextTick(() => {
-        const refreshEditors = () => {
-          this.rawEditor?.refresh()
-          this.formattedEditor?.refresh()
-          this.scheduleJsonFoldRender()
+      this.syncing = true
+      try {
+        if (editor === this.resultEditorInstance) {
+          this.replaceResultDocument(value)
+        } else {
+          editor.setValue(value)
         }
+      } finally {
+        this.syncing = false
+      }
+    },
+    replaceResultDocument (value) {
+      const enableFoldGutter = !this.isLargeText(value)
 
-        window.requestAnimationFrame(() => {
-          refreshEditors()
-          clearTimeout(this.delayedEditorRefreshTimer)
-          this.delayedEditorRefreshTimer = setTimeout(refreshEditors, 120)
+      if (!enableFoldGutter) {
+        this.setResultFoldGutter(false)
+      }
+
+      this.clearFoldMarkers(this.resultEditorInstance)
+      this.resultEditorInstance.swapDoc(new CodeMirror.Doc(value, this.resultEditorInstance.getOption('mode')))
+      this.resultEditorInstance.clearHistory()
+
+      if (enableFoldGutter) {
+        this.setResultFoldGutter(true)
+      }
+
+      this.largeResultMode = !enableFoldGutter
+    },
+    setResultFoldGutter (enabled) {
+      if (!this.resultEditorInstance || this.foldGutterEnabled === enabled) {
+        return
+      }
+
+      this.clearFoldMarkers(this.resultEditorInstance)
+      this.resultEditorInstance.setOption('foldGutter', enabled)
+      this.resultEditorInstance.setOption(
+        'gutters',
+        enabled ? ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'] : ['CodeMirror-linenumbers']
+      )
+      this.foldGutterEnabled = enabled
+    },
+    clearFoldMarkers (editor) {
+      if (!editor || typeof editor.getAllMarks !== 'function') {
+        return
+      }
+
+      editor.operation(() => {
+        editor.getAllMarks().forEach(marker => {
+          if (!marker.__isFold) {
+            return
+          }
+
+          try {
+            marker.clear()
+          } catch (error) {
+            // 大文本整体替换时 CodeMirror 的旧折叠标记可能已经失效，忽略后用新 Doc 重建。
+          }
         })
       })
     },
-    rebuildJsonFoldRanges (value) {
-      this.foldRanges = this.buildJsonFoldRanges(value)
-      this.renderVisibleFoldMarkers()
+    clearPendingSync () {
+      window.clearTimeout(this.sourceChangeTimer)
+      window.clearTimeout(this.resultChangeTimer)
+      this.sourceChangeTimer = null
+      this.resultChangeTimer = null
     },
-    buildJsonFoldRanges (value) {
-      const ranges = {}
-      const stack = []
-      let line = 0
-      let ch = 0
-      let inString = false
-      let escaping = false
-
-      for (let i = 0; i < value.length; i++) {
-        const current = value[i]
-
-        if (current === '\n') {
-          line++
-          ch = 0
-          escaping = false
-          continue
-        }
-
-        if (inString) {
-          if (escaping) {
-            escaping = false
-          } else if (current === '\\') {
-            escaping = true
-          } else if (current === '"') {
-            inString = false
-          }
-          ch++
-          continue
-        }
-
-        if (current === '"') {
-          inString = true
-        } else if (current === '{' || current === '[') {
-          stack.push({
-            char: current,
-            line,
-            ch
-          })
-        } else if (current === '}' || current === ']') {
-          const start = stack.pop()
-          if (start && this.isMatchingJsonBracket(start.char, current) && start.line < line) {
-            ranges[start.line] = {
-              from: CodeMirror.Pos(start.line, start.ch + 1),
-              to: CodeMirror.Pos(line, ch),
-              parentLine: stack.length ? stack[stack.length - 1].line : null
-            }
-          }
-        }
-
-        ch++
+    getEditorDebounceTime (editor) {
+      if (!editor) {
+        return CHANGE_DEBOUNCE_TIME
       }
 
-      return ranges
+      const firstLineLength = editor.lineCount() === 1 ? editor.getLine(0).length : 0
+      return editor.lineCount() > LARGE_LINE_COUNT || firstLineLength > LARGE_TEXT_LENGTH
+        ? LARGE_CHANGE_DEBOUNCE_TIME
+        : CHANGE_DEBOUNCE_TIME
     },
-    isMatchingJsonBracket (open, close) {
-      return (open === '{' && close === '}') || (open === '[' && close === ']')
+    isLargeText (text) {
+      return text.length > LARGE_TEXT_LENGTH || this.hasMoreLinesThan(text, LARGE_LINE_COUNT)
     },
-    toggleJsonFold (line) {
-      if (!this.formattedEditor) return
-
-      const originalLine = this.displayLineToOriginalLine[line]
-      if (typeof originalLine === 'undefined' || !this.foldRanges[originalLine]) return
-
-      if (this.foldedLines[originalLine]) {
-        this.unfoldJsonFold(originalLine)
-        return
+    hasMoreLinesThan (text, limit) {
+      let lineCount = 1
+      for (let index = 0; index < text.length; index++) {
+        if (text.charCodeAt(index) === 10) {
+          lineCount++
+        }
+        if (lineCount > limit) {
+          return true
+        }
       }
-
-      this.foldJsonFold(originalLine)
-    },
-    foldJsonFold (line) {
-      if (!this.formattedEditor || !this.foldRanges[line]) return
-      this.foldedLines[line] = true
-      this.applyFormattedDisplayValue()
-    },
-    unfoldJsonFold (line) {
-      delete this.foldedLines[line]
-      this.applyFormattedDisplayValue()
-    },
-    isDescendantFoldLine (line, ancestorLine) {
-      let parentLine = this.foldRanges[line]?.parentLine
-
-      while (parentLine !== null && typeof parentLine !== 'undefined') {
-        if (parentLine === ancestorLine) return true
-        parentLine = this.foldRanges[parentLine]?.parentLine
-      }
-
       return false
     },
-    hasFoldedAncestor (line) {
-      let parentLine = this.foldRanges[line]?.parentLine
-
-      while (parentLine !== null && typeof parentLine !== 'undefined') {
-        if (this.foldedLines[parentLine]) return true
-        parentLine = this.foldRanges[parentLine]?.parentLine
+    getSourceValue () {
+      return this.sourceEditorInstance ? this.sourceEditorInstance.getValue() : this.sourceText
+    },
+    getResultValue () {
+      return this.resultEditorInstance ? this.resultEditorInstance.getValue() : this.resultText
+    },
+    showMessage (type, message) {
+      if (this.$message && this.$message[type]) {
+        this.$message[type](message)
       }
-
-      return false
-    },
-    foldAllJsonFolds () {
-      this.foldedLines = {}
-
-      Object.keys(this.foldRanges).forEach(line => {
-        this.foldedLines[line] = true
-      })
-
-      this.applyFormattedDisplayValue()
-    },
-    unfoldAllJsonFolds () {
-      this.foldedLines = {}
-      this.applyFormattedDisplayValue()
-    },
-    applyFormattedDisplayValue () {
-      if (!this.formattedEditor) return
-
-      const displayValue = this.buildFormattedDisplayValue()
-      if (this.formattedEditor.getValue() !== displayValue) {
-        this.updatingFoldDisplay = true
-        this.formattedEditor.setValue(displayValue)
-        this.updatingFoldDisplay = false
-      }
-      this.renderVisibleFoldMarkers()
-      this.scheduleEditorRefresh()
-    },
-    buildFormattedDisplayValue () {
-      const lines = this.formattedValue ? this.formattedValue.split('\n') : []
-      const displayLines = []
-      const displayLineToOriginalLine = []
-
-      for (let line = 0; line < lines.length; line++) {
-        const range = this.foldRanges[line]
-
-        displayLines.push(this.foldedLines[line] && range ? this.getFoldedLineText(line, lines) : lines[line])
-        displayLineToOriginalLine.push(line)
-
-        if (this.foldedLines[line] && range) {
-          line = range.to.line
-        }
-      }
-
-      this.displayLineToOriginalLine = displayLineToOriginalLine
-      return displayLines.join('\n')
-    },
-    getFoldedLineText (line, lines) {
-      const range = this.foldRanges[line]
-      const openLineText = lines[line] || ''
-      const closeLineText = lines[range.to.line] || ''
-      const closeText = closeLineText.slice(range.to.ch).trimEnd()
-      return openLineText.slice(0, range.from.ch) + ' ... ' + closeText
-    },
-    hasActiveFolds () {
-      return Object.keys(this.foldedLines).length > 0
-    },
-    renderVisibleFoldMarkers () {
-      if (!this.formattedEditor) return
-
-      this.clearRenderedFoldMarkers()
-      const viewport = this.getBufferedViewport()
-
-      for (let line = viewport.from; line <= viewport.to; line++) {
-        const originalLine = this.displayLineToOriginalLine[line]
-        if (typeof originalLine !== 'undefined' && this.foldRanges[originalLine]) {
-          this.setJsonFoldMarker(line, Boolean(this.foldedLines[originalLine]))
-        }
-      }
-    },
-    getBufferedViewport () {
-      if (!this.formattedEditor) return { from: 0, to: 0 }
-
-      const viewport = this.formattedEditor.getViewport()
-      return {
-        from: Math.max(this.formattedEditor.firstLine(), viewport.from - 30),
-        to: Math.min(this.formattedEditor.lastLine(), viewport.to + 30)
-      }
-    },
-    setJsonFoldMarker (line, folded) {
-      if (!this.formattedEditor) return
-
-      const marker = document.createElement('button')
-      marker.type = 'button'
-      marker.className = folded ? 'json-fold-marker is-folded' : 'json-fold-marker'
-      marker.textContent = folded ? '+' : '-'
-      marker.setAttribute('aria-label', folded ? '展开 JSON 节点' : '折叠 JSON 节点')
-      marker.addEventListener('mousedown', event => {
-        event.preventDefault()
-        event.stopPropagation()
-        this.toggleJsonFold(line)
-      })
-
-      this.formattedEditor.setGutterMarker(line, 'json-fold-gutter', marker)
-      this.renderedFoldMarkerLines[line] = true
-    },
-    clearRenderedFoldMarkers () {
-      if (!this.formattedEditor) return
-
-      Object.keys(this.renderedFoldMarkerLines).forEach(line => {
-        this.formattedEditor.setGutterMarker(Number(line), 'json-fold-gutter', null)
-      })
-      this.renderedFoldMarkerLines = {}
-    },
-    clearJsonFolds () {
-      if (!this.formattedEditor) return
-      this.clearRenderedFoldMarkers()
     }
   }
 }
@@ -509,122 +445,132 @@ export default {
 
 <style scoped lang="scss">
 .json-executor {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
   height: 86vh;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .json-panel {
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  width: 50%;
-  border: 1px solid #e4e7ed;
+  border: 1px solid #dcdfe6;
   border-radius: 6px;
   background: #fff;
+  overflow: hidden;
 }
 
 .panel-header {
+  min-height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 6px 10px;
-  border-bottom: 1px solid #e4e7ed;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #ebeef5;
+  box-sizing: border-box;
 }
 
 .panel-title {
-  flex: 0 0 auto;
-  color: #303133;
-  font-size: 14px;
+  line-height: 20px;
+  font-size: 15px;
   font-weight: 600;
+  color: #303133;
 }
 
-.panel-info {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 10px;
-}
-
-.parse-error {
-  overflow: hidden;
-  color: #f56c6c;
+.panel-subtitle {
+  margin-top: 2px;
+  line-height: 18px;
   font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #909399;
 }
 
 .panel-actions {
   display: flex;
+  align-items: center;
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
-  flex: 0 0 auto;
-  gap: 6px;
 }
 
-.panel-actions :deep(.el-button) {
+.panel-actions :deep(.el-button + .el-button) {
   margin-left: 0;
 }
 
-.editor-wrap {
-  flex: 1;
-  min-height: 0;
+.status-text {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #67c23a;
 }
 
-.editor-wrap > textarea {
-  width: 100%;
-  height: 100%;
+.status-error {
+  color: #f56c6c;
+}
+
+.editor-wrap {
+  min-height: 0;
+  flex: 1;
+}
+
+.error-message {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-top: 1px solid #fde2e2;
+  background: #fef0f0;
+  line-height: 18px;
+  font-size: 12px;
+  color: #f56c6c;
+}
+
+.large-data-message {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border-top: 1px solid #f3e7c6;
+  background: #fdf6ec;
+  line-height: 18px;
+  font-size: 12px;
+  color: #b88230;
 }
 
 :deep(.CodeMirror) {
   height: 100%;
-  font-family: Consolas, Monaco, 'Courier New', monospace;
-  font-size: 14px;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 13px;
 }
 
 :deep(.CodeMirror-scroll) {
-  padding-bottom: 0;
+  min-height: 100%;
 }
 
-:deep(.json-fold-gutter) {
-  width: 18px;
+:deep(.CodeMirror-foldgutter) {
+  width: 16px;
 }
 
-:deep(.json-fold-marker) {
-  display: block;
-  width: 14px;
-  height: 14px;
-  margin: 2px auto 0;
-  padding: 0;
-  border: 1px solid #c0c4cc;
-  border-radius: 2px;
-  background: #fff;
-  color: #606266;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 11px;
-}
-
-:deep(.json-fold-marker:hover) {
-  border-color: #409eff;
-  color: #409eff;
-}
-
-:deep(.json-fold-marker.is-folded) {
-  border-color: #409eff;
-  color: #409eff;
+:deep(.CodeMirror-foldmarker) {
+  pointer-events: none;
 }
 
 @media (max-width: 900px) {
   .json-executor {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     height: auto;
   }
 
   .json-panel {
-    width: 100%;
-    height: 48vh;
+    min-height: 420px;
+  }
+
+  .panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .panel-actions {
+    justify-content: flex-start;
   }
 }
 </style>
