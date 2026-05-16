@@ -37,6 +37,34 @@ export const useOauthStore = defineStore('oauth', {
       } finally {
         this.loading = false
       }
+    },
+    async loginWithGitee (code) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await api.post('/auth/gitee/callback', { code })
+        const userStore = useUserStore()
+
+        const token = response.access_token || response.token
+        if (token) {
+          userStore.token = token
+          localStorage.setItem('token', token)
+        }
+
+        await userStore.fetchUserInfo()
+        dispatchUserLoginSuccess({
+          user: userStore.user,
+          token: userStore.token
+        })
+
+        return response
+      } catch (error) {
+        this.error = error
+        console.error('Gitee OAuth login failed:', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
     }
   }
 })

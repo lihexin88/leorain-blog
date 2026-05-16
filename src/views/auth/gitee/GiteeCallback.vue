@@ -15,7 +15,7 @@ onMounted(async () => {
   }
 
   try {
-    await oauthStore.loginWithGithub(code)
+    await oauthStore.loginWithGitee(code)
     await router.push('/')
   } catch (error) {
     console.error('GitHub github failed:', error)
@@ -24,10 +24,10 @@ onMounted(async () => {
 </script>
 
 <template>
-<div>
-  <p v-if="oauthStore.loading">正在登录中...</p>
-  <p v-else-if="oauthStore.error">登录失败，请重试</p>
-</div>
+  <div>
+    <p v-if="oauthStore.loading">正在登录中...</p>
+    <p v-else-if="oauthStore.error">登录失败，请重试</p>
+  </div>
 </template>
 
 <style scoped lang="scss">
