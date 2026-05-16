@@ -11,10 +11,10 @@
         <div class="login-animation-panel">
           <div class="login-animation-card">
             <AnimatedCharacters
-              class="login-animation"
-              :is-typing="isInputFocused"
-              :password-visible="passwordVisible"
-              :password-length="loginForm.password.length"
+                class="login-animation"
+                :is-typing="isInputFocused"
+                :password-visible="passwordVisible"
+                :password-length="loginForm.password.length"
             />
             <div class="animation-copy">
               <h3>欢迎回来</h3>
@@ -24,24 +24,26 @@
         </div>
 
         <el-form
-          ref="loginFormRef"
-          :model="loginForm"
-          :rules="loginRules"
-          label-position="top"
-          class="login-form"
-          @submit.prevent="handleLogin"
+            ref="loginFormRef"
+            :model="loginForm"
+            :rules="loginRules"
+            label-position="top"
+            class="login-form"
+            @submit.prevent="handleLogin"
         >
           <el-form-item label="邮箱" prop="email">
             <el-input
-              v-model="loginForm.email"
-              placeholder="请输入邮箱"
-              clearable
-              autofocus
-              @focus="isInputFocused = true"
-              @blur="isInputFocused = false"
+                v-model="loginForm.email"
+                placeholder="请输入邮箱"
+                clearable
+                autofocus
+                @focus="isInputFocused = true"
+                @blur="isInputFocused = false"
             >
               <template #prefix>
-                <el-icon><Message /></el-icon>
+                <el-icon>
+                  <Message/>
+                </el-icon>
               </template>
             </el-input>
             <div class="form-tip">
@@ -51,18 +53,20 @@
 
           <el-form-item label="密码" prop="password">
             <el-input
-              v-model="loginForm.password"
-              :type="passwordVisible ? 'text' : 'password'"
-              placeholder="请输入密码"
+                v-model="loginForm.password"
+                :type="passwordVisible ? 'text' : 'password'"
+                placeholder="请输入密码"
             >
               <template #suffix>
                 <el-icon style="cursor: pointer" @click="passwordVisible = !passwordVisible">
-                  <ViewIcon v-if="!passwordVisible" />
-                  <HideIcon v-else />
+                  <ViewIcon v-if="!passwordVisible"/>
+                  <HideIcon v-else/>
                 </el-icon>
               </template>
               <template #prefix>
-                <el-icon><Lock /></el-icon>
+                <el-icon>
+                  <Lock/>
+                </el-icon>
               </template>
             </el-input>
           </el-form-item>
@@ -72,15 +76,15 @@
           </el-form-item>
 
           <el-form-item label="验证码" required>
-            <Validator ref="validatorRef" />
+            <Validator ref="validatorRef"/>
           </el-form-item>
 
           <el-form-item>
             <el-button
-              type="primary"
-              class="login-button"
-              :loading="loading"
-              native-type="submit"
+                type="primary"
+                class="login-button"
+                :loading="loading"
+                native-type="submit"
             >
               登录
             </el-button>
@@ -90,9 +94,12 @@
             <el-divider>or</el-divider>
           </div>
 
-          <el-form-item v-if="authConfig.github">
-            <el-button class="github-button" @click="handleGithubLogin">
+          <el-form-item v-if="authConfig">
+            <el-button @click="handleGithubLogin">
               <i class="fab fa-github"></i>&nbsp;GitHub 登录
+            </el-button>
+            <el-button @click="handleGiteeLogin">
+              <i class="fab fa-gitee"></i>&nbsp;Gitee 登录
             </el-button>
           </el-form-item>
 
@@ -210,6 +217,9 @@ export default {
     },
     handleGithubLogin () {
       window.location.href = this.authConfig.github.auth_url
+    },
+    handleGiteeLogin () {
+      window.location.href = this.authConfig.gitee.auth_url
     },
     handleRegister () {
       if (this.isDialog) {
