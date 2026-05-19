@@ -97,7 +97,6 @@
           </div>
 
           <el-form-item v-if="authConfig">
-            {{ authConfig }}
             <el-button @click="handleGithubLogin">
               <i class="fab fa-github"></i>&nbsp;GitHub 登录
             </el-button>
