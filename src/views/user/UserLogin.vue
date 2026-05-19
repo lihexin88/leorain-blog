@@ -36,6 +36,7 @@
                 v-model="loginForm.email"
                 placeholder="请输入邮箱"
                 clearable
+                class="login-input"
                 autofocus
                 @focus="isInputFocused = true"
                 @blur="isInputFocused = false"
@@ -54,6 +55,7 @@
           <el-form-item label="密码" prop="password">
             <el-input
                 v-model="loginForm.password"
+                class="login-input"
                 :type="passwordVisible ? 'text' : 'password'"
                 placeholder="请输入密码"
             >
@@ -95,6 +97,7 @@
           </div>
 
           <el-form-item v-if="authConfig">
+            {{ authConfig }}
             <el-button @click="handleGithubLogin">
               <i class="fab fa-github"></i>&nbsp;GitHub 登录
             </el-button>
@@ -394,6 +397,11 @@ export default {
 
   .login-form {
     padding: 24px 20px 28px;
+  }
+  .login-input {
+    :deep(.el-input__inner) {
+      font-size: 16px;
+    }
   }
 }
 </style>

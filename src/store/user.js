@@ -70,7 +70,20 @@ export const useUserStore = defineStore('user', {
 
     async fetchUserInfo () {
       try {
-        const response = await userApi.getUserInfo()
+        const response = await userApi.getMyUserInfo()
+        const userData = response.data || response
+        this.user = userData
+        localStorage.setItem('user', JSON.stringify(this.user))
+        return userData
+      } catch (error) {
+        console.error('Fetch user info failed:', error)
+        throw error
+      }
+    },
+    async fetchOtherUserInfo () {
+      try {
+        const uid = this.$route.params.uid
+        const response = await userApi.getUserByUid(uid)
         const userData = response.data || response
         this.user = userData
         localStorage.setItem('user', JSON.stringify(this.user))

@@ -1,7 +1,7 @@
 import api from './base'
 
 const userApi = {
-  getUserInfo () {
+  getMyUserInfo () {
     return api.get('/user/info')
   },
   updateUserInfo (params) {

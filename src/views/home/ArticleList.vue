@@ -5,8 +5,11 @@
         <el-card
           v-for="(article, index) in articles"
           class="media article-item pointer"
-          @click="openArticle(article.slug)"
-          @touchend="openArticle(article.slug)"
+          @click="handleArticleClick(article.slug, $event)"
+          @touchstart.passive="handleArticleTouchStart(article.slug, $event)"
+          @touchmove.passive="handleArticleTouchMove(article.slug, $event)"
+          @touchend="handleArticleTouchEnd(article.slug, $event)"
+          @touchcancel="handleArticleTouchCancel(article.slug)"
           :key="index"
         >
           <!-- 封面媒体 -->
@@ -147,7 +150,9 @@ export default {
       smallWindowSize: false,
       layout: null,
       articles: [],
-      currentRotations: []
+      currentRotations: [],
+      articleTouchState: null,
+      lastArticleTouchAt: 0
     }
   },
   methods: {
@@ -155,6 +160,50 @@ export default {
     getFriendlyDate,
     mediaType,
     syncUrlPaginate,
+    isInteractiveArticleTarget (event) {
+      const target = event && event.target
+      if (!(target instanceof Element)) return false
+      return Boolean(target.closest('.article-tag, .info-clickable'))
+    },
+    handleArticleTouchStart (slug, event) {
+      const touch = event && event.touches && event.touches[0]
+      if (!touch) return
+      this.articleTouchState = {
+        slug,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        moved: false
+      }
+    },
+    handleArticleTouchMove (slug, event) {
+      if (!this.articleTouchState || this.articleTouchState.slug !== slug) return
+      const touch = event && event.touches && event.touches[0]
+      if (!touch) return
+      const deltaX = Math.abs(touch.clientX - this.articleTouchState.startX)
+      const deltaY = Math.abs(touch.clientY - this.articleTouchState.startY)
+      if (deltaX > 10 || deltaY > 10) {
+        this.articleTouchState.moved = true
+      }
+    },
+    handleArticleTouchEnd (slug, event) {
+      if (!this.articleTouchState || this.articleTouchState.slug !== slug) return
+      const touchState = this.articleTouchState
+      this.articleTouchState = null
+      this.lastArticleTouchAt = Date.now()
+      if (touchState.moved || this.isInteractiveArticleTarget(event)) return
+      this.openArticle(slug)
+    },
+    handleArticleTouchCancel (slug) {
+      if (this.articleTouchState && this.articleTouchState.slug === slug) {
+        this.articleTouchState = null
+        this.lastArticleTouchAt = Date.now()
+      }
+    },
+    handleArticleClick (slug, event) {
+      if (this.isInteractiveArticleTarget(event)) return
+      if (Date.now() - this.lastArticleTouchAt < 700) return
+      this.openArticle(slug)
+    },
     go_user (uid) {
       this.$router.push({
         name: 'UserProfile',

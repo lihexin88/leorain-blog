@@ -33,7 +33,7 @@
             <h4>{{ article.title }}</h4>
             <h6>{{ article.subtitle }}</h6>
             <div class="header">
-              <router-link :to="`/user/profile?uid=${article.user?.name}`" class="author-link">
+              <router-link :to="`/user/profile?uid=${article.user?.uid}`" class="author-link">
                 <i class="fas fa-user"></i>{{ article.user?.name ?? 'null' }}
               </router-link>
               <template v-if="article.tags && article.tags.length">
