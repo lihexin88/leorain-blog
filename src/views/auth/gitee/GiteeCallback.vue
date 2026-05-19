@@ -1,35 +1,99 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AuthCallbackStatus from '@/views/auth/AuthCallbackStatus.vue'
 import { useOauthStore } from '@/store/oauth'
 
 const route = useRoute()
 const router = useRouter()
 const oauthStore = useOauthStore()
+const activeStep = ref(0)
+const authStatus = ref('processing')
+const errorMessage = ref('')
+let progressTimer = null
+
+const statusTitle = computed(() => {
+  if (authStatus.value === 'success') {
+    return 'Gitee 认证成功'
+  }
+  if (authStatus.value === 'error') {
+    return 'Gitee 认证失败'
+  }
+  return '正在进行 Gitee 认证'
+})
+
+const statusDescription = computed(() => {
+  if (authStatus.value === 'success') {
+    return '账号信息已同步，正在为你跳转到首页。'
+  }
+  if (authStatus.value === 'error') {
+    return errorMessage.value || '认证过程中出现异常，请返回登录页后重试。'
+  }
+  return '请稍候，我们正在校验授权信息并同步你的账号。'
+})
+
+const startProgress = () => {
+  activeStep.value = 1
+  progressTimer = window.setInterval(() => {
+    if (activeStep.value < 2) {
+      activeStep.value += 1
+    }
+  }, 900)
+}
+
+const stopProgress = () => {
+  if (progressTimer) {
+    window.clearInterval(progressTimer)
+    progressTimer = null
+  }
+}
+
+const backToLogin = () => {
+  router.push('/login')
+}
+
+const backToHome = () => {
+  router.push('/')
+}
 
 onMounted(async () => {
   const code = route.query.code
   if (!code) {
-    console.error('Missing code parameter')
+    authStatus.value = 'error'
+    errorMessage.value = '缺少 Gitee 授权参数，请重新发起登录。'
     return
   }
 
+  startProgress()
   try {
     await oauthStore.loginWithGitee(code)
-    await router.push('/')
+    stopProgress()
+    authStatus.value = 'success'
+    activeStep.value = 3
+    window.setTimeout(() => {
+      router.push('/')
+    }, 800)
   } catch (error) {
-    console.error('GitHub github failed:', error)
+    stopProgress()
+    authStatus.value = 'error'
+    errorMessage.value = 'Gitee 登录失败，请稍后重试。'
+    console.error('Gitee login failed:', error)
   }
+})
+
+onBeforeUnmount(() => {
+  stopProgress()
 })
 </script>
 
 <template>
-  <div>
-    <p v-if="oauthStore.loading">正在登录中...</p>
-    <p v-else-if="oauthStore.error">登录失败，请重试</p>
-  </div>
+  <AuthCallbackStatus
+    provider="Gitee"
+    :active-step="activeStep"
+    :status="authStatus"
+    :title="statusTitle"
+    :description="statusDescription"
+    @back-login="backToLogin"
+    @back-home="backToHome"
+  />
 </template>
-
-<style scoped lang="scss">
-
-</style>
