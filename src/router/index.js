@@ -189,7 +189,7 @@ const routes = [
             children: [
               {
                 path: 'callback',
-                name: 'Callback',
+                name: 'GitHubCallback',
                 component: () => import('../views/auth/github/GithubCallback.vue')
               }
             ]
@@ -200,7 +200,7 @@ const routes = [
             children: [
               {
                 path: 'callback',
-                name: 'Callback',
+                name: 'GiteeCallback',
                 component: () => import('../views/auth/gitee/GiteeCallback.vue')
               }
             ]

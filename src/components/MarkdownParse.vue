@@ -326,7 +326,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .markdown-preview-trigger {
   position: fixed;
   width: 0;

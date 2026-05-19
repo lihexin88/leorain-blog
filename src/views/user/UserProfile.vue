@@ -16,9 +16,20 @@
           <div class="actions" v-if="isMyProfile">
             <el-button type="info" size="small" @click="handleEditProfile">编辑资料</el-button>
           </div>
-          <div class="social-links">
-            <el-link v-if="userInfo.github_name" :href="'https://github.com/' + userInfo.github_name" target="_blank" class="social-icon">
-              <i class="fab fa-github"></i>
+          <div class="oauth-accounts">
+            <span class="oauth-title">三方账号：</span>
+            <el-link
+              v-for="item in oauthProviderItems"
+              :key="item.provider"
+              :href="item.href"
+              :target="item.href ? '_blank' : '_self'"
+              :underline="false"
+              class="oauth-account"
+              :class="{ bound: item.bound, unbound: !item.bound, 'is-clickable': !!item.href }"
+            >
+              <i :class="item.icon"></i>
+              <span>{{ item.label }}</span>
+              <span class="oauth-name">{{ item.bound ? item.name : '未绑定' }}</span>
             </el-link>
           </div>
         </el-col>
@@ -135,6 +146,7 @@
 import { useUserStore } from '@/store/user'
 import { mapState, mapActions } from 'pinia'
 import userApi from '@/apis/user'
+import authApi from '@/apis/auth'
 import { uploadToOss } from '@/utils/oss-file'
 import UserItems from '@/components/UserItems.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
@@ -155,6 +167,11 @@ export default {
       defaultAvatar: 'https://images.leorain.cn/avatar/default_avatar.png',
       editDialogVisible: false,
       editSubmitting: false,
+      authConfig: {},
+      oauthProviders: [
+        { provider: 'github', label: 'GitHub', icon: 'fab fa-github' },
+        { provider: 'gitee', label: 'Gitee', icon: 'fab fa-gitee' }
+      ],
       editForm: {
         name: '',
         nickname: '',
@@ -171,6 +188,21 @@ export default {
     },
     isMyProfile () {
       return this.user && String(this.user.uid) === String(this.uid)
+    },
+    oauthAccounts () {
+      return Array.isArray(this.userInfo?.oauth) ? this.userInfo.oauth : []
+    },
+    oauthProviderItems () {
+      return this.oauthProviders.map(provider => {
+        const account = this.oauthAccounts.find(item => item.provider === provider.provider)
+        return {
+          ...provider,
+          account,
+          bound: Boolean(account),
+          name: account?.nickname || account?.name || account?.provider_user_id,
+          href: account?.url || this.authConfig?.[provider.provider]?.auth_url || null
+        }
+      })
     }
   },
   mounted () {
@@ -180,9 +212,15 @@ export default {
       return
     }
     this.fetchData()
+    this.getAuthConfig()
   },
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog', 'fetchUserInfo']),
+    getAuthConfig () {
+      authApi.getConfig().then(res => {
+        this.authConfig = res
+      })
+    },
     async fetchData () {
       if (!this.uid) return
       try {
@@ -366,7 +404,7 @@ export default {
   .website {
     margin-bottom: 15px;
     .el-link {
-      color: #fff;
+      color: #1a1b1e;
       text-decoration: underline;
       &:hover {
         opacity: 0.8;
@@ -378,15 +416,61 @@ export default {
     margin-bottom: 15px;
   }
 
-  .social-links {
+  .oauth-accounts {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 14px;
   }
 
-  .social-icon {
-    font-size: 24px;
-    color: white;
-    margin-right: 15px;
+  .oauth-title {
+    opacity: 0.85;
+  }
+
+  .oauth-account {
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: var(--text-color);
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+
+    :deep(.el-link__inner) {
+      gap: 6px;
+    }
+
+    &.is-clickable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.bound {
+      background: rgba(103, 194, 58, 0.18);
+      border-color: rgba(103, 194, 58, 0.45);
+      color: #67c23a;
+
+      &:hover {
+        background: rgba(103, 194, 58, 0.25);
+      }
+    }
+
+    &.unbound {
+      background: rgba(144, 147, 153, 0.14);
+      border-color: rgba(144, 147, 153, 0.35);
+      opacity: 0.85;
+      color: #909399;
+
+      &:hover {
+        background: rgba(144, 147, 153, 0.2);
+        opacity: 1;
+      }
+    }
+  }
+
+  .oauth-name {
+    opacity: 0.75;
   }
 }
 
@@ -480,12 +564,8 @@ export default {
     margin-top: 20px;
     align-items: center;
 
-    .social-links {
+    .oauth-accounts {
       justify-content: center;
-    }
-
-    .social-icon {
-      margin: 0 7px;
     }
   }
 
