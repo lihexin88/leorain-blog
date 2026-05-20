@@ -25,7 +25,6 @@
           <div class="panel-subtitle">点击行号旁箭头折叠或展开节点</div>
         </div>
         <div class="panel-actions">
-          <el-button size="small" @click="foldAllResult">全部折叠</el-button>
           <el-button size="small" @click="unfoldAllResult">全部展开</el-button>
           <el-button size="small" @click="compressJson">压缩</el-button>
           <el-button size="small" @click="escapeJson">转义</el-button>
@@ -46,7 +45,6 @@
 <script>
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
-import 'codemirror/theme/mdn-like.css'
 import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/fold/foldcode'
@@ -202,28 +200,15 @@ export default {
       this.clearPendingSync()
       this.updateBothEditors('', '')
     },
-    foldAllResult () {
-      if (!this.resultEditorInstance || this.largeResultMode) {
-        return
-      }
-
-      this.resultEditorInstance.operation(() => {
-        for (let line = this.resultEditorInstance.lineCount() - 1; line >= 0; line--) {
-          this.resultEditorInstance.foldCode(CodeMirror.Pos(line, 0), null, 'fold')
-        }
-      })
-    },
     unfoldAllResult () {
       if (!this.resultEditorInstance) {
         return
       }
 
       this.resultEditorInstance.operation(() => {
-        this.resultEditorInstance.getAllMarks().forEach(marker => {
-          if (marker.__isFold) {
-            marker.clear()
-          }
-        })
+        for (let line = this.resultEditorInstance.firstLine(); line <= this.resultEditorInstance.lastLine(); line++) {
+          this.resultEditorInstance.foldCode(CodeMirror.Pos(line, 0), { scanUp: false }, 'unfold')
+        }
       })
     },
     escapeJson () {
@@ -309,10 +294,12 @@ export default {
       }
 
       const nestedResult = this.tryParse(trimmedValue)
-      return nestedResult.valid ? nestedResult : {
-        valid: true,
-        value
-      }
+      return nestedResult.valid
+        ? nestedResult
+        : {
+            valid: true,
+            value
+          }
     },
     tryParse (text) {
       try {
@@ -571,8 +558,7 @@ export default {
 
 :deep(.CodeMirror) {
   height: 100%;
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 :deep(.CodeMirror-scroll) {
