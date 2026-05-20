@@ -1,38 +1,14 @@
 <template>
   <div class="json-executor">
     <section class="json-panel">
-      <div class="panel-header">
-        <div>
-          <div class="panel-title">原始数据</div>
-          <div class="panel-subtitle">输入 JSON 或转义后的 JSON 字符串</div>
-        </div>
-        <div class="panel-actions">
-          <el-button size="small" @click="clearJson">清空</el-button>
-          <span class="status-text" :class="{ 'status-error': jsonError }">
-            {{ jsonError ? '解析失败' : '已同步' }}
-          </span>
-        </div>
-      </div>
       <div class="editor-wrap">
-        <textarea ref="sourceEditor"></textarea>
+        <div ref="sourceEditor" class="full-height"></div>
       </div>
     </section>
 
     <section class="json-panel result-panel">
-      <div class="panel-header">
-        <div>
-          <div class="panel-title">格式化结果</div>
-          <div class="panel-subtitle">点击行号旁箭头折叠或展开节点</div>
-        </div>
-        <div class="panel-actions">
-          <el-button size="small" @click="unfoldAllResult">全部展开</el-button>
-          <el-button size="small" @click="compressJson">压缩</el-button>
-          <el-button size="small" @click="escapeJson">转义</el-button>
-          <el-button size="small" @click="unescapeJson">去除转义</el-button>
-        </div>
-      </div>
       <div class="editor-wrap">
-        <textarea ref="resultEditor"></textarea>
+        <div ref="resultEditor" class="full-height"></div>
       </div>
       <div v-if="largeResultMode" class="large-data-message">
         大数据模式：已关闭右侧折叠栏以降低卡顿。
@@ -43,14 +19,7 @@
 </template>
 
 <script>
-import CodeMirror from 'codemirror'
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/mode/javascript/javascript'
-import 'codemirror/addon/edit/matchbrackets'
-import 'codemirror/addon/fold/foldcode'
-import 'codemirror/addon/fold/foldgutter'
-import 'codemirror/addon/fold/brace-fold'
-import 'codemirror/addon/fold/foldgutter.css'
+import { JSONEditor } from 'vanilla-jsoneditor'
 
 const CHANGE_DEBOUNCE_TIME = 300
 const LARGE_CHANGE_DEBOUNCE_TIME = 700
@@ -78,76 +47,68 @@ export default {
   beforeUnmount () {
     this.clearPendingSync()
     if (this.sourceEditorInstance) {
-      this.sourceEditorInstance.off('changes', this.handleSourceChange)
-      this.sourceEditorInstance.toTextArea()
+      this.sourceEditorInstance.destroy()
     }
     if (this.resultEditorInstance) {
-      this.resultEditorInstance.off('changes', this.handleResultChange)
-      this.resultEditorInstance.toTextArea()
+      this.resultEditorInstance.destroy()
     }
   },
   methods: {
     initEditors () {
-      const commonOptions = {
-        lineNumbers: true,
-        mode: 'application/json',
-        theme: 'mdn-like',
-        tabSize: 2,
-        matchBrackets: true,
-        lineWrapping: true,
-        viewportMargin: 20,
-        workTime: 80,
-        workDelay: 120,
-        maxHighlightLength: 10000
-      }
-
-      this.sourceEditorInstance = CodeMirror.fromTextArea(this.$refs.sourceEditor, commonOptions)
-      this.resultEditorInstance = CodeMirror.fromTextArea(this.$refs.resultEditor, {
-        ...commonOptions,
-        foldGutter: true,
-        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-        extraKeys: {
-          'Ctrl-Q': cm => cm.foldCode(cm.getCursor())
+      this.sourceEditorInstance = new JSONEditor({
+        target: this.$refs.sourceEditor,
+        props: {
+          mode: 'text',
+          mainMenuBar: false,
+          statusBar: false,
+          askToFormat: false,
+          onChange: (content, previousContent, { source }) => {
+            if (source === 'set' || this.syncing) return
+            this.handleSourceChange(content)
+          }
         }
       })
 
-      this.sourceEditorInstance.on('changes', this.handleSourceChange)
-      this.resultEditorInstance.on('changes', this.handleResultChange)
+      this.resultEditorInstance = new JSONEditor({
+        target: this.$refs.resultEditor,
+        props: {
+          mode: 'tree',
+          mainMenuBar: true,
+          statusBar: true,
+          onChange: (content, previousContent, { source }) => {
+            if (source === 'set' || this.syncing) return
+            this.handleResultChange(content)
+          }
+        }
+      })
     },
-    handleSourceChange (editor) {
-      if (this.syncing) {
-        return
-      }
-
-      this.scheduleSourceFormat(editor)
+    handleSourceChange (content) {
+      this.scheduleSourceFormat(content)
     },
-    handleResultChange (editor) {
-      if (this.syncing) {
-        return
-      }
-
-      this.scheduleResultSync(editor)
+    handleResultChange (content) {
+      this.scheduleResultSync(content)
     },
-    scheduleSourceFormat (editor) {
+    scheduleSourceFormat (content) {
       window.clearTimeout(this.sourceChangeTimer)
 
-      if (editor.lineCount() === 1 && !editor.getLine(0).trim()) {
+      const text = content.text || (content.json ? JSON.stringify(content.json) : '')
+      if (!text.trim()) {
         this.sourceText = ''
         this.formatFromSource()
         return
       }
 
       this.sourceChangeTimer = window.setTimeout(() => {
-        this.sourceText = this.getSourceValue()
+        this.sourceText = text
         this.formatFromSource()
-      }, this.getEditorDebounceTime(editor))
+      }, this.getEditorDebounceTime(text))
     },
-    scheduleResultSync (editor) {
+    scheduleResultSync (content) {
       window.clearTimeout(this.resultChangeTimer)
       this.resultChangeTimer = window.setTimeout(() => {
-        this.resultText = this.getResultValue()
+        this.resultText = content.text || (content.json ? JSON.stringify(content.json, null, 2) : '')
         this.syncSourceFromResult()
-      }, this.getEditorDebounceTime(editor))
+      }, this.getEditorDebounceTime(this.resultText))
     },
     syncSourceFromResult () {
       this.setEditorValue(this.sourceEditorInstance, this.resultText)
@@ -184,18 +145,6 @@ export default {
       const parsed = this.parseJsonText(text)
       this.jsonError = parsed.valid ? '' : parsed.message
     },
-    compressJson () {
-      this.clearPendingSync()
-      const parsed = this.parseCurrentSource()
-      if (!parsed) {
-        return
-      }
-
-      const compactText = this.stringifyJson(parsed.value)
-      const formattedText = this.stringifyJson(parsed.value, 2)
-      this.updateBothEditors(compactText, formattedText)
-      this.showMessage('success', '已压缩')
-    },
     clearJson () {
       this.clearPendingSync()
       this.updateBothEditors('', '')
@@ -204,12 +153,7 @@ export default {
       if (!this.resultEditorInstance) {
         return
       }
-
-      this.resultEditorInstance.operation(() => {
-        for (let line = this.resultEditorInstance.firstLine(); line <= this.resultEditorInstance.lastLine(); line++) {
-          this.resultEditorInstance.foldCode(CodeMirror.Pos(line, 0), { scanUp: false }, 'unfold')
-        }
-      })
+      this.resultEditorInstance.expand(() => true)
     },
     escapeJson () {
       this.clearPendingSync()
@@ -339,11 +283,11 @@ export default {
       }
 
       return text
-        .replace(/\\r/g, '\r')
-        .replace(/\\n/g, '\n')
-        .replace(/\\t/g, '\t')
-        .replace(/\\"/g, '"')
         .replace(/\\\\/g, '\\')
+        .replace(/\\"/g, '"')
+        .replace(/\\t/g, '\t')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
     },
     updateBothEditors (sourceText, resultText) {
       this.sourceText = sourceText
@@ -353,69 +297,24 @@ export default {
       this.setEditorValue(this.resultEditorInstance, resultText)
     },
     setEditorValue (editor, value) {
-      if (!editor || editor.getValue() === value) {
+      if (!editor) {
         return
+      }
+
+      let content
+      try {
+        const json = JSON.parse(value)
+        content = { json }
+      } catch (e) {
+        content = { text: value }
       }
 
       this.syncing = true
       try {
-        if (editor === this.resultEditorInstance) {
-          this.replaceResultDocument(value)
-        } else {
-          editor.setValue(value)
-        }
+        editor.set(content)
       } finally {
         this.syncing = false
       }
-    },
-    replaceResultDocument (value) {
-      const enableFoldGutter = !this.isLargeText(value)
-
-      if (!enableFoldGutter) {
-        this.setResultFoldGutter(false)
-      }
-
-      this.clearFoldMarkers(this.resultEditorInstance)
-      this.resultEditorInstance.swapDoc(new CodeMirror.Doc(value, this.resultEditorInstance.getOption('mode')))
-      this.resultEditorInstance.clearHistory()
-
-      if (enableFoldGutter) {
-        this.setResultFoldGutter(true)
-      }
-
-      this.largeResultMode = !enableFoldGutter
-    },
-    setResultFoldGutter (enabled) {
-      if (!this.resultEditorInstance || this.foldGutterEnabled === enabled) {
-        return
-      }
-
-      this.clearFoldMarkers(this.resultEditorInstance)
-      this.resultEditorInstance.setOption('foldGutter', enabled)
-      this.resultEditorInstance.setOption(
-        'gutters',
-        enabled ? ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'] : ['CodeMirror-linenumbers']
-      )
-      this.foldGutterEnabled = enabled
-    },
-    clearFoldMarkers (editor) {
-      if (!editor || typeof editor.getAllMarks !== 'function') {
-        return
-      }
-
-      editor.operation(() => {
-        editor.getAllMarks().forEach(marker => {
-          if (!marker.__isFold) {
-            return
-          }
-
-          try {
-            marker.clear()
-          } catch (error) {
-            // 大文本整体替换时 CodeMirror 的旧折叠标记可能已经失效，忽略后用新 Doc 重建。
-          }
-        })
-      })
     },
     clearPendingSync () {
       window.clearTimeout(this.sourceChangeTimer)
@@ -423,13 +322,12 @@ export default {
       this.sourceChangeTimer = null
       this.resultChangeTimer = null
     },
-    getEditorDebounceTime (editor) {
-      if (!editor) {
+    getEditorDebounceTime (text) {
+      if (typeof text !== 'string') {
         return CHANGE_DEBOUNCE_TIME
       }
 
-      const firstLineLength = editor.lineCount() === 1 ? editor.getLine(0).length : 0
-      return editor.lineCount() > LARGE_LINE_COUNT || firstLineLength > LARGE_TEXT_LENGTH
+      return text.length > LARGE_TEXT_LENGTH
         ? LARGE_CHANGE_DEBOUNCE_TIME
         : CHANGE_DEBOUNCE_TIME
     },
@@ -449,10 +347,14 @@ export default {
       return false
     },
     getSourceValue () {
-      return this.sourceEditorInstance ? this.sourceEditorInstance.getValue() : this.sourceText
+      if (!this.sourceEditorInstance) return this.sourceText
+      const content = this.sourceEditorInstance.get()
+      return content.text || (content.json ? JSON.stringify(content.json) : '')
     },
     getResultValue () {
-      return this.resultEditorInstance ? this.resultEditorInstance.getValue() : this.resultText
+      if (!this.resultEditorInstance) return this.resultText
+      const content = this.resultEditorInstance.get()
+      return content.text || (content.json ? JSON.stringify(content.json, null, 2) : '')
     },
     showMessage (type, message) {
       if (this.$message && this.$message[type]) {
@@ -556,21 +458,13 @@ export default {
   color: #b88230;
 }
 
-:deep(.CodeMirror) {
+.full-height {
   height: 100%;
-  font-size: 16px;
 }
 
-:deep(.CodeMirror-scroll) {
-  min-height: 100%;
-}
-
-:deep(.CodeMirror-foldgutter) {
-  width: 16px;
-}
-
-:deep(.CodeMirror-foldmarker) {
-  cursor: pointer;
+:deep(.jse-main) {
+  height: 100%;
+  font-size: 14px;
 }
 
 @media (max-width: 900px) {

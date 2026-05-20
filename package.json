@@ -51,6 +51,7 @@
     "sockjs-client": "^1.6.1",
     "sweetalert2": "^11.26.17",
     "three": "^0.182.0",
+    "vanilla-jsoneditor": "^3.12.0",
     "vue": "^3.3.11",
     "vue-particles": "^1.0.9",
     "vue-router": "^4.2.5",
