@@ -6,9 +6,12 @@
           <div class="panel-title">原始数据</div>
           <div class="panel-subtitle">输入 JSON 或转义后的 JSON 字符串</div>
         </div>
-        <span class="status-text" :class="{ 'status-error': jsonError }">
-          {{ jsonError ? '解析失败' : '已同步' }}
-        </span>
+        <div class="panel-actions">
+          <el-button size="small" @click="clearJson">清空</el-button>
+          <span class="status-text" :class="{ 'status-error': jsonError }">
+            {{ jsonError ? '解析失败' : '已同步' }}
+          </span>
+        </div>
       </div>
       <div class="editor-wrap">
         <textarea ref="sourceEditor"></textarea>
@@ -22,6 +25,8 @@
           <div class="panel-subtitle">点击行号旁箭头折叠或展开节点</div>
         </div>
         <div class="panel-actions">
+          <el-button size="small" @click="foldAllResult">全部折叠</el-button>
+          <el-button size="small" @click="unfoldAllResult">全部展开</el-button>
           <el-button size="small" @click="compressJson">压缩</el-button>
           <el-button size="small" @click="escapeJson">转义</el-button>
           <el-button size="small" @click="unescapeJson">去除转义</el-button>
@@ -91,7 +96,7 @@ export default {
         theme: 'mdn-like',
         tabSize: 2,
         matchBrackets: true,
-        lineWrapping: false,
+        lineWrapping: true,
         viewportMargin: 20,
         workTime: 80,
         workDelay: 120,
@@ -192,6 +197,34 @@ export default {
       const formattedText = this.stringifyJson(parsed.value, 2)
       this.updateBothEditors(compactText, formattedText)
       this.showMessage('success', '已压缩')
+    },
+    clearJson () {
+      this.clearPendingSync()
+      this.updateBothEditors('', '')
+    },
+    foldAllResult () {
+      if (!this.resultEditorInstance || this.largeResultMode) {
+        return
+      }
+
+      this.resultEditorInstance.operation(() => {
+        for (let line = this.resultEditorInstance.lineCount() - 1; line >= 0; line--) {
+          this.resultEditorInstance.foldCode(CodeMirror.Pos(line, 0), null, 'fold')
+        }
+      })
+    },
+    unfoldAllResult () {
+      if (!this.resultEditorInstance) {
+        return
+      }
+
+      this.resultEditorInstance.operation(() => {
+        this.resultEditorInstance.getAllMarks().forEach(marker => {
+          if (marker.__isFold) {
+            marker.clear()
+          }
+        })
+      })
     },
     escapeJson () {
       this.clearPendingSync()
@@ -551,7 +584,7 @@ export default {
 }
 
 :deep(.CodeMirror-foldmarker) {
-  pointer-events: none;
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {
