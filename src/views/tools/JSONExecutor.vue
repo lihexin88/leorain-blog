@@ -31,6 +31,7 @@ const CHANGE_DEBOUNCE_TIME = 300
 const LARGE_CHANGE_DEBOUNCE_TIME = 700
 const LARGE_TEXT_LENGTH = 300000
 const LARGE_LINE_COUNT = 5000
+const SOURCE_STORAGE_KEY = 'json-executor-source-text'
 
 export default {
   data () {
@@ -87,6 +88,8 @@ export default {
       document.body.style.userSelect = ''
     },
     initEditors () {
+      const storedSourceText = localStorage.getItem(SOURCE_STORAGE_KEY) || ''
+
       this.sourceEditorInstance = new JSONEditor({
         target: this.$refs.sourceEditor,
         props: {
@@ -113,6 +116,13 @@ export default {
           }
         }
       })
+
+      if (storedSourceText) {
+        this.sourceText = storedSourceText
+        this.setEditorValue(this.sourceEditorInstance, storedSourceText)
+        this.formatFromSource()
+        this.selectAllSourceText()
+      }
     },
     handleSourceChange (content) {
       this.scheduleSourceFormat(content)
@@ -120,18 +130,35 @@ export default {
     handleResultChange (content) {
       this.scheduleResultSync(content)
     },
+    selectAllSourceText () {
+      this.$nextTick(() => {
+        this.sourceEditorInstance.focus()
+        this.sourceEditorInstance.select({
+          type: 'text',
+          ranges: [
+            {
+              anchor: 0,
+              head: this.sourceText.length
+            }
+          ],
+          main: 0
+        })
+      })
+    },
     scheduleSourceFormat (content) {
       window.clearTimeout(this.sourceChangeTimer)
 
       const text = content.text || (content.json ? JSON.stringify(content.json) : '')
       if (!text.trim()) {
         this.sourceText = ''
+        this.saveSourceText()
         this.formatFromSource()
         return
       }
 
       this.sourceChangeTimer = window.setTimeout(() => {
         this.sourceText = text
+        this.saveSourceText()
         this.formatFromSource()
       }, this.getEditorDebounceTime(text))
     },
@@ -145,6 +172,7 @@ export default {
     syncSourceFromResult () {
       this.setEditorValue(this.sourceEditorInstance, this.resultText)
       this.sourceText = this.resultText
+      this.saveSourceText()
       this.validateResultText()
     },
     formatFromSource () {
@@ -325,8 +353,12 @@ export default {
       this.sourceText = sourceText
       this.resultText = resultText
       this.jsonError = ''
+      this.saveSourceText()
       this.setEditorValue(this.sourceEditorInstance, sourceText)
       this.setEditorValue(this.resultEditorInstance, resultText)
+    },
+    saveSourceText () {
+      localStorage.setItem(SOURCE_STORAGE_KEY, this.sourceText)
     },
     setEditorValue (editor, value) {
       if (!editor) {

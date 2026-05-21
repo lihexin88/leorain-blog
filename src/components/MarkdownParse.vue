@@ -32,16 +32,13 @@
         </div>
       </template>
     </el-dialog>
-    <el-image
+    <el-image-viewer
       v-if="currentImage"
-      ref="elImage"
-      class="markdown-preview-trigger"
-      :src="currentImage"
-      :preview-src-list="[currentImage]"
-      :preview-teleport="true"
+      :url-list="[currentImage]"
+      :z-index="3000"
+      :teleported="true"
       @close="closePreview"
-    >
-    </el-image>
+    />
   </div>
 </template>
 
@@ -52,9 +49,10 @@ import DOMPurify from 'dompurify'
 import { emojiToImage } from '@/services/customEmoji'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import { ElImageViewer } from 'element-plus'
 
 export default {
-  components: {},
+  components: { ElImageViewer },
   props: {
     content: {
       type: String,
@@ -74,7 +72,8 @@ export default {
         executor_url: null,
         cost_time: 0
       },
-      currentImage: null
+      currentImage: null,
+      imagePreviewWheelHandler: null
     }
   },
   async created () {
@@ -90,24 +89,35 @@ export default {
     if (this.$refs.markdownContainer) {
       this.$refs.markdownContainer.removeEventListener('click', this.handleEvent)
     }
+    this.unbindImagePreviewWheel()
   },
   methods: {
     handleEvent (event) {
       if (event.target.tagName === 'IMG') {
         this.currentImage = event.target.src
-        this.$nextTick(() => {
-          const elImage = this.$refs.elImage
-          if (elImage) {
-            const img = elImage.$el.querySelector('img')
-            if (img) {
-              img.click()
-            }
-          }
-        })
+        this.bindImagePreviewWheel()
       }
     },
     closePreview () {
+      this.unbindImagePreviewWheel()
       this.currentImage = ''
+    },
+    bindImagePreviewWheel () {
+      this.unbindImagePreviewWheel()
+      this.imagePreviewWheelHandler = event => {
+        if (!event.target.closest('.el-image-viewer__wrapper')) {
+          return
+        }
+        event.preventDefault()
+      }
+      window.addEventListener('wheel', this.imagePreviewWheelHandler, { passive: false, capture: true })
+    },
+    unbindImagePreviewWheel () {
+      if (!this.imagePreviewWheelHandler) {
+        return
+      }
+      window.removeEventListener('wheel', this.imagePreviewWheelHandler, { capture: true })
+      this.imagePreviewWheelHandler = null
     },
     go_tool_exec () {
       if (this.executor.executor_url === null) {
@@ -327,20 +337,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.markdown-preview-trigger {
-  position: fixed;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.markdown-preview-trigger :deep(.el-image__inner) {
-  display: block;
-  width: 0;
-  height: 0;
-}
-
 .copy-button {
   cursor: pointer;
   background-color: #4d5155;
