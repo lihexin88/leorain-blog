@@ -1,12 +1,18 @@
 <template>
-  <div class="json-executor">
-    <section class="json-panel">
+  <div ref="container" class="json-executor">
+    <section class="json-panel" :style="{ width: leftWidth + '%' }">
       <div class="editor-wrap">
         <div ref="sourceEditor" class="full-height"></div>
       </div>
     </section>
 
-    <section class="json-panel result-panel">
+    <div
+      class="json-resizer"
+      :class="{ 'is-dragging': isDragging }"
+      @mousedown="startResize"
+    ></div>
+
+    <section class="json-panel result-panel" :style="{ width: 100 - leftWidth + '%' }">
       <div class="editor-wrap">
         <div ref="resultEditor" class="full-height"></div>
       </div>
@@ -38,7 +44,9 @@ export default {
       sourceChangeTimer: null,
       resultChangeTimer: null,
       foldGutterEnabled: true,
-      largeResultMode: false
+      largeResultMode: false,
+      leftWidth: 50,
+      isDragging: false
     }
   },
   mounted () {
@@ -46,6 +54,7 @@ export default {
   },
   beforeUnmount () {
     this.clearPendingSync()
+    this.stopResize()
     if (this.sourceEditorInstance) {
       this.sourceEditorInstance.destroy()
     }
@@ -54,6 +63,29 @@ export default {
     }
   },
   methods: {
+    startResize (event) {
+      event.preventDefault()
+      this.isDragging = true
+      document.addEventListener('mousemove', this.handleResize)
+      document.addEventListener('mouseup', this.stopResize)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    },
+    handleResize (event) {
+      if (!this.isDragging || !this.$refs.container) return
+      const rect = this.$refs.container.getBoundingClientRect()
+      const offset = event.clientX - rect.left
+      const percent = (offset / rect.width) * 100
+      this.leftWidth = Math.min(80, Math.max(20, percent))
+    },
+    stopResize () {
+      if (!this.isDragging) return
+      this.isDragging = false
+      document.removeEventListener('mousemove', this.handleResize)
+      document.removeEventListener('mouseup', this.stopResize)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    },
     initEditors () {
       this.sourceEditorInstance = new JSONEditor({
         target: this.$refs.sourceEditor,
@@ -367,9 +399,9 @@ export default {
 
 <style scoped lang="scss">
 .json-executor {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
   height: 86vh;
   padding: 8px;
   box-sizing: border-box;
@@ -380,10 +412,101 @@ export default {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--theme-primary-light-7);
   border-radius: 6px;
-  background: #fff;
+  background: var(--theme-primary-light-9);
   overflow: hidden;
+}
+
+.json-panel :deep(.jse-main) {
+  --jse-theme-color: var(--theme-accent-color);
+  --jse-theme-color-highlight: var(--theme-primary-light-3);
+  --jse-panel-background: var(--theme-primary-light-9);
+  --jse-panel-border: var(--theme-primary-light-7);
+  --jse-main-border: var(--theme-primary-light-7);
+  --jse-selection-background-color: var(--theme-primary-light-8);
+  --jse-selection-background-inactive-color: var(--theme-primary-light-9);
+  --jse-hover-background-color: var(--theme-primary-light-8);
+  --jse-active-line-background-color: var(--theme-primary-light-9);
+  --jse-context-menu-background: var(--theme-accent-color);
+  --jse-context-menu-background-highlight: var(--theme-primary-light-3);
+  --jse-context-menu-pointer-background: var(--theme-primary-dark-2);
+  --jse-context-menu-pointer-background-highlight: var(--theme-accent-color);
+  --jse-button-primary-background: var(--theme-accent-color);
+  --jse-button-primary-background-highlight: var(--theme-primary-light-3);
+  --jse-key-color: var(--theme-primary-dark-2);
+  --jse-value-color-string: var(--theme-accent-color);
+  --jse-delimiter-color: var(--muted-text-color);
+  --jse-tag-background: var(--theme-primary-light-8);
+  --jse-tag-color: var(--theme-primary-dark-2);
+  --jse-input-border-focus: var(--theme-accent-color);
+}
+
+[data-theme='dark'] .json-panel {
+  border-color: var(--theme-el-border-color);
+  background: var(--theme-el-bg-color-overlay);
+}
+
+[data-theme='dark'] .json-panel :deep(.jse-main) {
+  --jse-panel-background: var(--theme-el-bg-color-overlay);
+  --jse-panel-border: var(--theme-el-border-color);
+  --jse-main-border: var(--theme-el-border-color);
+  --jse-background-color: var(--theme-el-bg-color-overlay);
+  --jse-text-color: var(--text-color);
+  --jse-text-color-inverse: var(--theme-el-bg-color);
+  --jse-text-readonly: var(--muted-text-color);
+  --jse-panel-color: var(--text-color);
+  --jse-panel-color-readonly: var(--muted-text-color);
+  --jse-controls-background: var(--theme-el-fill-color);
+  --jse-controls-color: var(--text-color);
+  --jse-controls-color-readonly: var(--muted-text-color);
+  --jse-input-background: var(--theme-el-fill-color);
+  --jse-input-background-readonly: var(--theme-el-fill-color-lighter);
+  --jse-input-border: var(--theme-el-border-color);
+  --jse-selection-background-color: var(--theme-el-fill-color-lighter);
+  --jse-selection-background-inactive-color: var(--theme-el-fill-color-light);
+  --jse-hover-background-color: var(--theme-el-fill-color-light);
+  --jse-active-line-background-color: var(--theme-el-fill-color);
+  --jse-key-color: var(--theme-primary-light-5);
+  --jse-value-color-string: var(--theme-primary-light-3);
+  --jse-value-color-number: #f59e0b;
+  --jse-value-color-boolean: #f472b6;
+  --jse-value-color-null: var(--muted-text-color);
+  --jse-delimiter-color: var(--muted-text-color);
+  --jse-tag-background: var(--theme-el-fill-color-lighter);
+  --jse-tag-color: var(--text-color);
+}
+
+.json-resizer {
+  flex: 0 0 6px;
+  margin: 0 1px;
+  cursor: col-resize;
+  background: #c0c4cc;
+  border-radius: 3px;
+  transition: background 0.2s;
+  position: relative;
+
+  &:hover,
+  &.is-dragging {
+    background: #409eff;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 32px;
+    background: #c0c4cc;
+    border-radius: 1px;
+    transform: translate(-50%, -50%);
+  }
+
+  &:hover::before,
+  &.is-dragging::before {
+    background: #fff;
+  }
 }
 
 .panel-header {
@@ -469,12 +592,17 @@ export default {
 
 @media (max-width: 900px) {
   .json-executor {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     height: auto;
   }
 
   .json-panel {
     min-height: 420px;
+    width: 100% !important;
+  }
+
+  .json-resizer {
+    display: none;
   }
 
   .panel-header {
