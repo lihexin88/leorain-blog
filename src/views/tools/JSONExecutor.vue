@@ -121,7 +121,7 @@ export default {
         this.sourceText = storedSourceText
         this.setEditorValue(this.sourceEditorInstance, storedSourceText)
         this.formatFromSource()
-        this.selectAllSourceText()
+        this.selectAllSourceText(storedSourceText.length)
       }
     },
     handleSourceChange (content) {
@@ -130,18 +130,23 @@ export default {
     handleResultChange (content) {
       this.scheduleResultSync(content)
     },
-    selectAllSourceText () {
-      this.$nextTick(() => {
-        this.sourceEditorInstance.focus()
-        this.sourceEditorInstance.select({
-          type: 'text',
-          ranges: [
-            {
-              anchor: 0,
-              head: this.sourceText.length
-            }
-          ],
-          main: 0
+    selectAllSourceText (textLength) {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          if (!this.sourceEditorInstance) {
+            return
+          }
+          this.sourceEditorInstance.focus()
+          this.sourceEditorInstance.select({
+            type: 'text',
+            ranges: [
+              {
+                anchor: 0,
+                head: textLength
+              }
+            ],
+            main: 0
+          })
         })
       })
     },
