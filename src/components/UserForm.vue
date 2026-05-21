@@ -133,7 +133,7 @@ export default {
     this.loadGuestInfo()
     if (!this.guest.name || !this.guest.email) {
       // 需要展示弹窗时，走全局开关
-      this.userStore.setShowGuestDialog(true)
+      // this.userStore.setShowGuestDialog(true)
     }
     // 注册全局弹窗拥有者（仅首次注册）
     if (!this.userStore.loginDialogOwnerId) {
