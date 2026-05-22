@@ -1,6 +1,14 @@
 <template>
   <div ref="container" class="json-executor">
     <section class="json-panel" :style="{ width: leftWidth + '%' }">
+      <div class="panel-toolbar">
+        <el-tooltip content="Ctrl + S" placement="bottom" :show-after="300">
+          <el-button size="small" type="primary" @click="formatSourceText">格式化</el-button>
+        </el-tooltip>
+        <el-tooltip content="Ctrl + Shift + Z" placement="bottom" :show-after="300">
+          <el-button size="small" @click="compressSourceText">压缩</el-button>
+        </el-tooltip>
+      </div>
       <div class="editor-wrap">
         <div ref="sourceEditor" class="full-height"></div>
       </div>
@@ -68,11 +76,20 @@ export default {
   methods: {
     handleKeyDown (event) {
       if (!(event.ctrlKey || event.metaKey)) return
-      if (event.key !== 's' && event.key !== 'S') return
       if (!this.$refs.container || !this.$refs.container.contains(event.target)) return
-      event.preventDefault()
-      event.stopPropagation()
-      this.formatSourceText()
+
+      const key = event.key.toLowerCase()
+      if (key === 's' && !event.shiftKey) {
+        event.preventDefault()
+        event.stopPropagation()
+        this.formatSourceText()
+        return
+      }
+      if (key === 'z' && event.shiftKey) {
+        event.preventDefault()
+        event.stopPropagation()
+        this.compressSourceText()
+      }
     },
     formatSourceText () {
       this.clearPendingSync()
@@ -91,8 +108,27 @@ export default {
 
       const formattedText = this.stringifyJson(parsed.value, 2)
       this.updateBothEditors(formattedText, formattedText)
-      this.selectAllSourceText()
       this.showMessage('success', '已格式化')
+    },
+    compressSourceText () {
+      this.clearPendingSync()
+      const text = this.getSourceValue().trim()
+      if (!text) {
+        this.updateBothEditors('', '')
+        return
+      }
+
+      const parsed = this.parseJsonText(text)
+      if (!parsed.valid) {
+        this.jsonError = parsed.message
+        this.showMessage('error', parsed.message)
+        return
+      }
+
+      const compressedText = this.stringifyJson(parsed.value)
+      const formattedText = this.stringifyJson(parsed.value, 2)
+      this.updateBothEditors(compressedText, formattedText)
+      this.showMessage('success', '已压缩')
     },
     startResize (event) {
       event.preventDefault()
@@ -409,11 +445,15 @@ export default {
       }
 
       let content
-      try {
-        const json = JSON.parse(value)
-        content = { json }
-      } catch (e) {
+      if (editor === this.sourceEditorInstance) {
         content = { text: value }
+      } else {
+        try {
+          const json = JSON.parse(value)
+          content = { json }
+        } catch (e) {
+          content = { text: value }
+        }
       }
 
       this.syncing = true
@@ -456,7 +496,9 @@ export default {
     getSourceValue () {
       if (!this.sourceEditorInstance) return this.sourceText
       const content = this.sourceEditorInstance.get()
-      return content.text || (content.json ? JSON.stringify(content.json) : '')
+      if (typeof content.text === 'string') return content.text
+      if (content.json !== undefined) return JSON.stringify(content.json, null, 2)
+      return ''
     },
     getResultValue () {
       if (!this.resultEditorInstance) return this.resultText
@@ -493,14 +535,30 @@ export default {
   overflow: hidden;
 }
 
+.panel-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--theme-primary-light-7);
+  background: var(--theme-primary-light-9);
+}
+
+[data-theme='dark'] .panel-toolbar {
+  border-bottom-color: var(--theme-el-border-color);
+  background: var(--theme-el-bg-color-overlay);
+}
+
 .json-panel :deep(.jse-main) {
   --jse-theme-color: var(--theme-accent-color);
   --jse-theme-color-highlight: var(--theme-primary-light-3);
   --jse-panel-background: var(--theme-primary-light-9);
   --jse-panel-border: var(--theme-primary-light-7);
   --jse-main-border: var(--theme-primary-light-7);
-  --jse-selection-background-color: var(--theme-primary-light-8);
-  --jse-selection-background-inactive-color: var(--theme-primary-light-9);
+  --jse-selection-background-color: var(--theme-primary-light-7);
+  --jse-selection-background-inactive-color: var(--theme-primary-light-8);
   --jse-hover-background-color: var(--theme-primary-light-8);
   --jse-active-line-background-color: var(--theme-primary-light-9);
   --jse-context-menu-background: var(--theme-accent-color);
@@ -515,6 +573,26 @@ export default {
   --jse-tag-background: var(--theme-primary-light-8);
   --jse-tag-color: var(--theme-primary-dark-2);
   --jse-input-border-focus: var(--theme-accent-color);
+}
+
+.json-panel :deep(.cm-editor) {
+  .cm-scroller > .cm-selectionLayer {
+    z-index: 2;
+  }
+
+  .cm-content ::selection,
+  .cm-line ::selection,
+  .cm-line::selection {
+    background-color: var(--theme-primary-light-5) !important;
+  }
+}
+
+[data-theme='dark'] .json-panel :deep(.cm-editor) {
+  .cm-content ::selection,
+  .cm-line ::selection,
+  .cm-line::selection {
+    background-color: var(--theme-primary-dark-2) !important;
+  }
 }
 
 [data-theme='dark'] .json-panel {
@@ -538,8 +616,8 @@ export default {
   --jse-input-background: var(--theme-el-fill-color);
   --jse-input-background-readonly: var(--theme-el-fill-color-lighter);
   --jse-input-border: var(--theme-el-border-color);
-  --jse-selection-background-color: var(--theme-el-fill-color-lighter);
-  --jse-selection-background-inactive-color: var(--theme-el-fill-color-light);
+  --jse-selection-background-color: var(--theme-primary-dark-2);
+  --jse-selection-background-inactive-color: var(--theme-el-fill-color-lighter);
   --jse-hover-background-color: var(--theme-el-fill-color-light);
   --jse-active-line-background-color: var(--theme-el-fill-color);
   --jse-key-color: var(--theme-primary-light-5);
