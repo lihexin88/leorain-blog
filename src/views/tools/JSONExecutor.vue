@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { JSONEditor } from 'vanilla-jsoneditor'
+import { createJSONEditor } from 'vanilla-jsoneditor'
 
 const CHANGE_DEBOUNCE_TIME = 300
 const LARGE_CHANGE_DEBOUNCE_TIME = 700
@@ -52,10 +52,12 @@ export default {
   },
   mounted () {
     this.initEditors()
+    window.addEventListener('keydown', this.handleKeyDown, true)
   },
   beforeUnmount () {
     this.clearPendingSync()
     this.stopResize()
+    window.removeEventListener('keydown', this.handleKeyDown, true)
     if (this.sourceEditorInstance) {
       this.sourceEditorInstance.destroy()
     }
@@ -64,6 +66,34 @@ export default {
     }
   },
   methods: {
+    handleKeyDown (event) {
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (event.key !== 's' && event.key !== 'S') return
+      if (!this.$refs.container || !this.$refs.container.contains(event.target)) return
+      event.preventDefault()
+      event.stopPropagation()
+      this.formatSourceText()
+    },
+    formatSourceText () {
+      this.clearPendingSync()
+      const text = this.getSourceValue().trim()
+      if (!text) {
+        this.updateBothEditors('', '')
+        return
+      }
+
+      const parsed = this.parseJsonText(text)
+      if (!parsed.valid) {
+        this.jsonError = parsed.message
+        this.showMessage('error', parsed.message)
+        return
+      }
+
+      const formattedText = this.stringifyJson(parsed.value, 2)
+      this.updateBothEditors(formattedText, formattedText)
+      this.selectAllSourceText()
+      this.showMessage('success', '已格式化')
+    },
     startResize (event) {
       event.preventDefault()
       this.isDragging = true
@@ -90,7 +120,7 @@ export default {
     initEditors () {
       const storedSourceText = localStorage.getItem(SOURCE_STORAGE_KEY) || ''
 
-      this.sourceEditorInstance = new JSONEditor({
+      this.sourceEditorInstance = createJSONEditor({
         target: this.$refs.sourceEditor,
         props: {
           mode: 'text',
@@ -104,7 +134,7 @@ export default {
         }
       })
 
-      this.resultEditorInstance = new JSONEditor({
+      this.resultEditorInstance = createJSONEditor({
         target: this.$refs.resultEditor,
         props: {
           mode: 'tree',
@@ -121,7 +151,7 @@ export default {
         this.sourceText = storedSourceText
         this.setEditorValue(this.sourceEditorInstance, storedSourceText)
         this.formatFromSource()
-        this.selectAllSourceText(storedSourceText.length)
+        this.selectAllSourceText()
       }
     },
     handleSourceChange (content) {
@@ -130,23 +160,31 @@ export default {
     handleResultChange (content) {
       this.scheduleResultSync(content)
     },
-    selectAllSourceText (textLength) {
+    selectAllSourceText () {
       window.requestAnimationFrame(() => {
         window.requestAnimationFrame(() => {
           if (!this.sourceEditorInstance) {
             return
           }
-          this.sourceEditorInstance.focus()
-          this.sourceEditorInstance.select({
-            type: 'text',
-            ranges: [
-              {
-                anchor: 0,
-                head: textLength
-              }
-            ],
-            main: 0
-          })
+          try {
+            const text = this.getSourceValue()
+            if (!text.length) {
+              return
+            }
+            this.sourceEditorInstance.focus()
+            this.sourceEditorInstance.select({
+              type: 'text',
+              ranges: [
+                {
+                  anchor: 0,
+                  head: text.length
+                }
+              ],
+              main: 0
+            })
+          } catch (e) {
+            // 编辑器内部状态尚未就绪时忽略选择错误
+          }
         })
       })
     },
