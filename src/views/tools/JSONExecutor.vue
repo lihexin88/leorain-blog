@@ -8,6 +8,8 @@
         <el-tooltip content="Ctrl + Shift + Z" placement="bottom" :show-after="300">
           <el-button size="small" @click="compressSourceText">压缩</el-button>
         </el-tooltip>
+        <el-button size="small" @click="escapeJson">转义</el-button>
+        <el-button size="small" @click="unescapeJson">去除转义</el-button>
       </div>
       <div class="editor-wrap">
         <div ref="sourceEditor" class="full-height"></div>
@@ -296,35 +298,30 @@ export default {
     },
     escapeJson () {
       this.clearPendingSync()
-      const parsed = this.parseCurrentSource()
-      if (!parsed) {
+      const text = this.getSourceValue()
+      if (!text) {
+        this.showMessage('warning', '请输入内容')
         return
       }
 
-      const formattedText = this.stringifyJson(parsed.value, 2)
-      const escapedText = this.escapeText(formattedText)
-      this.updateBothEditors(escapedText, formattedText)
+      const escapedText = this.escapeText(text)
+      const parsed = this.parseJsonText(text)
+      const resultText = parsed.valid ? this.stringifyJson(parsed.value, 2) : ''
+      this.updateBothEditors(escapedText, resultText)
       this.showMessage('success', '已转义')
     },
     unescapeJson () {
       this.clearPendingSync()
-      const sourceText = this.getSourceValue().trim()
-      if (!sourceText) {
-        this.updateBothEditors('', '')
+      const text = this.getSourceValue()
+      if (!text) {
+        this.showMessage('warning', '请输入内容')
         return
       }
 
-      const unescapedText = this.unescapeText(sourceText)
+      const unescapedText = this.unescapeText(text)
       const parsed = this.parseJsonText(unescapedText)
-      if (!parsed.valid) {
-        this.updateBothEditors(unescapedText, '')
-        this.jsonError = parsed.message
-        this.showMessage('error', parsed.message)
-        return
-      }
-
-      const formattedText = this.stringifyJson(parsed.value, 2)
-      this.updateBothEditors(formattedText, formattedText)
+      const resultText = parsed.valid ? this.stringifyJson(parsed.value, 2) : ''
+      this.updateBothEditors(unescapedText, resultText)
       this.showMessage('success', '已去除转义')
     },
     parseCurrentSource () {
