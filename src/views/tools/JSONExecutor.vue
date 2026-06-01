@@ -9,7 +9,6 @@
           <el-button size="small" @click="compressSourceText">压缩</el-button>
         </el-tooltip>
         <el-button size="small" @click="escapeJson">转义</el-button>
-        <el-button size="small" @click="unescapeJson">去除转义</el-button>
       </div>
       <div class="editor-wrap">
         <div ref="sourceEditor" class="full-height"></div>
@@ -309,20 +308,6 @@ export default {
       const resultText = parsed.valid ? this.stringifyJson(parsed.value, 2) : ''
       this.updateBothEditors(escapedText, resultText)
       this.showMessage('success', '已转义')
-    },
-    unescapeJson () {
-      this.clearPendingSync()
-      const text = this.getSourceValue()
-      if (!text) {
-        this.showMessage('warning', '请输入内容')
-        return
-      }
-
-      const unescapedText = this.unescapeText(text)
-      const parsed = this.parseJsonText(unescapedText)
-      const resultText = parsed.valid ? this.stringifyJson(parsed.value, 2) : ''
-      this.updateBothEditors(unescapedText, resultText)
-      this.showMessage('success', '已去除转义')
     },
     parseCurrentSource () {
       const text = this.getSourceValue().trim()
