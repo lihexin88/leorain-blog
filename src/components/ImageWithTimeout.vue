@@ -1,77 +1,69 @@
 <template>
   <div>
-    <el-image
-        :src="blobUrl"
-        fit="contain"
-        class="image-with-limit"
-    >
-      <template v-slot:placeholder>
-        <div class="image-slot">
-          加载中...
-        </div>
-      </template>
-      <template v-slot:error>
-        <div class="image-slot">
-          <i style="overflow-x: clip">
-            {{ error_alt }}
-          </i>
-        </div>
-      </template>
-    </el-image>
+    <el-image v-if="loaded" :src="displaySrc" fit="contain" class="image-with-limit" />
+    <div v-else-if="loading" class="image-with-limit image-slot">加载中...</div>
+    <slot v-else name="error">
+      <div class="image-with-limit image-slot">
+        <i style="overflow-x: clip">{{ error_alt }}</i>
+      </div>
+    </slot>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    img_src: { type: String, required: true }, // 图片真实地址
-    timeout: { type: Number, default: 5000 }, // 超时时间 ms
-    error_alt: { type: String, default: 'error' } // alt
+    img_src: { type: String, required: true },
+    timeout: { type: Number, default: 5000 },
+    error_alt: { type: String, default: 'error' }
   },
   data () {
     return {
+      displaySrc: '',
       blobUrl: '',
-      controller: null
+      loaded: false,
+      loading: true,
+      preloader: null,
+      timer: null
     }
   },
   mounted () {
     this.loadImage(this.img_src, this.timeout)
   },
   beforeUnmount () {
-    // 清理 Blob URL 避免内存泄漏
-    if (this.blobUrl) {
-      URL.revokeObjectURL(this.blobUrl)
-    }
-    // 页面卸载时中止请求
-    if (this.controller) {
-      this.controller.abort()
-    }
+    this.cleanup()
+    if (this.blobUrl) URL.revokeObjectURL(this.blobUrl)
   },
   methods: {
-    async loadImage (url, timeout) {
-      this.controller = new AbortController()
-      const signal = this.controller.signal
-
-      // 超时定时器
-      const timer = setTimeout(() => {
-        this.controller.abort()
-      }, timeout)
-
-      try {
-        const res = await fetch(url, { signal })
-        // if (!res.ok) throw new Error("图片请求失败");
-        const blob = await res.blob()
-        this.blobUrl = URL.createObjectURL(blob)
-      } catch (err) {
-        // if (err.name === "AbortError") {
-        //   console.warn("图片加载超时，已中止请求");
-        // } else {
-        //   console.error("图片加载失败:", err);
-        // }
-        this.blobUrl = '' // 触发 el-image error slot
-      } finally {
-        clearTimeout(timer)
+    cleanup () {
+      if (this.timer) {
+        clearTimeout(this.timer)
+        this.timer = null
       }
+      if (this.preloader) {
+        this.preloader.onload = null
+        this.preloader.onerror = null
+        this.preloader = null
+      }
+    },
+    settle (src) {
+      if (!this.loading) return
+      this.cleanup()
+      this.loading = false
+      if (src) {
+        this.displaySrc = src
+        this.loaded = true
+      }
+    },
+    // Use Image() preload rather than fetch — fetch on a cross-origin image without CORS
+    // headers logs an uncatchable error in the console; <img> loads do not.
+    loadImage (url, timeout) {
+      this.timer = setTimeout(() => this.settle(null), timeout)
+      const img = new Image()
+      this.preloader = img
+      img.onload = () => this.settle(url)
+      img.onerror = () => this.settle(null)
+      img.src = url
     }
   }
 }

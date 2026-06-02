@@ -147,7 +147,7 @@
                   <template v-slot="scope">
                     <div style="display: flex;justify-content: center;align-items: center">
                       <el-image
-                        v-if="scope.row.asset.type === 2"
+                        v-if="scope.row.asset?.type === 2"
                         style="width: 100px; height: 75px; border-radius: 4px;"
                         fit="cover"
                         :src="getVideoSnapshotUrl(scope.row.asset_display_url)"
