@@ -5,73 +5,74 @@
     </div>
     <div class="article-container">
       <!-- 文章顶部 -->
-      <div class="article-header-container">
-        <div class="text-center" id="page-image" v-if="article.page_image">
+      <header class="article-header">
+        <div class="article-cover" v-if="article.page_image">
           <video
               v-if="isVideo(article.page_image)"
-              class="article-page-video"
+              class="article-cover-media"
               loop
               muted
               autoplay
-              style="max-width: 200px; max-height: 200px"
           >
             <source :src="article.page_image" type="video/mp4">
             您的浏览器不支持视频标签。
           </video>
           <el-image
               v-else
-              fit="contain"
+              class="article-cover-media"
+              fit="cover"
               :preview-src-list="[article.page_image]"
               :close-on-press-escape="true"
               :hideOnClickModal="true"
-              style="max-width: 200px; max-height: 200px"
               :src="article.page_image"
           ></el-image>
         </div>
-        <div class="article-title-box">
-          <div>
-            <h4>{{ article.title }}</h4>
-            <h6>{{ article.subtitle }}</h6>
-            <div class="header">
-              <router-link :to="`/user/profile?uid=${article.user?.uid}`" class="author-link">
-                <i class="fas fa-user"></i>{{ article.user?.name ?? 'null' }}
-              </router-link>
-              <template v-if="article.tags && article.tags.length">
-                <i class="fas fa-tags"></i>
-                <router-link
-                    v-for="(tag, index) in article.tags"
-                    :key="index"
-                    :to="`/tag/${tag.tag}`"
-                    class="tag-link"
-                >
-                  {{ tag.tag }}
-                </router-link>
-              </template>
-            </div>
+        <div class="article-header-info">
+          <h4 class="article-title">{{ article.title }}</h4>
+          <p class="article-subtitle" v-if="article.subtitle">{{ article.subtitle }}</p>
+          <div class="article-meta">
+            <router-link
+                :to="`/user/profile?uid=${article.user?.uid}`"
+                class="meta-item author-link"
+            >
+              <i class="fas fa-user"></i>
+              <span>{{ article.user?.name ?? 'null' }}</span>
+            </router-link>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span class="meta-item">
+              <el-icon><Clock/></el-icon>
+              <span>{{ formatDate(article.published_at) }}</span>
+            </span>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <el-link
+                :href="`#article-comment-area`"
+                class="meta-item comment-link"
+                :underline="false"
+            >
+              <el-icon><Comment/></el-icon>
+              <span>{{ article.comment_count ?? 0 }}</span>
+            </el-link>
+            <span class="meta-dot" aria-hidden="true">·</span>
+            <span class="meta-item">
+              <i class="fas fa-book-open"></i>
+              <span>{{ wordCount }} 字 / {{ readingTime }} 分钟</span>
+            </span>
           </div>
-          <div>
-            <div>
-              <el-icon>
-                <Clock/>
-              </el-icon>
-              {{ formatDate(article.published_at) }}
-              <el-link :href="`#article-comment-area`" class="comment-link">
-                <el-icon>
-                  <Comment/>
-                </el-icon>
-                {{ article.comment_count ?? 0 }}
-              </el-link>
-            </div>
-          </div>
-          <div>
-            本文 <b>{{ wordCount }}</b> 个字，阅读需要大约
-            <b>{{ readingTime }}</b> 分钟
+          <div class="article-tags" v-if="article.tags && article.tags.length">
+            <router-link
+                v-for="(tag, index) in article.tags"
+                :key="index"
+                :to="`/tag/${tag.tag}`"
+                class="tag-pill"
+            >
+              # {{ tag.tag }}
+            </router-link>
           </div>
         </div>
-      </div>
+      </header>
       <div class="article container">
         <a
-            v-if="article.id && userInfo.is_admin"
+            v-if="article.id && userInfo.is_admin === 1"
             class="article-edit-link"
             :href="`${apiHost}/dashboard/articles/${article.id}/edit`"
             target="_blank"
@@ -308,37 +309,116 @@ export default {
   object-fit: contain;
 }
 
-.article-header-container {
+.article-header {
   display: flex;
-  justify-content: center;
-  padding-top: 10px;
-  gap: 10px;
+  gap: 24px;
   align-items: center;
+  padding: 8px 4px 20px;
+  border-bottom: 1px solid currentColor;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
-.article-title-box {
-  width: 100%;
+.article-cover {
+  flex: 0 0 auto;
 }
 
-.article-title-box h4 {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+.article-cover-media {
+  display: block;
+  width: 168px;
+  height: 168px;
+  border-radius: 12px;
+  overflow: hidden;
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
-.article-title-box h6 {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 1rem;
+.article-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.author-link, .tag-link, .comment-link {
-  color: rgb(17, 59, 85);
+.article-title {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+}
+
+.article-subtitle {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 400;
+  line-height: 1.5;
+  opacity: 0.7;
+  word-break: break-word;
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+.article-meta .meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
   text-decoration: none;
-  margin-right: 10px;
 }
 
-.author-link:hover, .tag-link:hover, .comment-link:hover {
+.article-meta .meta-dot {
+  user-select: none;
+  opacity: 0.5;
+}
+
+.article-meta .el-icon {
+  font-size: 0.95em;
+}
+
+.author-link,
+.comment-link {
+  color: inherit;
+}
+
+.author-link:hover,
+.comment-link:hover {
+  opacity: 0.85;
   text-decoration: underline;
+}
+
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: inherit;
+  background-color: rgba(127, 127, 127, 0.12);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.tag-pill:hover {
+  background-color: rgba(127, 127, 127, 0.22);
+  transform: translateY(-1px);
 }
 
 .article.container {
@@ -384,10 +464,6 @@ export default {
   overflow-wrap: break-word;
 }
 
-#page-image {
-  margin-top: 20px;
-}
-
 /* 响应式设计 */
 @include mobile {
   .article-box {
@@ -402,6 +478,61 @@ export default {
   }
   .article-page-left {
     display: none;
+  }
+
+  .article-container {
+    padding: 14px;
+  }
+
+  .article-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+    gap: 14px;
+    padding: 4px 0 14px;
+  }
+
+  .article-cover {
+    align-self: center;
+  }
+
+  .article-cover-media {
+    width: 132px;
+    height: 132px;
+    border-radius: 10px;
+  }
+
+  .article-header-info {
+    gap: 8px;
+  }
+
+  .article-title {
+    font-size: 1.35rem;
+    line-height: 1.35;
+  }
+
+  .article-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .article-meta {
+    font-size: 0.82rem;
+    gap: 4px 8px;
+  }
+
+  .article-meta .meta-dot {
+    display: none;
+  }
+
+  .tag-pill {
+    font-size: 0.75rem;
+    padding: 1px 8px;
+  }
+
+  .article-edit-link {
+    top: 6px;
+    right: 8px;
+    font-size: 0.82rem;
   }
 }
 
