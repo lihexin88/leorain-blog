@@ -2,7 +2,7 @@
   <div>
     <div class="executor-container">
       <div class="code-area">
-        <code-area ref="codeInput" :isVim="isVim" id="code-area" :show-run="true" @executor_submit="executor_submit" type=1 :language="language" @executor_changes="executor_changes" :value="code"></code-area>
+        <code-area ref="codeInput" :isVim="isVim" id="code-area" :show-run="!isHtml" @executor_submit="executor_submit" type=1 :language="language" @executor_changes="executor_changes" :value="code"></code-area>
       </div>
       <div class="result-area">
         <code-area v-if="!isHtml" id="result-textarea" :show-run="false" type=2 :value="result"></code-area>
