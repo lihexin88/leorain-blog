@@ -298,6 +298,11 @@
 <script>
 export default {
   name: 'ToolCpu',
+  tdk: {
+    title: 'CPU 十位全加器电路模拟器',
+    description: '在线模拟 CPU 十位全加器物理电路,演示加法与减法运算过程及数据流转。',
+    keywords: '全加器, CPU 模拟, 数字电路, 二进制加法, 在线工具'
+  },
   data () {
     // 初始化10个全加器
     const initAdders = () => {

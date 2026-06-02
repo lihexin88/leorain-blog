@@ -7,6 +7,11 @@ import { Crop, Edit, RefreshLeft, ZoomIn, ZoomOut } from '@element-plus/icons-vu
 
 export default {
   name: 'ToolMedia',
+  tdk: {
+    title: '在线音视频/图片处理工具',
+    description: '在线处理图片与视频,支持格式转换、压缩、裁剪、分辨率调整等,基于 FFmpeg 浏览器即开即用。',
+    keywords: '在线音视频处理, 在线图片处理, 格式转换, 视频压缩, FFmpeg, 在线工具'
+  },
   components: {
     Crop,
     Edit,

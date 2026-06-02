@@ -151,6 +151,11 @@
 
 <script>
 export default {
+  tdk: {
+    title: '在线进制转换工具',
+    description: '在线进行二进制、八进制、十进制、十六进制等多种进制之间的相互转换。',
+    keywords: '进制转换, 二进制, 八进制, 十进制, 十六进制, 在线工具'
+  },
   data () {
     return {
       radixData: {

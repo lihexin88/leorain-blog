@@ -42,6 +42,50 @@ import 'codemirror/mode/htmlmixed/htmlmixed'
 export default {
   name: 'UniversalExecutor',
   components: { Executor: CodeExecutor },
+  tdk () {
+    const map = {
+      php: {
+        title: '在线 PHP 运行工具',
+        description: '在线运行 PHP 代码，支持 PHP 8.2，浏览器即开即用。',
+        keywords: 'PHP 在线运行, PHP 在线编译, PHP 8.2, 在线代码执行'
+      },
+      golang: {
+        title: '在线 Go 运行工具',
+        description: '在线运行 Go 代码，支持 Go 1.20，浏览器即开即用。',
+        keywords: 'Go 在线运行, Golang 在线编译, Go 1.20, 在线代码执行'
+      },
+      java: {
+        title: '在线 Java 运行工具',
+        description: '在线运行 Java 代码，支持 OpenJDK 17,浏览器即开即用。',
+        keywords: 'Java 在线运行, Java 在线编译, OpenJDK 17, 在线代码执行'
+      },
+      clang: {
+        title: '在线 C 运行工具',
+        description: '在线运行 C 代码,支持 GCC 11,浏览器即开即用。',
+        keywords: 'C 在线运行, C 在线编译, GCC, 在线代码执行'
+      },
+      cpp: {
+        title: '在线 C++ 运行工具',
+        description: '在线运行 C++ 代码,支持 g++,浏览器即开即用。',
+        keywords: 'C++ 在线运行, C++ 在线编译, g++, 在线代码执行'
+      },
+      python: {
+        title: '在线 Python 运行工具',
+        description: '在线运行 Python 代码,支持 Python 3.10,浏览器即开即用。',
+        keywords: 'Python 在线运行, Python 在线编译, Python 3.10, 在线代码执行'
+      },
+      html: {
+        title: '在线 HTML 预览工具',
+        description: '在线编写并实时预览 HTML 代码,浏览器即开即用。',
+        keywords: 'HTML 在线预览, HTML 在线编辑, 在线代码执行'
+      }
+    }
+    return map[this.selectedLangKey] || {
+      title: '在线代码运行工具',
+      description: '在线运行多语言代码,浏览器即开即用。',
+      keywords: '在线代码运行, 在线编译, 多语言'
+    }
+  },
   props: {
     initialCode: {
       type: String,

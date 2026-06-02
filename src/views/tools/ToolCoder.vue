@@ -114,6 +114,15 @@ import { ref, computed, nextTick } from 'vue'
 import CryptoJS from 'crypto-js'
 import QRCode from 'qrcode'
 import { ElMessage } from 'element-plus'
+import { useTDK } from '@/utils/tdk'
+import { useConfigStore } from '@/store/config'
+
+const configStore = useConfigStore()
+useTDK(() => ({
+  title: '开发工具箱 - ' + (configStore.config.title || 'leorain'),
+  description: '开发者常用字符串处理工具:HTML 文本提取、URL/Base64 编解码、加密哈希、二维码生成、随机密码等。',
+  keywords: '开发工具, 字符串处理, URL 编码, Base64, 加密, 二维码, 随机密码, 在线工具'
+}))
 
 const inputText = ref('')
 const outputText = ref('')

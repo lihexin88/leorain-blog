@@ -4,6 +4,11 @@ import * as THREE from 'three'
 
 export default {
   name: 'ToolFish',
+  tdk: {
+    title: '在线钓鱼小游戏',
+    description: '在线趣味钓鱼小游戏,鼠标交互、动画效果丰富,休闲解压。',
+    keywords: '在线钓鱼, 在线小游戏, 休闲游戏, 在线工具'
+  },
   data () {
     return {
       // 弹窗显示状态
