@@ -402,7 +402,13 @@ export default {
     }
 
     .article-media {
-      transform: scale(1.1);
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transform: scale(1);
       filter: saturate(1.08);
     }
     .article-body {
@@ -481,15 +487,23 @@ export default {
 }
 
 .article-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 140px;
+  max-width: 140px;
+  height: 140px;
+  max-height: 140px;
+  object-fit: contain;
+  object-position: top right;
   border-radius: 14px;
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.4s ease;
-  transform-origin: center;
+  transform-origin: top right;
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: auto;
+  bottom: auto;
   z-index: 0;
   transform: scale(1);
 }
