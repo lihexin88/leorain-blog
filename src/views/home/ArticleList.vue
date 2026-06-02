@@ -406,7 +406,7 @@ export default {
       max-width: 100%;
       height: 100%;
       max-height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       object-position: center;
       transform: scale(1);
       filter: saturate(1.08);
@@ -488,17 +488,20 @@ export default {
 
 .article-media {
   width: 140px;
-  max-width: 140px;
   height: 140px;
+  max-width: 140px;
   max-height: 140px;
   object-fit: contain;
   object-position: top right;
-  border-radius: 14px;
+  overflow: hidden;
+  background-color: var(--article-item-bg-transparent, rgba(255, 255, 255, 0.08));
   transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    max-width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    max-height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.4s ease;
-  transform-origin: top right;
+  transform-origin: center;
   position: absolute;
   top: 0;
   right: 0;
@@ -517,7 +520,7 @@ export default {
   flex-direction: column;
   flex: 1;
   padding: 8px;
-  background: linear-gradient(to top, var(--article-item-bg) 0%, var(--article-item-bg-transparent) 60%, transparent 100%);
+  background: linear-gradient(to top, var(--article-item-bg) 0%, var(--article-item-bg-transparent) 30%, transparent 50%);
   border-radius: 0 0 14px 14px;
   margin-top: auto;
   color: #fff;
@@ -631,6 +634,14 @@ export default {
   color: var(--muted-text-color, grey);
   font-size: .8em;
   transition: color 0.3s ease;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+
+  .float-right {
+    margin-left: auto;
+  }
 
   i {
     transition: transform 0.3s ease,
