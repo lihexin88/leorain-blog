@@ -70,6 +70,15 @@
         </div>
       </div>
       <div class="article container">
+        <a
+            v-if="article.id && userInfo.is_admin"
+            class="article-edit-link"
+            :href="`${apiHost}/dashboard/articles/${article.id}/edit`"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+          [编辑]
+        </a>
         <div class="row container-text-overflow-wrap article-content-container">
           <div class="article-content">
             <div v-if="article.is_markdown">
@@ -116,6 +125,8 @@ import { useConfigStore } from '@/store/config'
 import moment from 'moment'
 import { articleApi } from '@/apis'
 import { Clock, Comment } from '@element-plus/icons-vue'
+import { mapState } from 'pinia'
+import { useUserStore } from '@/store/user'
 
 export default {
   name: 'ArticleDetail',
@@ -124,6 +135,12 @@ export default {
       title: this.article.title ? `${this.article.title}` : '文章详情',
       description: this.article.subtitle || (this.article.content ? this.article.content.substring(0, 100) : ''),
       keywords: this.article.tags ? this.article.tags.map(t => t.tag).join(',') : ''
+    }
+  },
+  computed: {
+    ...mapState(useUserStore, { userInfo: 'user' }),
+    apiHost () {
+      return process.env.API_HOST || ''
     }
   },
   components: {
@@ -321,6 +338,24 @@ export default {
 }
 
 .author-link:hover, .tag-link:hover, .comment-link:hover {
+  text-decoration: underline;
+}
+
+.article.container {
+  position: relative;
+}
+
+.article-edit-link {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.9rem;
+  color: rgb(17, 59, 85);
+  text-decoration: none;
+  z-index: 1;
+}
+
+.article-edit-link:hover {
   text-decoration: underline;
 }
 
