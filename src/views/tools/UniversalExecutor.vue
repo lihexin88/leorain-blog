@@ -71,8 +71,7 @@ export default {
           versions: [
             { version: 82, name: '8.2' }
           ],
-          defaultVersion: { version: 82, name: '8.2' },
-          sample: ''
+          defaultVersion: { version: 82, name: '8.2' }
         },
         golang: {
           label: 'Go',
@@ -81,17 +80,7 @@ export default {
           versions: [
             { version: 120, name: '1.20' }
           ],
-          defaultVersion: { version: 120, name: '1.20' },
-          sample: `package main
-
-import (
-    "fmt"
-    "runtime"
-)
-
-func main() {
-    fmt.Printf("Go version: %s\n", runtime.Version())
-}`
+          defaultVersion: { version: 120, name: '1.20' }
         },
         java: {
           label: 'Java',
@@ -100,42 +89,21 @@ func main() {
           versions: [
             { version: 17, name: 'openjdk:17' }
           ],
-          defaultVersion: { version: 17, name: 'openjdk:17' },
-          sample: `public class Main {
-    public static void main(String[] args) {
-        String jdkVersion = System.getProperty("java.version");
-        System.out.println("jdk version: " + jdkVersion);
-    }
-}`
+          defaultVersion: { version: 17, name: 'openjdk:17' }
         },
         clang: {
           label: 'C',
           endpoint: 'clang',
           mime: 'text/x-csrc',
           versions: [{ version: 11, name: 'gcc 11' }],
-          defaultVersion: { version: 11, name: 'gcc 11' },
-          sample: `#include <stdio.h>
-
-int main() {
-    system("gcc --version");
-    return 0;
-}`
+          defaultVersion: { version: 11, name: 'gcc 11' }
         },
         cpp: {
           label: 'C++',
           endpoint: 'cpp',
           mime: 'text/x-c++src',
           versions: [{ version: 11, name: 'g++' }],
-          defaultVersion: { version: 11, name: 'g++' },
-          sample: `#include <iostream>
-
-int main() {
-    std::cout << "GCC version: "
-              << __GNUC__ << "."
-              << __GNUC_MINOR__ << "."
-              << __GNUC_PATCHLEVEL__ << std::endl;
-    return 0;
-}`
+          defaultVersion: { version: 11, name: 'g++' }
         },
         python: {
           label: 'Python',
@@ -144,23 +112,14 @@ int main() {
           versions: [
             { version: 310, name: '3.10' }
           ],
-          defaultVersion: { version: 310, name: '3.10' },
-          sample: `from platform import python_version
-print(python_version())`
+          defaultVersion: { version: 310, name: '3.10' }
         },
         html: {
           label: 'HTML',
           endpoint: 'html',
           mime: 'text/html',
           versions: [],
-          defaultVersion: null,
-          sample: `<!DOCTYPE html>
-<html>
-<body>
-<h1>Hello World</h1>
-<p>This is a paragraph.</p>
-</body>
-</html>`
+          defaultVersion: null
         }
       }
     }
@@ -254,12 +213,8 @@ print(python_version())`
       this.language = cfg.mime
       this.versions = cfg.versions
       this.currentVersion = cfg.defaultVersion
-      this.code = cfg.sample || ''
-      if (this.selectedLangKey === 'html') {
-        this.result = this.code
-      } else {
-        this.result = ''
-      }
+      this.code = ''
+      this.result = ''
 
       // Update URL with language parameter
       const url = new URL(window.location)
