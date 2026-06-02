@@ -172,6 +172,11 @@ import { mapActions } from 'pinia'
 
 export default {
   name: 'ToolLottery',
+  tdk: {
+    title: '在线抽奖工具',
+    description: '在线抽奖小工具,支持自定义奖项与名单,适合活动、聚会、随机抽签。',
+    keywords: '在线抽奖, 抽奖工具, 随机抽签, 在线工具'
+  },
   components: {
     UserItems
   },

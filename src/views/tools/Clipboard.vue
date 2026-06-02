@@ -59,6 +59,11 @@ import ClipboardTable from './particals/ClipboardTable.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
+  tdk: {
+    title: '在线剪切板同步工具',
+    description: '在线公共/个人剪切板,跨设备同步文字与图片,解决手机与电脑剪切板同步问题。',
+    keywords: '在线剪切板, 剪切板同步, 跨设备同步, 在线工具'
+  },
   components: { MarkdownParse, ClipboardTable },
   data () {
     return {

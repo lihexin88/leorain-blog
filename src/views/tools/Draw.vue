@@ -151,6 +151,11 @@ import {
 import assetsApi from '@/apis/assets'
 
 export default {
+  tdk: {
+    title: '在线画板工具',
+    description: '在线创建和管理画布,支持手绘、保存、删除多张画布。',
+    keywords: '在线画板, 在线绘图, 画布, 在线工具'
+  },
   components: {},
   data () {
     return {

@@ -43,6 +43,11 @@ const LARGE_LINE_COUNT = 5000
 const SOURCE_STORAGE_KEY = 'json-executor-source-text'
 
 export default {
+  tdk: {
+    title: '在线 JSON 编辑工具',
+    description: '在线 JSON 格式化、压缩、转义、去除转义,支持大数据量,浏览器即开即用。',
+    keywords: 'JSON 在线编辑, JSON 格式化, JSON 压缩, JSON 转义, 在线工具'
+  },
   data () {
     return {
       sourceEditorInstance: null,
