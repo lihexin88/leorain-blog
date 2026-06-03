@@ -2,11 +2,11 @@ import moment from 'moment/moment'
 import confetti from 'canvas-confetti'
 
 export function mediaType (fileName) {
-  if (fileName.match(/\.(jpg|jpeg|png|gif)$/)) {
+  if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
     return 'image'
-  } else if (fileName.match(/\.(mp4|avi|mov|wmv|flv)$/)) {
+  } else if (fileName.toLowerCase().match(/\.(mp4|avi|mov|wmv|flv)$/)) {
     return 'video'
-  } else if (fileName.match(/\.(mp3|wav|ogg)$/)) {
+  } else if (fileName.toLowerCase().match(/\.(mp3|wav|ogg)$/)) {
     return 'audio'
   } else {
     return 'file'
