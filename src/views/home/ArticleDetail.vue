@@ -72,7 +72,7 @@
       </header>
       <div class="article container">
         <a
-            v-if="article.id && userInfo.is_admin === 1"
+            v-if="article.id && userInfo?.is_admin === 1"
             class="article-edit-link"
             :href="`${apiHost}/dashboard/articles/${article.id}/edit`"
             target="_blank"
