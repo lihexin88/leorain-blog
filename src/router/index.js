@@ -39,6 +39,11 @@ const routes = [
         component: () => import('../views/user/UserRegister.vue')
       },
       {
+        path: 'password/reset',
+        name: 'PasswordResetRequest',
+        component: () => import('../views/user/PasswordResetRequest.vue')
+      },
+      {
         path: 'login',
         name: 'Login',
         redirect: '/'
@@ -183,6 +188,11 @@ const routes = [
         path: 'auth',
         name: 'Auth',
         children: [
+          {
+            path: 'reset_password',
+            name: 'PasswordReset',
+            component: () => import('../views/user/PasswordReset.vue')
+          },
           {
             path: 'github',
             name: 'GitHub',
