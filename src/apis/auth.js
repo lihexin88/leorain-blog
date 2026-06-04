@@ -9,6 +9,12 @@ const authApi = {
   },
   getConfig () {
     return api.get('/auth/config')
+  },
+  sendResetPasswordEmail (params) {
+    return api.post('/auth/send_reset_password_email', params)
+  },
+  resetPassword (params) {
+    return api.post('/auth/reset_password', params)
   }
 }
 
