@@ -213,6 +213,7 @@ export default {
     },
     validateData () {
       if (!this.guest?.name) {
+        this.showDialog = true
         this.$message.error('用户名不能为空')
         return false
       }
