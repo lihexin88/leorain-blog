@@ -14,21 +14,18 @@
         >
           <!-- 封面媒体 -->
           <div>
-            <a
-              v-if="article.page_image"
-              class="article-item-link"
-              :title="article.slug"
-            >
+            <a v-if="article.page_image" class="article-item-link" :title="article.slug">
               <img
                 v-if="mediaType(article.page_image) === 'image'"
                 class="article-media"
                 :alt="article.slug"
                 :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
-              >
+              />
               <video
                 v-else-if="mediaType(article.page_image) === 'video'"
                 class="article-media"
-                muted autoplay
+                muted
+                autoplay
                 playsinline="true"
                 webkit-playsinline="true"
                 :src="article.page_image"
@@ -38,14 +35,16 @@
                 class="article-media"
                 :alt="article.slug"
                 src="https://images.leorain.cn/icons/assets/pure_article.png"
-              >
+              />
             </a>
-            <a v-else class="article-item-link"
-               @click="openArticle(article.slug)"
-            >
-              <img v-if="article.page_image !== undefined" class="article-media" :alt="article.slug"
-                   src="https://images.leorain.cn/icons/assets/pure_article.png"
-                   data-holder-rendered="true">
+            <a v-else class="article-item-link" @click="openArticle(article.slug)">
+              <img
+                v-if="article.page_image !== undefined"
+                class="article-media"
+                :alt="article.slug"
+                src="https://images.leorain.cn/icons/assets/pure_article.png"
+                data-holder-rendered="true"
+              />
             </a>
           </div>
 
@@ -84,20 +83,12 @@
                 <i class="fas fa-user info-clickable" @click="go_user(article.user.uid)">
                   {{ article.user.name ?? 'null' }}
                 </i>
-                <i
-                  :title="moment(article.published_at).format('Y-M-D H:m:s')"
-                  :id="index"
-                  class="fas fa-clock"
-                >
-                  {{ getFriendlyDate(moment(article.published_at).format("Y-M-D H:m:s")) }}
+                <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
+                  {{ getFriendlyDate(moment(article.published_at).format('Y-M-D H:m:s')) }}
                 </i>
                 <i class="fas fa-eye">{{ article.view_count }}</i>
                 <i class="fas fa-comments">{{ article.comments_count }}</i>
-                <a
-                  @click="openArticle(article.slug)"
-                  class="float-right info-clickable"
-                  :title="article.slug"
-                >
+                <a @click="openArticle(article.slug)" class="float-right info-clickable" :title="article.slug">
                   More
                   <i class="fas fa-chevron-right"></i>
                 </a>
@@ -124,15 +115,11 @@
 </template>
 
 <script>
-import {
-  getFriendlyDate,
-  mediaType,
-  paginateLayouts,
-  syncUrlPaginate
-} from '@/utils/helpers'
+import { getFriendlyDate, mediaType, paginateLayouts, syncUrlPaginate } from '@/utils/helpers'
 import moment from 'moment'
 import anime from 'animejs'
 import { articleApi } from '@/apis'
+import { isMobile } from '@xterm/xterm/src/vs/base/common/platform'
 
 export default {
   computed: {
@@ -220,56 +207,60 @@ export default {
       window.location.href = '/tag/' + tag
     },
     load () {
-      articleApi.getArticles({
-        page: this.page,
-        per_page: this.per_page
-      }).then((response) => {
-        this.articles = response.data
-        this.currentRotations = response.data.map(() => ({ x: 0, y: 0 }))
-        this.total = response.total
-        if (this.page === 1) {
-          this.syncUrlPaginate({
-            page: null,
-            per_page: null
-          })
-        } else {
-          this.syncUrlPaginate({
-            page: this.page,
-            per_page: this.per_page
-          })
-        }
-        window.scrollTo({ top: 0 })
-        this.$nextTick(() => {
-          anime.remove('.article-item, .article-item-link, .article-body, .article-tag, .info i, .info a')
-          anime({
-            targets: '.article-item',
-            scale: [0.94, 1],
-            opacity: [0, 1],
-            translateY: [46, 0],
-            rotateX: [10, 0],
-            rotateZ: [2, 0],
-            delay: anime.stagger(90),
-            duration: 900,
-            easing: 'easeOutCubic'
-          })
-          anime({
-            targets: '.article-item-link, .article-body',
-            opacity: [0, 1],
-            translateY: [18, 0],
-            delay: anime.stagger(70, { start: 180 }),
-            duration: 650,
-            easing: 'easeOutQuad'
-          })
-          anime({
-            targets: '.article-tag, .info i, .info a',
-            opacity: [0, 1],
-            translateY: [10, 0],
-            delay: anime.stagger(40, { start: 320 }),
-            duration: 420,
-            easing: 'easeOutQuad'
+      articleApi
+        .getArticles({
+          page: this.page,
+          per_page: this.per_page
+        })
+        .then(response => {
+          this.articles = response.data
+          this.currentRotations = response.data.map(() => ({ x: 0, y: 0 }))
+          this.total = response.total
+          if (this.page === 1) {
+            this.syncUrlPaginate({
+              page: null,
+              per_page: null
+            })
+          } else {
+            this.syncUrlPaginate({
+              page: this.page,
+              per_page: this.per_page
+            })
+          }
+          window.scrollTo({ top: 0 })
+          this.$nextTick(() => {
+            const isMobileDevice = window.matchMedia('(max-width: 768px)').matches
+            if (isMobileDevice) return
+            anime.remove('.article-item, .article-item-link, .article-body, .article-tag, .info i, .info a')
+            anime({
+              targets: '.article-item',
+              scale: [0.94, 1],
+              opacity: [0, 1],
+              translateY: [46, 0],
+              rotateX: [10, 0],
+              rotateZ: [2, 0],
+              delay: anime.stagger(90),
+              duration: 900,
+              easing: 'easeOutCubic'
+            })
+            anime({
+              targets: '.article-item-link, .article-body',
+              opacity: [0, 1],
+              translateY: [18, 0],
+              delay: anime.stagger(70, { start: 180 }),
+              duration: 650,
+              easing: 'easeOutQuad'
+            })
+            anime({
+              targets: '.article-tag, .info i, .info a',
+              opacity: [0, 1],
+              translateY: [10, 0],
+              delay: anime.stagger(40, { start: 320 }),
+              duration: 420,
+              easing: 'easeOutQuad'
+            })
           })
         })
-      })
     }
   },
   watch: {
@@ -299,7 +290,7 @@ export default {
   width: 100%;
   max-width: 100%;
 
-  @media screen and (max-aspect-ratio: 1/.7) {
+  @media screen and (max-aspect-ratio: 1/0.7) {
     padding-left: 3px !important;
     padding-right: 3px !important;
   }
@@ -327,9 +318,11 @@ export default {
   :deep(.el-card__body) {
     overflow: hidden;
     border-radius: 15px;
-    background-color: var(--article-item-bg, rgba(255,255,255,0.81));
+    background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
     color: var(--card-text-color, #111827);
-    transition: background-color 0.35s ease, color 0.35s ease;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
 
   padding: 5px !important;
@@ -342,13 +335,19 @@ export default {
   isolation: isolate;
   transform-style: preserve-3d;
   border: 1px solid var(--article-border, rgba(255, 255, 255, 0.55));
-  background-color: var(--article-item-bg, rgba(255,255,255,0.81));
+  background-color: var(--article-item-bg, rgba(255, 255, 255, 0.81));
   background-clip: padding-box;
   color: var(--card-text-color, #111827);
   margin: 0;
   border-radius: 18px;
-  box-shadow: var(--article-box-shadow, 0 10px 30px rgba(99, 102, 241, 0.12), 0 16px 34px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.55));
-  transition: background-color 0.35s ease,
+  box-shadow: var(
+    --article-box-shadow,
+    0 10px 30px rgba(99, 102, 241, 0.12),
+    0 16px 34px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55)
+  );
+  transition:
+    background-color 0.35s ease,
     color 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease;
@@ -401,25 +400,27 @@ export default {
       animation: rotateBorder 2s linear infinite;
     }
 
-    .article-media {
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
-      max-height: 100%;
-      object-fit: cover;
-      object-position: center;
-      transform: scale(1);
-      filter: saturate(1.08);
-      transition-delay: 250ms;
-    }
-    .article-body {
-      background: transparent;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    }
-    .article-title,
-    .article-description,
-    .article-extra {
-      transform: translateY(150px);
+    @include pc {
+      .article-media {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transform: scale(1);
+        filter: saturate(1.08);
+        transition-delay: 250ms;
+      }
+      .article-body {
+        background: transparent;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+      .article-title,
+      .article-description,
+      .article-extra {
+        transform: translateY(150px);
+      }
     }
   }
   @include mobile {
@@ -467,7 +468,8 @@ export default {
 }
 
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -497,7 +499,8 @@ export default {
   overflow: hidden;
   border-radius: 15px;
   background-color: var(--article-item-bg-transparent, rgba(255, 255, 255, 0.08));
-  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+  transition:
+    width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     max-width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     max-height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -522,11 +525,19 @@ export default {
   flex-direction: column;
   flex: 1;
   padding: 8px;
-  background: linear-gradient(to top, var(--article-item-bg) 0%, var(--article-item-bg-transparent) 30%, transparent 50%);
+  background: linear-gradient(
+    to top,
+    var(--article-item-bg) 0%,
+    var(--article-item-bg-transparent) 30%,
+    transparent 50%
+  );
   border-radius: 0 0 14px 14px;
   margin-top: auto;
   color: #fff;
-  transition: background-color 0.35s ease, color 0.35s ease, text-shadow 0.35s ease;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    text-shadow 0.35s ease;
 }
 
 .article-heading {
@@ -542,12 +553,14 @@ export default {
   display: inline-block;
   transform: translateZ(26px);
   text-shadow: 0 8px 22px rgba(99, 102, 241, 0.08);
-  transition: color 0.3s ease, transform .3s ease-in-out;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease-in-out;
 }
 
 .article-description {
-  margin-top: .6em;
-  font-size: .8em;
+  margin-top: 0.6em;
+  font-size: 0.8em;
   height: 40px;
   line-height: 1.4285em;
   color: var(--muted-text-color, #5b6476);
@@ -557,7 +570,10 @@ export default {
   position: relative;
   z-index: 1;
   cursor: pointer;
-  transition: color 0.3s ease, text-shadow 0.3s ease, transform .3s ease-in-out;
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease,
+    transform 0.3s ease-in-out;
   transform: translateZ(18px);
 
   &:hover {
@@ -571,7 +587,7 @@ export default {
   position: relative;
   z-index: 1;
   transform: translateZ(18px);
-  transition: transform .3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 
 .article-tags-wrap {
@@ -589,7 +605,8 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.42);
   color: var(--card-text-color, #4b5563);
   font-weight: 500;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     background 0.3s ease,
     border-color 0.3s ease,
     box-shadow 0.3s ease,
@@ -614,7 +631,8 @@ export default {
     transform: translateZ(36px) scale(1.08) translateY(-2px);
     background: linear-gradient(135deg, rgba(244, 114, 182, 0.36) 0%, rgba(96, 165, 250, 0.34) 100%);
     border-color: transparent;
-    box-shadow: 0 8px 18px rgba(99, 102, 241, 0.16),
+    box-shadow:
+      0 8px 18px rgba(99, 102, 241, 0.16),
       0 4px 10px rgba(236, 72, 153, 0.12);
     color: var(--theme-accent-color, #7c3aed) !important;
   }
@@ -634,7 +652,7 @@ export default {
 
 .info {
   color: var(--muted-text-color, grey);
-  font-size: .8em;
+  font-size: 0.8em;
   transition: color 0.3s ease;
   display: flex;
   flex-wrap: wrap;
@@ -646,7 +664,8 @@ export default {
   }
 
   i {
-    transition: transform 0.3s ease,
+    transition:
+      transform 0.3s ease,
       background 0.3s ease,
       color 0.3s ease,
       box-shadow 0.3s ease;
@@ -663,7 +682,8 @@ export default {
   }
 
   a {
-    transition: transform 0.3s ease,
+    transition:
+      transform 0.3s ease,
       background 0.3s ease,
       color 0.3s ease,
       box-shadow 0.3s ease;
