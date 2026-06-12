@@ -75,7 +75,7 @@ export default {
           tooltip: '开往-友链接力',
           href: 'https://www.travellings.cn/go.html',
           alt: '开往-友链接力',
-          img: 'https://www.travellings.cn/assets/logo.gif'
+          img: 'https://www.travellings.cn/assets/w.png'
         },
         {
           tooltip: '空间穿梭-随机访问BlogsClub成员博客',

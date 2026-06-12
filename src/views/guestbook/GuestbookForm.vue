@@ -112,6 +112,13 @@ export default {
     generate_link_text () {
       this.simplemde.value(this.link_text)
       this.show_replace_tip = false
+      // 设置值后刷新 CodeMirror 布局并聚焦，避免光标坐标失准
+      this.$nextTick(() => {
+        const cm = this.simplemde.codemirror
+        cm.refresh()
+        cm.focus()
+        cm.setCursor(cm.lineCount(), 0)
+      })
     },
     do_submit (apiMethod, body) {
       apiMethod(body).then((response) => {
@@ -171,10 +178,14 @@ export default {
 }
 
 :deep(.CodeMirror-scroll) {
-  margin-top: 25px;
+  margin-top: 0;
+}
+
+:deep(.CodeMirror-lines) {
+  padding-top: 25px;
 }
 
 :deep(.editor-preview-side) {
-  margin-top: 25px;
+  padding-top: 25px;
 }
 </style>
