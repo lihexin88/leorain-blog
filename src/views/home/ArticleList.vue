@@ -2,7 +2,33 @@
   <div class="container list article-list-container" id="container-left">
     <div class="row">
       <div class="article-list">
-        <el-card
+        <!-- 骨架屏占位 -->
+        <template v-if="loading">
+          <div
+            v-for="i in skeletonCount"
+            :key="'skeleton-' + i"
+            class="article-item article-skeleton"
+          >
+            <div class="skeleton-media"></div>
+            <div class="media-body article-body">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-desc"></div>
+              <div class="skeleton-line skeleton-desc skeleton-desc--short"></div>
+              <div class="skeleton-tags">
+                <div class="skeleton-tag"></div>
+                <div class="skeleton-tag"></div>
+              </div>
+              <div class="skeleton-info">
+                <div class="skeleton-dot"></div>
+                <div class="skeleton-dot"></div>
+                <div class="skeleton-dot"></div>
+              </div>
+            </div>
+          </div>
+        </template>
+        <!-- 文章列表 -->
+        <template v-else>
+          <el-card
           v-for="(article, index) in articles"
           class="media article-item pointer"
           @click="handleArticleClick(article.slug, $event)"
@@ -96,6 +122,7 @@
             </div>
           </div>
         </el-card>
+        </template>
       </div>
 
       <div class="pagination-wrap">
@@ -125,6 +152,10 @@ export default {
   computed: {
     moment () {
       return moment
+    },
+    skeletonCount () {
+      if (typeof window === 'undefined') return 9
+      return window.matchMedia('(max-aspect-ratio: 1/1)').matches ? 4 : 9
     }
   },
   props: {},
@@ -137,6 +168,7 @@ export default {
       smallWindowSize: false,
       layout: null,
       articles: [],
+      loading: true,
       currentRotations: [],
       articleTouchState: null,
       lastArticleTouchAt: 0
@@ -207,6 +239,7 @@ export default {
       window.location.href = '/tag/' + tag
     },
     load () {
+      this.loading = true
       articleApi
         .getArticles({
           page: this.page,
@@ -216,6 +249,7 @@ export default {
           this.articles = response.data
           this.currentRotations = response.data.map(() => ({ x: 0, y: 0 }))
           this.total = response.total
+          this.loading = false
           if (this.page === 1) {
             this.syncUrlPaginate({
               page: null,
@@ -712,6 +746,77 @@ export default {
   padding: 10px;
 }
 
+/* 骨架屏占位样式 */
+.article-skeleton {
+  pointer-events: none;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+
+  .skeleton-media {
+    position: absolute;
+    inset: 0;
+    background: var(--skeleton-bg, rgba(148, 163, 184, 0.12));
+    border-radius: 14px;
+  }
+
+  .skeleton-line {
+    border-radius: 6px;
+    background: var(--skeleton-line-bg, rgba(148, 163, 184, 0.18));
+  }
+
+  .skeleton-title {
+    width: 70%;
+    height: 20px;
+    margin-bottom: 10px;
+  }
+
+  .skeleton-desc {
+    width: 100%;
+    height: 14px;
+    margin-bottom: 8px;
+
+    &--short {
+      width: 55%;
+    }
+  }
+
+  .skeleton-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .skeleton-tag {
+    width: 48px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--skeleton-line-bg, rgba(148, 163, 184, 0.18));
+  }
+
+  .skeleton-info {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    align-items: center;
+  }
+
+  .skeleton-dot {
+    width: 32px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--skeleton-line-bg, rgba(148, 163, 184, 0.14));
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .article-item,
   .article-item:hover,
@@ -727,6 +832,10 @@ export default {
 
   .article-item::before {
     opacity: 0 !important;
+  }
+
+  .article-skeleton {
+    animation: none;
   }
 }
 
