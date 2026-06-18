@@ -61,7 +61,7 @@
           <div class="article-tags" v-if="article.tags && article.tags.length">
             <router-link
                 v-for="(tag, index) in article.tags"
-                :key="index"
+                :key="tag.tag"
                 :to="`/tag/${tag.tag}`"
                 class="tag-pill"
             >
@@ -541,7 +541,7 @@ export default {
   img {
     max-width: 100%;
     cursor: pointer;
-    transition: all .3s ease-in-out;
+    transition: transform .3s ease-in-out;
     &:hover{
       scale: 1.02;
     }
@@ -550,7 +550,7 @@ export default {
   video {
     max-width: 100%;
     cursor: pointer;
-    transition: all .3s ease-in-out;
+    transition: transform .3s ease-in-out;
     &:hover{
       scale: 1.02;
     }

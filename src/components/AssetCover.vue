@@ -16,7 +16,7 @@
     </div>
     <div v-else-if="asset.type === 4" class="asset-cover-audio-wrapper" @click="$emit('openDir', asset)">
       <div v-if="asset.children?.length" class="asset-cover-folder-grid">
-        <div v-for="(item,index) in asset.children" :key="index" class="asset-cover-folder-cell">
+        <div v-for="(item,index) in asset.children" :key="item.asset_id" class="asset-cover-folder-cell">
           <el-image style="border-radius: 6px" class="asset-cover-folder-thumb" fit="cover" :src="item.child_thumbnail" />
         </div>
       </div>

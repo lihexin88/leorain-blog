@@ -315,6 +315,17 @@ export default {
         }
       ]
     })
+
+    // Scroll editor into view on mobile when focused (avoids keyboard occlusion)
+    this.simplemde.codemirror.on('focus', () => {
+      this.$nextTick(() => {
+        const editorEl = this.$el.querySelector('.comment-editor-wrapper')
+        if (editorEl) {
+          editorEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      })
+    })
+
     commentApi.getComments({
       commentable_id: this.commentableId,
       commentable_type: this.commentableType,

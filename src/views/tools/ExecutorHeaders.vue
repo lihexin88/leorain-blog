@@ -1,7 +1,7 @@
 <template>
   <div class="executor-header">
     <div class="executor-header-box">
-      <div v-for="(executor,index) in executors" class="executor-header-item" :key="index">
+      <div v-for="(executor,index) in executors" class="executor-header-item" :key="executor">
         <el-button plain :type="is_current(executor.language)" @click="open_page(executor.url)">{{ executor.name }}
         </el-button>
       </div>

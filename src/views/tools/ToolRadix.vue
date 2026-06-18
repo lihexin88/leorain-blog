@@ -132,7 +132,7 @@
             <div v-if="historyList.length === 0" class="empty-history">
               暂无历史记录
             </div>
-            <div v-for="(item, index) in historyList" :key="index" class="history-item">
+            <div v-for="(item, index) in historyList" :key="'history-'+index" class="history-item">
               <div class="history-content">{{ item.content }}</div>
               <div class="history-time">{{ item.time }}</div>
               <div class="history-actions">

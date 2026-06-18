@@ -22,7 +22,7 @@
     <div class="links-layout" :class="{ 'links-layout--single': !hasRssList }">
       <section class="links-main">
         <div class="links-container">
-          <div class="links-item-div" v-for="(link,index) in links" :key="index">
+          <div class="links-item-div" v-for="(link,index) in links" :key="link.id">
             <div style="position: relative" @click="openLink(link.link,link.id)">
               <el-card
                 :body-style="{ paddingLeft: '5px' }"
@@ -79,7 +79,7 @@
                 </div>
               </el-card>
             </div>
-            <div class="links-item-div-tips" @click="preview(link)">预览</div>
+            <div class="links-item-div-tips" role="button" tabindex="0" @click="preview(link)" @keydown.enter="preview(link)">预览</div>
           </div>
         </div>
       </section>
@@ -142,7 +142,7 @@
         </div>
       </template>
       <div style="width: 100%;height: 100%">
-        <iframe style="width: 100%;height: 100%;border: none;border-radius: 5px" :src="preview_link.link"></iframe>
+        <iframe style="width: 100%;height: 100%;border: none;border-radius: 5px" :src="preview_link.link" height="100%"></iframe>
       </div>
     </el-dialog>
   </div>

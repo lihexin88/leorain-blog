@@ -36,7 +36,7 @@
           @touchmove.passive="handleArticleTouchMove(article.slug, $event)"
           @touchend="handleArticleTouchEnd(article.slug, $event)"
           @touchcancel="handleArticleTouchCancel(article.slug)"
-          :key="index"
+          :key="article.slug"
         >
           <!-- 封面媒体 -->
           <div>
@@ -46,6 +46,8 @@
                 class="article-media"
                 :alt="article.slug"
                 :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
+                width="140"
+                height="140"
               />
               <video
                 v-else-if="mediaType(article.page_image) === 'video'"
@@ -55,12 +57,16 @@
                 playsinline="true"
                 webkit-playsinline="true"
                 :src="article.page_image"
+                width="140"
+                height="140"
               ></video>
               <img
                 v-else-if="article.page_image !== undefined"
                 class="article-media"
                 :alt="article.slug"
                 src="https://images.leorain.cn/icons/assets/pure_article.png"
+                width="140"
+                height="140"
               />
             </a>
             <a v-else class="article-item-link" @click="openArticle(article.slug)">
@@ -70,13 +76,15 @@
                 :alt="article.slug"
                 src="https://images.leorain.cn/icons/assets/pure_article.png"
                 data-holder-rendered="true"
+                width="140"
+                height="140"
               />
             </a>
           </div>
 
           <!-- 文章内容 -->
           <div class="media-body article-body">
-            <div class="media-heading article-heading" @click="openArticle(article.slug)">
+            <div class="media-heading article-heading" role="button" tabindex="0" @click="openArticle(article.slug)" @keydown.enter="openArticle(article.slug)">
               <a :title="article.title">
                 <span class="article-title">{{ article.title }}</span>
               </a>
@@ -96,7 +104,7 @@
                 <el-tag
                   v-for="(tag, tagIndex) in article.tags"
                   class="article-tag"
-                  :key="tagIndex"
+                  :key="tag.tag"
                   @click="open_tag(tag.tag)"
                   :title="tag.tag"
                   type="info"
@@ -436,13 +444,7 @@ export default {
 
     @include pc {
       .article-media {
-        width: 100%;
-        max-width: 100%;
-        height: 100%;
-        max-height: 100%;
-        object-fit: cover;
-        object-position: center;
-        transform: scale(1);
+        transform: scale(1.15);
         filter: saturate(1.08);
         transition-delay: 250ms;
       }
@@ -534,12 +536,9 @@ export default {
   border-radius: 15px;
   background-color: var(--article-item-bg-transparent, rgba(255, 255, 255, 0.08));
   transition:
-    width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    max-width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    max-height 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.4s ease;
+  will-change: transform, filter;
   transform-origin: center;
   position: absolute;
   top: 0;

@@ -33,7 +33,7 @@
                          @click="openExistingLottery(scope.row)">刮开
               </el-button>
               <el-button v-else-if="scope.row.type === 'fish'" type="success" size="small"
-                         @click="exchange(scope.row.id)">兑换
+                         :loading="exchanging" @click="exchange(scope.row.id)">兑换
               </el-button>
             </template>
             <span v-else>{{ scope.row.status_display }}</span>
@@ -110,6 +110,7 @@ export default {
       pagination: null,
       currentPage: 1,
       loading: false,
+      exchanging: false,
       lotteryModalVisible: false,
       modalTicket: null,
       currentLotteryUserItemId: null,
@@ -156,17 +157,26 @@ export default {
       this.fetchUserItems(newPage)
     },
     exchange (userItemId) {
-      userApi.exchangeUserItem(userItemId)
-        .then(() => {
-          this.$message.success('兑换成功!')
-          this.fetchUserItems(this.currentPage)
-          // 如果父组件有刷新积分的方法可以emit
-          this.$emit('after-exchange')
-        })
-        .catch(error => {
-          this.$message.error(error.response.data.messages[0] || '兑换失败')
-          console.error(error)
-        })
+      this.$confirm('确认兑换该物品？兑换后不可撤销。', '提示', {
+        confirmButtonText: '确认兑换',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.exchanging = true
+        userApi.exchangeUserItem(userItemId)
+          .then(() => {
+            this.$message.success('兑换成功!')
+            this.fetchUserItems(this.currentPage)
+            this.$emit('after-exchange')
+          })
+          .catch(error => {
+            this.$message.error(error.response.data.messages[0] || '兑换失败')
+            console.error(error)
+          })
+          .finally(() => {
+            this.exchanging = false
+          })
+      }).catch(() => {})
     },
     openExistingLottery (userItem) {
       this.loading = true

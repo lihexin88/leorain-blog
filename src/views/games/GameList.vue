@@ -108,9 +108,9 @@ export default {
           class="game-card"
           :body-style="{ padding: '0px' }"
       >
-        <div class="card-clickable" @click="goToGame(game)">
+        <div class="card-clickable" role="button" tabindex="0" @click="goToGame(game)" @keydown.enter="goToGame(game)">
           <div class="game-cover">
-            <img :src="game.cover_image" :alt="game.name" class="image"/>
+            <img :src="game.cover_image" :alt="game.name" class="image" height="160"/>
           </div>
           <div class="game-info">
             <div class="game-title" :title="game.name">

@@ -1,12 +1,12 @@
 <template>
   <span class="vote-button">
-    <a href="javascript:;" @click="upVote(item.id)">
+    <button class="vote-btn" :disabled="voting" :aria-label="item.is_up_voted ? '取消赞' : '赞'" @click="upVote(item.id)">
       <i :class="item.is_up_voted ? 'fas fa-thumbs-up text-success' : 'far fa-thumbs-up'"></i>
       <small v-if="item.vote_count > 0">{{ item.vote_count }}</small>
-    </a>
-    <a v-if="show_down_vote" href="javascript:;" @click="downVote(item.id)">
+    </button>
+    <button v-if="show_down_vote" class="vote-btn" :disabled="voting" :aria-label="item.is_down_voted ? '取消踩' : '踩'" @click="downVote(item.id)">
       <i :class="item.is_down_voted ? 'fas fa-thumbs-down text-danger' : 'far fa-thumbs-down'"></i>
-    </a>
+    </button>
   </span>
 </template>
 
@@ -33,18 +33,11 @@ export default {
   },
   data () {
     return {
-      isLike: false
+      voting: false
     }
   },
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
-    toggleStatus () {
-      let count = this.item.vote_count
-
-      this.item.is_voting = !this.item.is_voting
-
-      this.item.vote_count = this.item.is_voting ? count + 1 : count - 1
-    },
     upVote (id) {
       this.toggleVote(id, 'up')
     },
@@ -52,6 +45,8 @@ export default {
       this.toggleVote(id, 'down')
     },
     toggleVote (id, type) {
+      if (this.voting) return
+      this.voting = true
       let url = this.api + '/vote/' + type
       let upType = 'is_up_voted'
       let downType = 'is_down_voted'
@@ -72,8 +67,33 @@ export default {
           if (response.status == 401) {
             this.setShowLoginDialog(true)
           }
+        }).finally(() => {
+          this.voting = false
         })
     }
   }
 }
 </script>
+
+<style scoped>
+.vote-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: inherit;
+}
+.vote-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.vote-btn:hover:not(:disabled) {
+  background: rgba(0,0,0,0.05);
+}
+</style>

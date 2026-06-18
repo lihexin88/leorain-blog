@@ -17,7 +17,7 @@
             <div class="info-personal">
               <el-tooltip>
                 <template #content>
-                  <el-image style="width: 250px" :src="wechat.qr_code"></el-image>
+                  <el-image style="width: 250px; height: 250px" :src="wechat.qr_code"></el-image>
                 </template>
                 <el-image style="width: 35px" :src="wechat.logo" alt="微信二维码"></el-image>
               </el-tooltip>
@@ -35,7 +35,7 @@
         <div>
           <!--          info-->
           <h3 class="info-title">
-            <span class="info-title-span" v-for="(char, index) in configStore.title" :key="index">{{ char }}</span>
+            <span class="info-title-span" v-for="(char, index) in configStore.title" :key="'char-'+index">{{ char }}</span>
           </h3>
           <h5 style="display: flex; justify-content: center">{{ configStore.description }}</h5>
         </div>
@@ -225,7 +225,9 @@ export default {
       served_time: 0,
       launch_timestamp: 242312160,
       distance: 0,
-      light_year_count: 0
+      light_year_count: 0,
+      servedTimer: null,
+      distanceTimer: null
     }
   },
   methods: {
@@ -266,7 +268,7 @@ export default {
       })
     },
     setTimeInterval () {
-      setInterval(() => {
+      this.servedTimer = setInterval(() => {
         if (this.systemInfo.served_at !== null) {
           // 时间
           // 计算差值
@@ -274,7 +276,7 @@ export default {
         }
       }, 1000)
       let nowTimestamp = moment().unix()
-      setInterval(() => {
+      this.distanceTimer = setInterval(() => {
         this.distance = (nowTimestamp - this.launch_timestamp) * 17.062
         this.light_year_count = this.distance / 9460730472580.8
         nowTimestamp++
@@ -291,6 +293,10 @@ export default {
     this.get_tag_cloud()
     this.get_config()
     this.get_system_info()
+  },
+  beforeUnmount () {
+    if (this.servedTimer) clearInterval(this.servedTimer)
+    if (this.distanceTimer) clearInterval(this.distanceTimer)
   }
 }
 </script>

@@ -42,6 +42,11 @@ export default {
       geojsonLayer: null // 存储 GeoJSON 图层
     }
   },
+  beforeUnmount () {
+    if (this.stompClient && this.stompClient.active) {
+      this.stompClient.deactivate()
+    }
+  },
   async mounted () {
     // 延迟初始化确保DOM渲染完成
     this.$nextTick(() => {

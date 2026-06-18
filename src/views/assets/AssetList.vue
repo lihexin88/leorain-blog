@@ -30,7 +30,7 @@
     <div class="asset-layout">
       <div class="asset-main">
         <div class="list asset-item-container" id="container-left">
-          <div v-for="(asset,index) in assets" :key="index" class="asset-items-box"
+          <div v-for="(asset,index) in assets" :key="asset.asset_id" class="asset-items-box"
                draggable="true"
                @dragstart="onDragStart($event, asset)"
                @dragover.prevent="onDragOver($event, asset)"
@@ -42,6 +42,7 @@
                 class="asset-asr-btn"
                 size="small"
                 type="primary"
+                :loading="asset._asrLoading"
                 @click="handleAssetAsr(asset)"
             >
               <span v-if="asset.has_asr">已识别</span>
@@ -255,7 +256,7 @@
       <el-input v-model="creatDirName"></el-input>
       <template #footer>
         <el-button @click="showCreatDirDialog = false">取消</el-button>
-        <el-button type="primary" @click="createDir">确认</el-button>
+        <el-button type="primary" :loading="creatingDir" @click="createDir">确认</el-button>
       </template>
     </el-dialog>
 
@@ -1055,6 +1056,8 @@ export default {
       }
     },
     createDir () {
+      if (this.creatingDir) return
+      this.creatingDir = true
       assetsApi.createAsset({
         type: 4,
         name: this.creatDirName,
@@ -1068,6 +1071,8 @@ export default {
         this.load(true)
       }).catch(() => {
         this.$message.error('创建目录失败，请重试')
+      }).finally(() => {
+        this.creatingDir = false
       })
     },
     loadDirPath (assetId) {
@@ -1126,12 +1131,14 @@ export default {
       this.asrPollingTimer = setTimeout(poll, 1000)
     },
     handleAssetAsr (asset) {
+      if (asset._asrLoading) return
       if (Number(asset?.has_asr) === 1) {
         this.currentAsrAsset = asset
         this.asrPage = 1
         this.loadAsrList(true)
         return
       }
+      asset._asrLoading = true
       assetsApi.assetAsr({
         asset_id: asset.asset_id
       }).then((response) => {
@@ -1146,6 +1153,8 @@ export default {
         this.loadAsrList(true)
       }).catch(err => {
         this.$message.error(err?.message || '提交识别失败')
+      }).finally(() => {
+        asset._asrLoading = false
       })
     },
     isVideoAsset (asset) {
@@ -1270,6 +1279,7 @@ export default {
       isVectorSearch: 0,
       showCreatDirDialog: false,
       creatDirName: '',
+      creatingDir: false,
       fullPath: [],
       // 右键菜单-重命名相关
       renameDialogVisible: false,
