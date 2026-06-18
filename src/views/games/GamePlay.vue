@@ -2,7 +2,7 @@
   <div class="game-play-wrapper">
     <el-row :gutter="0" class="game-container">
       <!-- 左侧：键位说明 -->
-      <el-col :xs="24" :sm="6" class="sidebar key-guide">
+      <el-col v-if="!isMobile" :xs="24" :sm="6" class="sidebar key-guide">
         <div class="sidebar-header">
           <h5>键位说明</h5>
         </div>
@@ -74,6 +74,39 @@
             </div>
           </div>
 
+          <!-- 移动端虚拟游戏按钮 -->
+          <div class="game-buttons" v-if="isMobile">
+            <div class="game-buttons-row">
+              <div class="dpad">
+                <button class="game-btn dpad-btn dpad-up" @touchstart.prevent="pressBtn('up')" @touchend.prevent="releaseBtn('up')" @mousedown.prevent="pressBtn('up')" @mouseup.prevent="releaseBtn('up')">
+                  <span class="dpad-arrow">▲</span>
+                </button>
+                <div class="dpad-middle">
+                  <button class="game-btn dpad-btn dpad-left" @touchstart.prevent="pressBtn('left')" @touchend.prevent="releaseBtn('left')" @mousedown.prevent="pressBtn('left')" @mouseup.prevent="releaseBtn('left')">
+                    <span class="dpad-arrow">◀</span>
+                  </button>
+                  <div class="dpad-center"></div>
+                  <button class="game-btn dpad-btn dpad-right" @touchstart.prevent="pressBtn('right')" @touchend.prevent="releaseBtn('right')" @mousedown.prevent="pressBtn('right')" @mouseup.prevent="releaseBtn('right')">
+                    <span class="dpad-arrow">▶</span>
+                  </button>
+                </div>
+                <button class="game-btn dpad-btn dpad-down" @touchstart.prevent="pressBtn('down')" @touchend.prevent="releaseBtn('down')" @mousedown.prevent="pressBtn('down')" @mouseup.prevent="releaseBtn('down')">
+                  <span class="dpad-arrow">▼</span>
+                </button>
+              </div>
+              <div class="action-buttons">
+                <div class="action-top">
+                  <button class="game-btn action-btn btn-select" @touchstart.prevent="pressBtn('select')" @touchend.prevent="releaseBtn('select')" @mousedown.prevent="pressBtn('select')" @mouseup.prevent="releaseBtn('select')">Select</button>
+                  <button class="game-btn action-btn btn-start" @touchstart.prevent="pressBtn('start')" @touchend.prevent="releaseBtn('start')" @mousedown.prevent="pressBtn('start')" @mouseup.prevent="releaseBtn('start')">Start</button>
+                </div>
+                <div class="action-bottom">
+                  <button class="game-btn action-btn btn-b" @touchstart.prevent="pressBtn('b')" @touchend.prevent="releaseBtn('b')" @mousedown.prevent="pressBtn('b')" @mouseup.prevent="releaseBtn('b')">B</button>
+                  <button class="game-btn action-btn btn-a" @touchstart.prevent="pressBtn('a')" @touchend.prevent="releaseBtn('a')" @mousedown.prevent="pressBtn('a')" @mouseup.prevent="releaseBtn('a')">A</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="game-controls">
             <el-button-group>
               <el-button @click="resetGame">Reset</el-button>
@@ -131,13 +164,15 @@ export default {
       saveable: true,
       gameName: '',
       width: 0,
-      height: 0
+      height: 0,
+      isMobile: false
     }
   },
   computed: {
     ...mapState(useUserStore, ['user'])
   },
   mounted () {
+    this.isMobile = window.innerWidth <= 768
     this.fetchGameDetail()
     // 等待渲染后测量一次
     this.$nextTick(() => {
@@ -159,6 +194,12 @@ export default {
     }
   },
   methods: {
+    pressBtn (name) {
+      if (this.$refs.nes) this.$refs.nes.pressButton(name)
+    },
+    releaseBtn (name) {
+      if (this.$refs.nes) this.$refs.nes.releaseButton(name)
+    },
     updateViewportSize () {
       // 找到视口容器（中间区域可用宽度）
       const el = this.$el.querySelector('.game-viewport')
@@ -367,6 +408,118 @@ export default {
 
   .game-viewport {
     width: 100%;
+  }
+
+  .game-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    padding: 10px 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  .game-buttons-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    gap: 24px;
+  }
+
+  .dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .dpad-middle {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .dpad-center {
+    width: 40px;
+    height: 40px;
+    background: var(--el-fill-color-light, #f5f7fa);
+    border-radius: 4px;
+  }
+
+  .dpad-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--el-fill-color, #e5e6eb);
+    border: 1px solid var(--el-border-color, #dcdfe6);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color, #333);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+
+    &:active {
+      background: var(--el-color-primary-light-5, #b3d8ff);
+    }
+  }
+
+  .dpad-arrow {
+    pointer-events: none;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .action-top {
+    display: flex;
+    gap: 12px;
+  }
+
+  .action-bottom {
+    display: flex;
+    gap: 12px;
+  }
+
+  .action-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--el-fill-color, #e5e6eb);
+    border: 1px solid var(--el-border-color, #dcdfe6);
+    color: var(--text-color, #333);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.1s;
+
+    &:active {
+      background: var(--el-color-primary-light-5, #b3d8ff);
+    }
+  }
+
+  .btn-a, .btn-b {
+    width: 56px;
+    height: 56px;
+    font-size: 15px;
+  }
+
+  .btn-start, .btn-select {
+    width: 56px;
+    height: 28px;
+    border-radius: 14px;
+    font-size: 11px;
   }
 }
 </style>
