@@ -22,7 +22,7 @@
     <div class="links-layout" :class="{ 'links-layout--single': !hasRssList }">
       <section class="links-main">
         <div class="links-container">
-          <div class="links-item-div" v-for="(link,index) in links" :key="link.id">
+          <div class="links-item-div" v-for="(link) in links" :key="link.id">
             <div style="position: relative" @click="openLink(link.link,link.id)">
               <el-card
                 :body-style="{ paddingLeft: '5px' }"
@@ -276,11 +276,7 @@ export default {
 </script>
 <style scoped lang="scss">
 .links-body {
-  background-image: url("https://images.leorain.cn/icons/assets/links-body-background.jpg");
-  background-position: center;
-  background-size: cover;
   padding-bottom: 24px;
-  background-attachment: fixed;
 }
 
 .links-rules {

@@ -332,13 +332,6 @@ body.el-popup-parent--hidden {
   cursor: pointer;
 }
 
-/* 全局触控目标最小尺寸（WCAG 2.5.5） */
-button,
-[role="button"],
-.pointer {
-  min-height: 44px;
-  min-width: 44px;
-}
 
 /* 全局 :focus-visible 样式（键盘无障碍） */
 :focus-visible {
