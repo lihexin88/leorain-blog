@@ -413,8 +413,8 @@ export default {
   .game-buttons {
     display: flex;
     justify-content: center;
-    margin-top: 12px;
-    padding: 10px 0;
+    margin-top: 24px;
+    padding: 16px 0;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
@@ -425,41 +425,41 @@ export default {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 400px;
-    gap: 24px;
+    max-width: 420px;
+    gap: 28px;
   }
 
   .dpad {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
   }
 
   .dpad-middle {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
   }
 
   .dpad-center {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: var(--el-fill-color-light, #f5f7fa);
     border-radius: 4px;
   }
 
   .dpad-btn {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: var(--el-fill-color, #e5e6eb);
     border: 1px solid var(--el-border-color, #dcdfe6);
-    border-radius: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-color, #333);
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     transition: background-color 0.1s;
 
@@ -476,27 +476,27 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
 
   .action-top {
     display: flex;
-    gap: 12px;
+    gap: 14px;
   }
 
   .action-bottom {
     display: flex;
-    gap: 12px;
+    gap: 14px;
   }
 
   .action-btn {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: var(--el-fill-color, #e5e6eb);
     border: 1px solid var(--el-border-color, #dcdfe6);
     color: var(--text-color, #333);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -510,16 +510,16 @@ export default {
   }
 
   .btn-a, .btn-b {
-    width: 56px;
-    height: 56px;
-    font-size: 15px;
+    width: 64px;
+    height: 64px;
+    font-size: 16px;
   }
 
   .btn-start, .btn-select {
-    width: 56px;
-    height: 28px;
-    border-radius: 14px;
-    font-size: 11px;
+    width: 64px;
+    height: 32px;
+    border-radius: 16px;
+    font-size: 12px;
   }
 }
 </style>
