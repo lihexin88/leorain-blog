@@ -36,6 +36,17 @@ const KEY_MAP = {
   ArrowRight: [1, Controller.BUTTON_RIGHT]
 }
 
+const BUTTON_MAP = {
+  up: Controller.BUTTON_UP,
+  down: Controller.BUTTON_DOWN,
+  left: Controller.BUTTON_LEFT,
+  right: Controller.BUTTON_RIGHT,
+  a: Controller.BUTTON_A,
+  b: Controller.BUTTON_B,
+  start: Controller.BUTTON_START,
+  select: Controller.BUTTON_SELECT
+}
+
 export default {
   name: 'NesPlayer',
   props: {
@@ -134,6 +145,7 @@ export default {
         this._nes.loadROM(romStr)
         this.isLoading = false
         this.$emit('success')
+        this.handleStart()
       } catch (err) {
         if (version !== this._loadVersion) return
         this.isLoading = false
@@ -241,6 +253,20 @@ export default {
       }
       window.addEventListener('keydown', this._onKeyDown)
       window.addEventListener('keyup', this._onKeyUp)
+    },
+
+    // ─── 虚拟按键（供移动端游戏按钮调用）────────────────────────────────────
+
+    pressButton (name) {
+      if (!this._nes) return
+      const code = BUTTON_MAP[name]
+      if (code !== undefined) this._nes.buttonDown(1, code)
+    },
+
+    releaseButton (name) {
+      if (!this._nes) return
+      const code = BUTTON_MAP[name]
+      if (code !== undefined) this._nes.buttonUp(1, code)
     },
 
     // ─── 公开 API（供父组件通过 ref 调用）────────────────────────────────────
