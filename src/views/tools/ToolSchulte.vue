@@ -358,7 +358,7 @@ export default {
           <div class="play-area">
             <div ref="animatedElement" class="play-item-container">
               <div :class="['play-item',]" @click="clickBox(cur.val,cur.next)" v-for="(cur,index) in shuffledArray"
-                   :key="index">
+                   :key="cur.val">
                 <el-button :class="['item-button', wrongIndex === cur.val && 'wrong-item-button']"
                            :style="{ color:  getRandomColor(cur.val)}">
                   {{ cur.val }}

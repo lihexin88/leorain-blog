@@ -1,7 +1,7 @@
 <template>
   <div class="topic-list-container">
-    <el-card v-for="(topic, index) in topicList" :key="index" class="topic-list-item">
-      <div @click="goTopicDetail(topic.slug, topic.type)">
+    <el-card v-for="(topic, index) in topicList" :key="topic.slug" class="topic-list-item">
+      <div role="button" tabindex="0" @click="goTopicDetail(topic.slug, topic.type)" @keydown.enter="goTopicDetail(topic.slug, topic.type)">
         <div class="topic-list-item-title">{{ topic.title }}</div>
         <div class="topic-list-item-description">{{ topic.description }}</div>
         <div class="topic-list-item-date">

@@ -187,7 +187,7 @@ const EyeBall = {
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
-      transition: 'all 0.15s'
+      transition: 'height 0.15s ease'
     }))
 
     const pupilStyle = computed(() => ({
@@ -547,7 +547,7 @@ export default {
 .character {
   position: absolute;
   bottom: 0;
-  transition: all 0.7s ease-in-out;
+  transition: transform 0.7s ease-in-out;
 }
 
 .character-purple {
@@ -590,7 +590,7 @@ export default {
   position: absolute;
   display: flex;
   gap: 32px;
-  transition: all 0.7s ease-in-out;
+  transition: left 0.7s ease-in-out, top 0.7s ease-in-out;
 }
 
 .eyes-black {
@@ -601,7 +601,7 @@ export default {
   position: absolute;
   display: flex;
   gap: 32px;
-  transition: all 0.2s ease-out;
+  transition: left 0.2s ease-out, top 0.2s ease-out;
 }
 
 .pupils-yellow {
@@ -614,7 +614,7 @@ export default {
   height: 4px;
   background-color: #2D2D2D;
   border-radius: 9999px;
-  transition: all 0.2s ease-out;
+  transition: left 0.2s ease-out, top 0.2s ease-out;
 }
 
 </style>

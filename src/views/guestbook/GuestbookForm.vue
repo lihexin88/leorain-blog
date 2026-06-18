@@ -21,7 +21,7 @@
           </el-popover>
         </div>
         <div style="padding:0 10px">
-          <el-button type="primary" @click="submit">提交</el-button>
+          <el-button type="primary" :loading="submitting" @click="submit">提交</el-button>
         </div>
       </div>
     </div>
@@ -59,6 +59,7 @@ export default {
       simplemde: null,
       content: null,
       show_replace_tip: false,
+      submitting: false,
       editor_id: 'editor' + Math.random().toString(36).substr(2),
       link_text: '- 站点名称:\n' +
           '- 一句话描述:\n' +
@@ -98,6 +99,15 @@ export default {
         'link', 'guide'
       ]
     })
+    // Scroll editor into view on mobile when focused (avoids keyboard occlusion)
+    this.simplemde.codemirror.on('focus', () => {
+      this.$nextTick(() => {
+        const editorEl = this.$el.querySelector('.guestbook-input')
+        if (editorEl) {
+          editorEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      })
+    })
     this.userAuthorized = localStorage.getItem('user') !== null
   },
   methods: {
@@ -121,6 +131,8 @@ export default {
       })
     },
     do_submit (apiMethod, body) {
+      if (this.submitting) return
+      this.submitting = true
       apiMethod(body).then((response) => {
         if (this.guestbook) {
           if (this.guestbook.children === undefined) {
@@ -138,6 +150,8 @@ export default {
         this.$message.success('提交成功')
       }).catch(() => {
         this.$message.error('提交失败')
+      }).finally(() => {
+        this.submitting = false
       })
     },
     submit () {

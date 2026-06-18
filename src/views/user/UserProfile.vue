@@ -435,7 +435,7 @@ export default {
     border-radius: 999px;
     color: var(--text-color);
     border: 1px solid transparent;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 
     :deep(.el-link__inner) {
       gap: 6px;

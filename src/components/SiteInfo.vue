@@ -541,7 +541,7 @@ export default {
   border-color: var(--el-color-primary, #409eff);
   box-shadow: 0 0 0 2px var(--el-color-primary, #409eff), 0 6px 18px rgba(0,0,0,0.18);
   transform: translateY(-2px) scale(1.08);
-  transition: all 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 :deep(.el-progress-bar__innerText){
   color: #000000;

@@ -621,6 +621,11 @@ export default {
     window.removeEventListener('mousemove', this.updateMousePosition)
     window.removeEventListener('resize', this.handleWindowResize)
 
+    if (this.speedTimer) {
+      clearInterval(this.speedTimer)
+      this.speedTimer = null
+    }
+
     if (this.timer) {
       cancelAnimationFrame(this.timer)
     }

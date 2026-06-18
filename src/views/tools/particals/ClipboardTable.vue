@@ -24,7 +24,8 @@ export default {
         type: 1,
         file: null
       },
-      loading: false
+      loading: false,
+      submitting: false
     }
   },
   props: {
@@ -123,6 +124,8 @@ export default {
       }
     },
     async submit () {
+      if (this.submitting) return
+      this.submitting = true
       let postData = {
         data_source_type: this.getDateSourceInfo().id
       }
@@ -176,6 +179,8 @@ export default {
           type: 'error',
           message: err?.message || '操作失败'
         })
+      } finally {
+        this.submitting = false
       }
     },
     async handlePaste (event) {
@@ -349,7 +354,7 @@ export default {
       <template v-slot:footer>
         <div>
           <el-button @click="show_popup = false">取消</el-button>
-          <el-button type="primary" @click="submit">确定</el-button>
+          <el-button type="primary" :loading="submitting" @click="submit">确定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -377,7 +382,7 @@ export default {
             width="24px"
         >
           <template v-slot="scope">
-            <div @click="star(scope.row)" class="clipboard-table-column-star">
+            <div @click="star(scope.row)" @keydown.enter="star(scope.row)" role="button" tabindex="0" class="clipboard-table-column-star">
               <i v-if="scope.row.star" class="el-icon-star-on"></i>
               <i v-else class="el-icon-star-off"></i>
             </div>

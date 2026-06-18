@@ -28,7 +28,7 @@
           </el-icon>
           <span>工具箱</span>
         </template>
-        <el-menu-item v-for="(tool,index) in tools" :key="index" :index="tool.href">
+        <el-menu-item v-for="(tool,index) in tools" :key="tool.href" :index="tool.href">
           <img :src="tool.image" class="menu-icon"/>
           <span>{{ tool.text }}</span>
         </el-menu-item>
@@ -72,7 +72,7 @@
         </el-icon>
         <span>工具箱</span>
       </template>
-      <el-menu-item v-for="(tool,index) in tools" :key="index" :index="tool.href">
+      <el-menu-item v-for="(tool,index) in tools" :key="tool.href" :index="tool.href">
         <img :src="tool.image" class="menu-icon"/>
         <span>{{ tool.text }}</span>
       </el-menu-item>
@@ -361,7 +361,7 @@ export default {
 
 .user-avatar {
   border: 1px solid #eee;
-  transition: all .3s ease-in-out;
+  transition: border-color .3s ease-in-out, transform .3s ease-in-out;
   &:hover {
     border-color: #409eff;
     scale: 1.05;

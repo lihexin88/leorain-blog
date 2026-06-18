@@ -1,9 +1,9 @@
 <template>
   <div class="nes-player" :style="{ width: width + 'px', height: height + 'px' }">
     <canvas ref="canvas" class="nes-canvas" />
-    <div v-if="showOverlay" class="nes-overlay" @click="handleStart">
+    <button v-if="showOverlay" class="nes-overlay" @click="handleStart">
       <span class="nes-label">{{ isLoading ? 'Loading...' : label }}</span>
-    </div>
+    </button>
   </div>
 </template>
 
@@ -327,6 +327,13 @@ export default {
   justify-content: center;
   background: rgba(0, 0, 0, 0.55);
   cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font: inherit;
+  color: inherit;
 }
 
 .nes-label {

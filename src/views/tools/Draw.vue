@@ -20,7 +20,7 @@
             </div>
           </template>
           <div class="drawer-list-content" ref="drawerList" v-infinite-scroll="handleScroll">
-            <div v-for="(i,index) in draw_list" :key="index" class="drawer-list-item">
+            <div v-for="(i,index) in draw_list" :key="i.asset_id" class="drawer-list-item">
               <div class="drawer-list-title">
                 <div>
                   {{ i.name }}
@@ -596,6 +596,17 @@ export default {
       this.canvasTx.strokeStyle = newValue
     }
   },
+  beforeUnmount () {
+    if (this.stompClient && this.stompClient.active) {
+      this.stompClient.deactivate()
+    }
+    if (this.canvas) {
+      this.canvas.removeEventListener('mousedown', this.handleMouseDown)
+      this.canvas.removeEventListener('mousemove', this.handleMouseMove)
+      this.canvas.removeEventListener('mouseup', this.handleMouseUp)
+      this.canvas.removeEventListener('mouseleave', this.handleMouseLeave)
+    }
+  },
   mounted () {
     const urlParams = new URLSearchParams(window.location.search)
     // 初始化画布
@@ -610,7 +621,7 @@ export default {
     this.canvasTx.lineJoin = 'round'
 
     // 绑定鼠标按下事件
-    this.canvas.addEventListener('mousedown', (event) => {
+    this.handleMouseDown = (event) => {
       // 关闭已存在的画布
       getDrawLock(this.asset_id).then((response) => {
         if (response.data === true) {
@@ -620,10 +631,11 @@ export default {
           this.drawing = true
         }
       })
-    })
+    }
+    this.canvas.addEventListener('mousedown', this.handleMouseDown)
 
     // 绑定鼠标移动事件
-    this.canvas.addEventListener('mousemove', (event) => {
+    this.handleMouseMove = (event) => {
       if (this.drawing) {
         const pos = this.getMousePos(event)
         // 第一个点时初始化路径，避免异步锁请求延迟导致 moveTo 位置偏差产生直线
@@ -636,20 +648,24 @@ export default {
         this.canvasTx.stroke()
         this.currentLine.push({ x: pos.x, y: pos.y }) // 保存当前线段的坐标
       }
-    })
+    }
+    this.canvas.addEventListener('mousemove', this.handleMouseMove)
 
     // 绑定鼠标抬起事件
-    this.canvas.addEventListener('mouseup', (event) => {
+    this.handleMouseUp = (event) => {
       if (this.currentLine.length > 0) {
         this.paintOver(event)
       }
-    })
+    }
+    this.canvas.addEventListener('mouseup', this.handleMouseUp)
+
     // 绑定鼠标离开事件
-    this.canvas.addEventListener('mouseleave', (event) => {
+    this.handleMouseLeave = (event) => {
       if (this.currentLine.length > 0) {
         this.paintOver(event)
       }
-    })
+    }
+    this.canvas.addEventListener('mouseleave', this.handleMouseLeave)
     // 开启链接
     this.connectWebSocket()
     // 判断是否有初始化数据

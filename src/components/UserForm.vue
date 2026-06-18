@@ -1,7 +1,7 @@
 <template>
   <div class="guest-input-form">
     <div>
-      <div style="padding-right: 5px;cursor: pointer" @click="openDialog">
+      <div style="padding-right: 5px;cursor: pointer" role="button" tabindex="0" @click="openDialog" @keydown.enter="openDialog">
         <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
@@ -24,28 +24,22 @@
           <el-avatar shape="circle" :size="80" :src="avatar" class="guest-avatar"></el-avatar>
           <div class="avatar-decoration"></div>
         </div>
-        <div class="guest-input-box">
-          <div class="guest-input">
-            <div class="guest-input-tip">昵称</div>
-            <el-input class="guest-input-item" v-model="guest.name" :clearable="true"
-                      placeholder="如何称呼您？"></el-input>
-          </div>
-          <div class="guest-input">
-            <div class="guest-input-tip">邮箱</div>
-            <el-input class="guest-input-item" type="email" v-model="guest.email" :clearable="true"
-                      placeholder="用于接收回复通知">
-            </el-input>
-          </div>
-          <div class="guest-input">
-            <div class="guest-input-tip">网址</div>
-            <el-input class="guest-input-item" v-model="guest.website" :clearable="true"
-                      placeholder="您的博客或个人主页 (选填)"></el-input>
-          </div>
-        </div>
+        <el-form ref="guestFormRef" :model="guest" :rules="guestRules" label-position="top" class="guest-input-box">
+          <el-form-item label="昵称" prop="name">
+            <el-input v-model="guest.name" :clearable="true" placeholder="如何称呼您？"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input type="email" v-model="guest.email" :clearable="true"
+                      placeholder="用于接收回复通知"></el-input>
+          </el-form-item>
+          <el-form-item label="网址">
+            <el-input v-model="guest.website" :clearable="true" placeholder="您的博客或个人主页 (选填)"></el-input>
+          </el-form-item>
+        </el-form>
       </div>
       <template v-slot:footer>
         <div class="guest-dialog-footer">
-          <el-button class="confirm-btn" @click="saveGuestInfo">开启交流</el-button>
+          <el-button class="confirm-btn" :loading="saving" @click="saveGuestInfo">开启交流</el-button>
         </div>
       </template>
     </el-dialog>
@@ -67,6 +61,13 @@ export default {
         email: null,
         website: null
       },
+      guestRules: {
+        name: [{ required: true, message: '用户名不能为空', trigger: 'blur' }],
+        email: [
+          { required: true, message: '邮箱不能为空', trigger: 'blur' },
+          { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
+        ]
+      },
       avatar: '',
       guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
       // pinia
@@ -74,6 +75,7 @@ export default {
       // 唯一实例标识，用于确保全局仅渲染一个弹窗
       instanceId: Math.random().toString(36).slice(2),
       debouncedUpdateAvatar: null,
+      saving: false,
       tiltStyle: {
         transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
       }
@@ -198,37 +200,27 @@ export default {
       }
     },
     saveGuestInfo () {
-      if (!this.validateData()) {
-        return
-      }
-      localStorage.setItem('guest_info', JSON.stringify({
-        nickname: this.guest.name,
-        email: this.guest.email,
-        website: this.guest.website
-      }))
-      if (this.userStore) {
-        this.userStore.setShowGuestDialog(false)
-      }
-      this.$emit('update')
+      if (this.saving) return
+      this.$refs.guestFormRef?.validate().then(() => {
+        this.saving = true
+        localStorage.setItem('guest_info', JSON.stringify({
+          nickname: this.guest.name,
+          email: this.guest.email,
+          website: this.guest.website
+        }))
+        if (this.userStore) {
+          this.userStore.setShowGuestDialog(false)
+        }
+        this.$emit('update')
+      }).catch(() => {
+        // validation failed, inline errors shown
+      }).finally(() => {
+        this.saving = false
+      })
     },
     validateData () {
-      if (!this.guest?.name) {
-        this.showDialog = true
-        this.$message.error('用户名不能为空')
-        return false
-      }
-      if (!this.guest?.email) {
-        this.$message.error('邮箱不能为空')
-        return false
-      } else {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(this.guest.email)) {
-          this.$message.error('邮箱格式不正确')
-          return false
-        }
-      }
-      return true
-    }
+      return this.$refs.guestFormRef?.validate().catch(() => false) || false
+    },
   }
 }
 </script>
@@ -333,29 +325,20 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 15px;
-}
 
-.guest-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
+  :deep(.el-form-item__label) {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #606266;
+    padding-left: 5px;
+  }
 
-.guest-input-tip {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #606266;
-  padding-left: 5px;
-}
-
-.guest-input-item {
   :deep(.el-input__wrapper) {
     border-radius: 12px;
     background-color: #f5f7fa;
     box-shadow: none;
     border: 2px solid transparent;
-    transition: all 0.3s;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
     padding: 5px 15px;
 
     &.is-focus {
@@ -377,7 +360,7 @@ export default {
     background: linear-gradient(45deg, #409EFF, #007aff);
     border: none;
     box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
-    transition: all 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
 
     &:hover {
       transform: translateY(-2px);

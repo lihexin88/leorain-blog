@@ -102,7 +102,7 @@ export default {
     </div>
     <div style="padding-top: 10px">
       <div style="display: grid;grid-template-columns: repeat(11, 1fr);grid-gap: 5px;justify-content: center">
-        <el-tag v-for="(i,index) in numberSet" style="cursor: pointer" @click="concatResult(i)" :key="index">{{ i }}</el-tag>
+        <el-tag v-for="(i,index) in numberSet" style="cursor: pointer" @click="concatResult(i)" :key="'num-'+index">{{ i }}</el-tag>
         <el-tag type="info" @click="backspace">
           <el-icon>
             <arrow-left/>

@@ -10,6 +10,8 @@
           loop
           muted
           playsinline
+          width="100%"
+          height="100%"
       >
         <source :src="configStore.backgroundImage" type="video/mp4">
         您的浏览器不支持视频标签。
@@ -19,6 +21,8 @@
           class="background-image"
           :src="configStore.backgroundImage"
           alt="背景图片"
+          width="100%"
+          height="100%"
       >
     </div>
 
@@ -31,7 +35,11 @@
     <main class="body">
       <site-info/>
       <!-- 子组件将在这里渲染 -->
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition name="fade-slide" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
 
     <footer class="footer">
@@ -139,6 +147,21 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .header {

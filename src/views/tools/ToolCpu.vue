@@ -175,7 +175,7 @@
           <div class="adders-circuit">
             <div
                 v-for="(adder, index) in adders"
-                :key="index"
+                :key="'adder-'+index"
                 class="adder-circuit-wrapper"
             >
               <!-- 进位输入线（从上一个全加器） -->
