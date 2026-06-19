@@ -40,6 +40,22 @@
               <td>D</td>
             </tr>
             <tr>
+              <td>左上</td>
+              <td>W+A</td>
+            </tr>
+            <tr>
+              <td>右上</td>
+              <td>W+D</td>
+            </tr>
+            <tr>
+              <td>左下</td>
+              <td>S+A</td>
+            </tr>
+            <tr>
+              <td>右下</td>
+              <td>S+D</td>
+            </tr>
+            <tr>
               <td>A</td>
               <td>J</td>
             </tr>
@@ -53,7 +69,7 @@
       </el-col>
 
       <!-- 中间：游戏播放器 -->
-      <el-col :xs="24" :sm="12" class="main-content">
+      <el-col :xs="24" :sm="12" class="main-content" @touchmove.prevent @contextmenu.prevent>
         <div class="game-box">
           <div class="game-viewport">
             <nes-player
@@ -61,8 +77,6 @@
                 ref="nes"
                 :url="gameUrl"
                 label="Click to Start"
-                :width="width"
-                :height="height"
                 @fps="getFps"
                 @success="onSuccess"
                 @error="onError"
@@ -78,10 +92,18 @@
           <div class="game-buttons" v-if="isMobile">
             <div class="game-buttons-row">
               <div class="dpad">
-                <button class="game-btn dpad-btn dpad-up" @touchstart.prevent="pressBtn('up')" @touchend.prevent="releaseBtn('up')" @mousedown.prevent="pressBtn('up')" @mouseup.prevent="releaseBtn('up')">
-                  <span class="dpad-arrow">▲</span>
-                </button>
-                <div class="dpad-middle">
+                <div class="dpad-row">
+                  <button class="game-btn dpad-btn dpad-up-left" @touchstart.prevent="pressBtn('up+left')" @touchend.prevent="releaseBtn('up+left')" @mousedown.prevent="pressBtn('up+left')" @mouseup.prevent="releaseBtn('up+left')">
+                    <span class="dpad-arrow">↖</span>
+                  </button>
+                  <button class="game-btn dpad-btn dpad-up" @touchstart.prevent="pressBtn('up')" @touchend.prevent="releaseBtn('up')" @mousedown.prevent="pressBtn('up')" @mouseup.prevent="releaseBtn('up')">
+                    <span class="dpad-arrow">▲</span>
+                  </button>
+                  <button class="game-btn dpad-btn dpad-up-right" @touchstart.prevent="pressBtn('up+right')" @touchend.prevent="releaseBtn('up+right')" @mousedown.prevent="pressBtn('up+right')" @mouseup.prevent="releaseBtn('up+right')">
+                    <span class="dpad-arrow">↗</span>
+                  </button>
+                </div>
+                <div class="dpad-row">
                   <button class="game-btn dpad-btn dpad-left" @touchstart.prevent="pressBtn('left')" @touchend.prevent="releaseBtn('left')" @mousedown.prevent="pressBtn('left')" @mouseup.prevent="releaseBtn('left')">
                     <span class="dpad-arrow">◀</span>
                   </button>
@@ -90,9 +112,17 @@
                     <span class="dpad-arrow">▶</span>
                   </button>
                 </div>
-                <button class="game-btn dpad-btn dpad-down" @touchstart.prevent="pressBtn('down')" @touchend.prevent="releaseBtn('down')" @mousedown.prevent="pressBtn('down')" @mouseup.prevent="releaseBtn('down')">
-                  <span class="dpad-arrow">▼</span>
-                </button>
+                <div class="dpad-row">
+                  <button class="game-btn dpad-btn dpad-down-left" @touchstart.prevent="pressBtn('down+left')" @touchend.prevent="releaseBtn('down+left')" @mousedown.prevent="pressBtn('down+left')" @mouseup.prevent="releaseBtn('down+left')">
+                    <span class="dpad-arrow">↙</span>
+                  </button>
+                  <button class="game-btn dpad-btn dpad-down" @touchstart.prevent="pressBtn('down')" @touchend.prevent="releaseBtn('down')" @mousedown.prevent="pressBtn('down')" @mouseup.prevent="releaseBtn('down')">
+                    <span class="dpad-arrow">▼</span>
+                  </button>
+                  <button class="game-btn dpad-btn dpad-down-right" @touchstart.prevent="pressBtn('down+right')" @touchend.prevent="releaseBtn('down+right')" @mousedown.prevent="pressBtn('down+right')" @mouseup.prevent="releaseBtn('down+right')">
+                    <span class="dpad-arrow">↘</span>
+                  </button>
+                </div>
               </div>
               <div class="action-buttons">
                 <div class="action-top">
@@ -114,6 +144,10 @@
               <el-button :disabled="saveable" @click="save">Save</el-button>
               <el-button :disabled="saveable" @click="load">Load</el-button>
             </el-button-group>
+          </div>
+
+          <div class="scroll-hint" v-if="isMobile">
+            <span>↓ 在此处向下滑动可滚动页面，上方区域滑动无效 ↓</span>
           </div>
         </div>
       </el-col>
@@ -163,8 +197,6 @@ export default {
       currentFPS: '0',
       saveable: true,
       gameName: '',
-      width: 0,
-      height: 0,
       isMobile: false
     }
   },
@@ -174,15 +206,10 @@ export default {
   mounted () {
     this.isMobile = window.innerWidth <= 768
     this.fetchGameDetail()
-    // 等待渲染后测量一次
-    this.$nextTick(() => {
-      this.updateViewportSize()
-    })
-    // 监听窗口尺寸变化
-    window.addEventListener('resize', this.updateViewportSize, { passive: true })
+    window.addEventListener('resize', this.onResize, { passive: true })
   },
   beforeUnmount () {
-    window.removeEventListener('resize', this.updateViewportSize)
+    window.removeEventListener('resize', this.onResize)
   },
   watch: {
     slug (newVal, oldVal) {
@@ -200,17 +227,8 @@ export default {
     releaseBtn (name) {
       if (this.$refs.nes) this.$refs.nes.releaseButton(name)
     },
-    updateViewportSize () {
-      // 找到视口容器（中间区域可用宽度）
-      const el = this.$el.querySelector('.game-viewport')
-      if (!el) return
-      const w = Math.floor(el.clientWidth || 0)
-      if (!w) return
-      const h = Math.floor(w * 3 / 4) // 4:3 比例
-      if (w !== this.width || h !== this.height) {
-        this.width = w
-        this.height = h
-      }
+    onResize () {
+      this.isMobile = window.innerWidth <= 768
     },
     async fetchGameDetail () {
       const slug = this.slug
@@ -356,6 +374,9 @@ export default {
     line-height: 0;
     border-radius: 4px;
     overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
 
     .show-fps {
       position: absolute;
@@ -366,6 +387,7 @@ export default {
       font-size: 12px;
       text-shadow: 1px 1px 2px #000;
       z-index: 10;
+      pointer-events: none;
     }
   }
 
@@ -377,6 +399,34 @@ export default {
 
     .el-button {
       padding: 10px 20px;
+    }
+  }
+}
+
+@include mobile {
+  .main-content {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: auto;
+    overflow: hidden;
+  }
+
+  .scroll-hint {
+    text-align: center;
+    padding: 10px 16px;
+    margin-top: 16px;
+    color: var(--text-color, #666);
+    font-size: 0.85rem;
+    background: var(--el-fill-color-light, #f5f7fa);
+    border-radius: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: auto;
+
+    span {
+      opacity: 0.7;
     }
   }
 }
@@ -436,7 +486,7 @@ export default {
     gap: 3px;
   }
 
-  .dpad-middle {
+  .dpad-row {
     display: flex;
     align-items: center;
     gap: 3px;
@@ -521,5 +571,8 @@ export default {
     border-radius: 16px;
     font-size: 12px;
   }
+}
+.main-content {
+  padding: 0;
 }
 </style>

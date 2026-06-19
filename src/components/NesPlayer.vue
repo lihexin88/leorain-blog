@@ -1,5 +1,5 @@
 <template>
-  <div class="nes-player" :style="{ width: width + 'px', height: height + 'px' }">
+  <div class="nes-player">
     <canvas ref="canvas" class="nes-canvas" />
     <button v-if="showOverlay" class="nes-overlay" @click="handleStart">
       <span class="nes-label">{{ isLoading ? 'Loading...' : label }}</span>
@@ -51,8 +51,6 @@ export default {
   name: 'NesPlayer',
   props: {
     url: { type: String, required: true },
-    width: { type: Number, default: 512 },
-    height: { type: Number, default: 480 },
     label: { type: String, default: 'Click to Start' }
   },
   emits: ['fps', 'error', 'success', 'saved', 'loaded'],
@@ -73,9 +71,7 @@ export default {
   watch: {
     url (newUrl, oldUrl) {
       if (newUrl && newUrl !== oldUrl) this.loadRom(newUrl)
-    },
-    width () { this._resizeCanvas() },
-    height () { this._resizeCanvas() }
+    }
   },
 
   mounted () {
@@ -100,10 +96,7 @@ export default {
     },
 
     _resizeCanvas () {
-      const cv = this.$refs.canvas
-      if (!cv) return
-      cv.style.width = this.width + 'px'
-      cv.style.height = this.height + 'px'
+      // canvas CSS 尺寸完全由样式控制（width:100% + aspect-ratio），无需手动设置
     },
 
     _drawFrame (buf) {
@@ -259,14 +252,21 @@ export default {
 
     pressButton (name) {
       if (!this._nes) return
-      const code = BUTTON_MAP[name]
-      if (code !== undefined) this._nes.buttonDown(1, code)
+      // 对角方向同时按下两个方向键
+      const names = name.split('+')
+      names.forEach(n => {
+        const code = BUTTON_MAP[n]
+        if (code !== undefined) this._nes.buttonDown(1, code)
+      })
     },
 
     releaseButton (name) {
       if (!this._nes) return
-      const code = BUTTON_MAP[name]
-      if (code !== undefined) this._nes.buttonUp(1, code)
+      const names = name.split('+')
+      names.forEach(n => {
+        const code = BUTTON_MAP[n]
+        if (code !== undefined) this._nes.buttonUp(1, code)
+      })
     },
 
     // ─── 公开 API（供父组件通过 ref 调用）────────────────────────────────────
@@ -337,10 +337,16 @@ export default {
   background: #000;
   line-height: 0;
   overflow: hidden;
+  width: 100%;
+  /* 256:240 = 16:15, NES 原生比例 */
+  aspect-ratio: 256 / 240;
 }
 
 .nes-canvas {
   display: block;
+  width: 100%;
+  height: 100%;
+  scale: 1.05;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
