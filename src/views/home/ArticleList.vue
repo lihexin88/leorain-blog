@@ -9,7 +9,9 @@
             :key="'skeleton-' + i"
             class="article-item article-skeleton"
           >
-            <div class="skeleton-media"></div>
+            <div class="article-cover">
+              <div class="skeleton-media"></div>
+            </div>
             <div class="media-body article-body">
               <div class="skeleton-line skeleton-title"></div>
               <div class="skeleton-line skeleton-desc"></div>
@@ -39,48 +41,40 @@
           :key="article.slug"
         >
           <!-- 封面媒体 -->
-          <div>
-            <a v-if="article.page_image" class="article-item-link" :title="article.slug">
-              <img
-                v-if="mediaType(article.page_image) === 'image'"
-                class="article-media"
-                :alt="article.slug"
-                :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
-                width="140"
-                height="140"
-              />
-              <video
-                v-else-if="mediaType(article.page_image) === 'video'"
-                class="article-media"
-                muted
-                autoplay
-                playsinline="true"
-                webkit-playsinline="true"
-                :src="article.page_image"
-                width="140"
-                height="140"
-              ></video>
-              <img
-                v-else-if="article.page_image !== undefined"
-                class="article-media"
-                :alt="article.slug"
-                src="https://images.leorain.cn/icons/assets/pure_article.png"
-                width="140"
-                height="140"
-              />
-            </a>
-            <a v-else class="article-item-link" @click="openArticle(article.slug)">
-              <img
-                v-if="article.page_image !== undefined"
-                class="article-media"
-                :alt="article.slug"
-                src="https://images.leorain.cn/icons/assets/pure_article.png"
-                data-holder-rendered="true"
-                width="140"
-                height="140"
-              />
-            </a>
-          </div>
+            <div class="article-cover">
+              <a v-if="article.page_image" class="article-item-link" :title="article.slug">
+                <img
+                  v-if="mediaType(article.page_image) === 'image'"
+                  class="article-media"
+                  :alt="article.slug"
+                  :src="article.is_zoom ? article.page_image + '?x-oss-process=style/page-image' : article.page_image"
+                />
+                <video
+                  v-else-if="mediaType(article.page_image) === 'video'"
+                  class="article-media"
+                  muted
+                  autoplay
+                  playsinline="true"
+                  webkit-playsinline="true"
+                  :src="article.page_image"
+                ></video>
+                <img
+                  v-else-if="article.page_image !== undefined"
+                  class="article-media"
+                  :alt="article.slug"
+                  src="https://images.leorain.cn/icons/assets/pure_article.png"
+                />
+              </a>
+              <a v-else class="article-item-link" @click="openArticle(article.slug)">
+                <img
+                  v-if="article.page_image !== undefined"
+                  class="article-media"
+                  :alt="article.slug"
+                  src="https://images.leorain.cn/icons/assets/pure_article.png"
+                  data-holder-rendered="true"
+                />
+              </a>
+            </div>
 
           <!-- 文章内容 -->
           <div class="media-body article-body">
@@ -369,8 +363,9 @@ export default {
 
   padding: 5px !important;
   display: flex;
+  flex-direction: row;
   justify-content: flex-start;
-  align-items: flex-end;
+  align-items: stretch;
   backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
@@ -448,14 +443,10 @@ export default {
         filter: saturate(1.08);
         transition-delay: 250ms;
       }
-      .article-body {
-        background: transparent;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      }
       .article-title,
       .article-description,
       .article-extra {
-        transform: translateY(150px);
+        transform: translateX(10px);
       }
     }
   }
@@ -463,7 +454,36 @@ export default {
     width: 100%;
     padding: 5px !important;
     height: auto !important;
-    display: block;
+    display: flex;
+
+    :deep(.el-card__body) {
+      flex-direction: column;
+    }
+
+    .article-cover {
+      width: 100%;
+      min-height: 100px;
+      max-height: 140px;
+      border-radius: 14px 14px 0 0;
+
+      .article-media {
+        height: 100%;
+      }
+    }
+
+    .article-body {
+      padding: 8px 10px;
+      border-radius: 0 0 14px 14px;
+    }
+
+    .article-title {
+      font-size: 1em;
+    }
+
+    .article-description {
+      height: 32px;
+      font-size: 0.75em;
+    }
   }
 }
 
@@ -514,39 +534,43 @@ export default {
 }
 
 .article-item-link {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  cursor: pointer;
-  overflow: hidden;
-  border-radius: 14px;
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.article-cover {
+  flex-shrink: 0;
+  width: 140px;
+  min-height: 140px;
+  overflow: hidden;
+  border-radius: 14px;
+  position: relative;
+  z-index: 1;
+
+  .article-item-link {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .article-media {
-  width: 140px;
-  height: 140px;
-  max-width: 140px;
-  max-height: 140px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: top right;
+  object-position: center;
   overflow: hidden;
-  border-radius: 15px;
+  border-radius: 14px;
   background-color: var(--article-item-bg-transparent, rgba(255, 255, 255, 0.08));
   transition:
     transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.4s ease;
   will-change: transform, filter;
   transform-origin: center;
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: auto;
-  bottom: auto;
-  z-index: 0;
-  transform: scale(1);
+  display: block;
 }
 
 .article-body {
@@ -557,20 +581,14 @@ export default {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 8px;
-  background: linear-gradient(
-    to top,
-    var(--article-item-bg) 0%,
-    var(--article-item-bg-transparent) 30%,
-    transparent 50%
-  );
-  border-radius: 0 0 14px 14px;
-  margin-top: auto;
+  padding: 10px 12px;
+  border-radius: 0 14px 14px 0;
   color: #fff;
   transition:
     background-color 0.35s ease,
     color 0.35s ease,
     text-shadow 0.35s ease;
+  min-width: 0;
 }
 
 .article-heading {
@@ -680,7 +698,8 @@ export default {
   position: relative;
   z-index: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: stretch;
 }
 
 .info {
@@ -750,11 +769,20 @@ export default {
   pointer-events: none;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 
-  .skeleton-media {
-    position: absolute;
-    inset: 0;
+  .article-cover {
+    flex-shrink: 0;
+    width: 140px;
+    min-height: 140px;
     background: var(--skeleton-bg, rgba(148, 163, 184, 0.12));
     border-radius: 14px;
+    overflow: hidden;
+
+    .skeleton-media {
+      width: 100%;
+      height: 100%;
+      background: var(--skeleton-bg, rgba(148, 163, 184, 0.12));
+      border-radius: 14px;
+    }
   }
 
   .skeleton-line {
