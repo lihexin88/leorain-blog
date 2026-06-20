@@ -4,11 +4,7 @@
       <div class="article-list">
         <!-- 骨架屏占位 -->
         <template v-if="loading">
-          <div
-            v-for="i in skeletonCount"
-            :key="'skeleton-' + i"
-            class="article-item article-skeleton"
-          >
+          <div v-for="i in skeletonCount" :key="'skeleton-' + i" class="article-item article-skeleton">
             <div class="article-cover">
               <div class="skeleton-media"></div>
             </div>
@@ -31,16 +27,16 @@
         <!-- 文章列表 -->
         <template v-else>
           <el-card
-          v-for="(article, index) in articles"
-          class="media article-item pointer"
-          @click="handleArticleClick(article.slug, $event)"
-          @touchstart.passive="handleArticleTouchStart(article.slug, $event)"
-          @touchmove.passive="handleArticleTouchMove(article.slug, $event)"
-          @touchend="handleArticleTouchEnd(article.slug, $event)"
-          @touchcancel="handleArticleTouchCancel(article.slug)"
-          :key="article.slug"
-        >
-          <!-- 封面媒体 -->
+            v-for="(article, index) in articles"
+            class="media article-item pointer"
+            @click="handleArticleClick(article.slug, $event)"
+            @touchstart.passive="handleArticleTouchStart(article.slug, $event)"
+            @touchmove.passive="handleArticleTouchMove(article.slug, $event)"
+            @touchend="handleArticleTouchEnd(article.slug, $event)"
+            @touchcancel="handleArticleTouchCancel(article.slug)"
+            :key="article.slug"
+          >
+            <!-- 封面媒体 -->
             <div class="article-cover">
               <a v-if="article.page_image" class="article-item-link" :title="article.slug">
                 <img
@@ -66,64 +62,73 @@
                 />
               </a>
               <a v-else class="article-item-link" @click="openArticle(article.slug)">
-                <img
-                  v-if="article.page_image !== undefined"
-                  class="article-media"
-                  :alt="article.slug"
-                  src="https://images.leorain.cn/icons/assets/pure_article.png"
-                  data-holder-rendered="true"
-                />
+                <div class="none-image-wrapper">
+                  <span class="none-image-label">随机</span>
+                  <img
+                    v-if="article.page_image !== undefined && nonePageImageUrl"
+                    class="article-media none-image"
+                    :alt="article.slug"
+                    :src="nonePageImageUrl"
+                    data-holder-rendered="true"
+                  />
+                </div>
               </a>
             </div>
 
-          <!-- 文章内容 -->
-          <div class="media-body article-body">
-            <div class="media-heading article-heading" role="button" tabindex="0" @click="openArticle(article.slug)" @keydown.enter="openArticle(article.slug)">
-              <a :title="article.title">
-                <span class="article-title">{{ article.title }}</span>
-              </a>
-            </div>
-
-            <div
-              class="article-description"
-              v-if="article.meta_description || article.subtitle"
-              @click="openArticle(article.slug)"
-              :title="article.slug"
-            >
-              <span>{{ article.meta_description ?? article.subtitle }}</span>
-            </div>
-
-            <div class="article-extra">
-              <div class="article-tags-wrap">
-                <el-tag
-                  v-for="(tag, tagIndex) in article.tags"
-                  class="article-tag"
-                  :key="tag.tag"
-                  @click="open_tag(tag.tag)"
-                  :title="tag.tag"
-                  type="info"
-                >
-                  {{ tag.tag }}
-                </el-tag>
-              </div>
-
-              <div class="info">
-                <i class="fas fa-user info-clickable" @click="go_user(article.user.uid)">
-                  {{ article.user.name ?? 'null' }}
-                </i>
-                <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
-                  {{ getFriendlyDate(moment(article.published_at).format('Y-M-D H:m:s')) }}
-                </i>
-                <i class="fas fa-eye">{{ article.view_count }}</i>
-                <i class="fas fa-comments">{{ article.comments_count }}</i>
-                <a @click="openArticle(article.slug)" class="float-right info-clickable" :title="article.slug">
-                  More
-                  <i class="fas fa-chevron-right"></i>
+            <!-- 文章内容 -->
+            <div class="media-body article-body">
+              <div
+                class="media-heading article-heading"
+                role="button"
+                tabindex="0"
+                @click="openArticle(article.slug)"
+                @keydown.enter="openArticle(article.slug)"
+              >
+                <a :title="article.title">
+                  <span class="article-title">{{ article.title }}</span>
                 </a>
               </div>
+
+              <div
+                class="article-description"
+                v-if="article.meta_description || article.subtitle"
+                @click="openArticle(article.slug)"
+                :title="article.slug"
+              >
+                <span>{{ article.meta_description ?? article.subtitle }}</span>
+              </div>
+
+              <div class="article-extra">
+                <div class="article-tags-wrap">
+                  <el-tag
+                    v-for="(tag, tagIndex) in article.tags"
+                    class="article-tag"
+                    :key="tag.tag"
+                    @click="open_tag(tag.tag)"
+                    :title="tag.tag"
+                    type="info"
+                  >
+                    {{ tag.tag }}
+                  </el-tag>
+                </div>
+
+                <div class="info">
+                  <i class="fas fa-user info-clickable" @click="go_user(article.user.uid)">
+                    {{ article.user.name ?? 'null' }}
+                  </i>
+                  <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
+                    {{ getFriendlyDate(moment(article.published_at).format('Y-M-D H:m:s')) }}
+                  </i>
+                  <i class="fas fa-eye">{{ article.view_count }}</i>
+                  <i class="fas fa-comments">{{ article.comments_count }}</i>
+                  <a @click="openArticle(article.slug)" class="float-right info-clickable" :title="article.slug">
+                    More
+                    <i class="fas fa-chevron-right"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
         </template>
       </div>
 
@@ -147,8 +152,7 @@
 import { getFriendlyDate, mediaType, paginateLayouts, syncUrlPaginate } from '@/utils/helpers'
 import moment from 'moment'
 import anime from 'animejs'
-import { articleApi } from '@/apis'
-import { isMobile } from '@xterm/xterm/src/vs/base/common/platform'
+import { articleApi, siteAssetsApi } from '@/apis'
 
 export default {
   computed: {
@@ -173,7 +177,8 @@ export default {
       loading: true,
       currentRotations: [],
       articleTouchState: null,
-      lastArticleTouchAt: 0
+      lastArticleTouchAt: 0,
+      nonePageImageUrl: null
     }
   },
   methods: {
@@ -239,6 +244,11 @@ export default {
     },
     open_tag (tag) {
       window.location.href = '/tag/' + tag
+    },
+    getNonePageImage () {
+      siteAssetsApi.takeImage().then(res => {
+        this.nonePageImageUrl = res.url
+      })
     },
     load () {
       this.loading = true
@@ -315,6 +325,7 @@ export default {
     }
     this.smallWindowSize = articlePaginateLayouts.smallWindowSize
     this.layout = articlePaginateLayouts.layout
+    this.getNonePageImage()
     this.load()
   }
 }
@@ -883,6 +894,25 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+.none-image-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+
+  .none-image-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 1;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    pointer-events: none;
   }
 }
 </style>
