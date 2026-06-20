@@ -58,13 +58,14 @@ export default {
   data () {
     return {
       isLoading: false,
-      isStarted: false
+      isStarted: false,
+      audioMuted: true
     }
   },
 
   computed: {
     showOverlay () {
-      return !this.isStarted || this.isLoading
+      return this.isLoading
     }
   },
 
@@ -172,14 +173,21 @@ export default {
         }
       })
 
-      // Web Audio —— 在用户点击时才 resume（浏览器自动播放策略）
+      // Web Audio —— 默认 suspended，由 unmuteAudio() 在用户手势中 resume
       this._audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' })
       const sp = this._audioCtx.createScriptProcessor(SCRIPT_BUF_SIZE, 0, 2)
       sp.onaudioprocess = (e) => {
         const l = e.outputBuffer.getChannelData(0)
         const r = e.outputBuffer.getChannelData(1)
-        const available = this._audioWritePos - this._audioReadPos
 
+        // 静音时输出零，且不推进读指针（避免积压过时数据）
+        if (this.audioMuted) {
+          l.fill(0)
+          r.fill(0)
+          return
+        }
+
+        const available = this._audioWritePos - this._audioReadPos
         if (!this._audioReady || available < SCRIPT_BUF_SIZE) {
           l.fill(0)
           r.fill(0)
@@ -201,7 +209,6 @@ export default {
 
     handleStart () {
       if (this.isLoading || !this._nes) return
-      if (this._audioCtx?.state === 'suspended') this._audioCtx.resume()
       this.isStarted = true
       this._startLoop()
       this._addKeyListeners()
@@ -270,6 +277,22 @@ export default {
     },
 
     // ─── 公开 API（供父组件通过 ref 调用）────────────────────────────────────
+
+    muteAudio () {
+      this.audioMuted = true
+      if (this._audioCtx && this._audioCtx.state === 'running') {
+        this._audioCtx.suspend()
+      }
+    },
+
+    unmuteAudio () {
+      this.audioMuted = false
+      // 跳过静音期间积压的旧音频数据
+      this._audioReadPos = this._audioWritePos
+      if (this._audioCtx?.state === 'suspended') {
+        this._audioCtx.resume()
+      }
+    },
 
     reset () {
       if (this._nes) this._nes.reset()

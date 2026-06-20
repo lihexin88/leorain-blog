@@ -150,8 +150,8 @@
       <git-logs />
     </div>
     <div class="info-div">
-      <el-divider>Video Memory</el-divider>
-      <video-memory />
+      <el-divider>站内资源</el-divider>
+      <site-asset />
     </div>
     <div class="info-div">
       <el-divider>访客地图</el-divider>
@@ -174,7 +174,7 @@ import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
 import QuotesArea from '@/components/QuotesArea.vue'
 import TagCloud from '@/components/TagCloud.vue'
-import VideoMemory from '@/components/VideoMemory.vue'
+import SiteAsset from '@/components/SiteAsset.vue'
 import anime from 'animejs'
 import { getHumanReadableDate } from '@/utils/helpers'
 import { getWeather } from '@/utils/weather'
@@ -186,7 +186,7 @@ export default {
     VisitorMap,
     GitLogs,
     TagCloud,
-    VideoMemory,
+    SiteAsset,
     Quotes: QuotesArea,
     Parse: MarkdownParse
   },
@@ -353,7 +353,7 @@ export default {
   color: white;
 }
 .about-me-parser {
-  :deep(.markdown){
+  :deep(.markdown) {
     background: transparent;
   }
 }

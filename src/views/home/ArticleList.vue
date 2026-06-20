@@ -544,8 +544,8 @@ export default {
 
 .article-cover {
   flex-shrink: 0;
-  width: 140px;
-  min-height: 140px;
+  width: 180px;
+  height: 260px;
   overflow: hidden;
   border-radius: 14px;
   position: relative;

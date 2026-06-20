@@ -7,5 +7,8 @@ export default {
         num
       }
     })
+  },
+  takeImage () {
+    return api.get('/site/image/random')
   }
 }

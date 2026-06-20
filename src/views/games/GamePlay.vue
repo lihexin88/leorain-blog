@@ -2,7 +2,7 @@
   <div class="game-play-wrapper">
     <el-row :gutter="0" class="game-container">
       <!-- 左侧：键位说明 -->
-      <el-col v-if="!isMobile" :xs="24" :sm="6" class="sidebar key-guide">
+      <el-col v-if="!layoutsStore.isMobile" :xs="24" :sm="6" class="sidebar key-guide">
         <div class="sidebar-header">
           <h5>键位说明</h5>
         </div>
@@ -89,49 +89,49 @@
           </div>
 
           <!-- 移动端虚拟游戏按钮 -->
-          <div class="game-buttons" v-if="isMobile">
+          <div class="game-buttons" v-if="layoutsStore.isMobile" @touchstart.prevent="onGameTouchStart" @touchmove.prevent="onGameTouchMove" @touchend.prevent="onGameTouchEnd" @touchcancel.prevent="onGameTouchEnd">
             <div class="game-buttons-row">
               <div class="dpad">
                 <div class="dpad-row">
-                  <button class="game-btn dpad-btn dpad-up-left" @touchstart.prevent="pressBtn('up+left')" @touchend.prevent="releaseBtn('up+left')" @mousedown.prevent="pressBtn('up+left')" @mouseup.prevent="releaseBtn('up+left')">
+                  <button class="game-btn dpad-btn dpad-up-left" data-btn="up+left" @mousedown.prevent="pressBtn('up+left')" @mouseup.prevent="releaseBtn('up+left')">
                     <span class="dpad-arrow">↖</span>
                   </button>
-                  <button class="game-btn dpad-btn dpad-up" @touchstart.prevent="pressBtn('up')" @touchend.prevent="releaseBtn('up')" @mousedown.prevent="pressBtn('up')" @mouseup.prevent="releaseBtn('up')">
+                  <button class="game-btn dpad-btn dpad-up" data-btn="up" @mousedown.prevent="pressBtn('up')" @mouseup.prevent="releaseBtn('up')">
                     <span class="dpad-arrow">▲</span>
                   </button>
-                  <button class="game-btn dpad-btn dpad-up-right" @touchstart.prevent="pressBtn('up+right')" @touchend.prevent="releaseBtn('up+right')" @mousedown.prevent="pressBtn('up+right')" @mouseup.prevent="releaseBtn('up+right')">
+                  <button class="game-btn dpad-btn dpad-up-right" data-btn="up+right" @mousedown.prevent="pressBtn('up+right')" @mouseup.prevent="releaseBtn('up+right')">
                     <span class="dpad-arrow">↗</span>
                   </button>
                 </div>
                 <div class="dpad-row">
-                  <button class="game-btn dpad-btn dpad-left" @touchstart.prevent="pressBtn('left')" @touchend.prevent="releaseBtn('left')" @mousedown.prevent="pressBtn('left')" @mouseup.prevent="releaseBtn('left')">
+                  <button class="game-btn dpad-btn dpad-left" data-btn="left" @mousedown.prevent="pressBtn('left')" @mouseup.prevent="releaseBtn('left')">
                     <span class="dpad-arrow">◀</span>
                   </button>
                   <div class="dpad-center"></div>
-                  <button class="game-btn dpad-btn dpad-right" @touchstart.prevent="pressBtn('right')" @touchend.prevent="releaseBtn('right')" @mousedown.prevent="pressBtn('right')" @mouseup.prevent="releaseBtn('right')">
+                  <button class="game-btn dpad-btn dpad-right" data-btn="right" @mousedown.prevent="pressBtn('right')" @mouseup.prevent="releaseBtn('right')">
                     <span class="dpad-arrow">▶</span>
                   </button>
                 </div>
                 <div class="dpad-row">
-                  <button class="game-btn dpad-btn dpad-down-left" @touchstart.prevent="pressBtn('down+left')" @touchend.prevent="releaseBtn('down+left')" @mousedown.prevent="pressBtn('down+left')" @mouseup.prevent="releaseBtn('down+left')">
+                  <button class="game-btn dpad-btn dpad-down-left" data-btn="down+left" @mousedown.prevent="pressBtn('down+left')" @mouseup.prevent="releaseBtn('down+left')">
                     <span class="dpad-arrow">↙</span>
                   </button>
-                  <button class="game-btn dpad-btn dpad-down" @touchstart.prevent="pressBtn('down')" @touchend.prevent="releaseBtn('down')" @mousedown.prevent="pressBtn('down')" @mouseup.prevent="releaseBtn('down')">
+                  <button class="game-btn dpad-btn dpad-down" data-btn="down" @mousedown.prevent="pressBtn('down')" @mouseup.prevent="releaseBtn('down')">
                     <span class="dpad-arrow">▼</span>
                   </button>
-                  <button class="game-btn dpad-btn dpad-down-right" @touchstart.prevent="pressBtn('down+right')" @touchend.prevent="releaseBtn('down+right')" @mousedown.prevent="pressBtn('down+right')" @mouseup.prevent="releaseBtn('down+right')">
+                  <button class="game-btn dpad-btn dpad-down-right" data-btn="down+right" @mousedown.prevent="pressBtn('down+right')" @mouseup.prevent="releaseBtn('down+right')">
                     <span class="dpad-arrow">↘</span>
                   </button>
                 </div>
               </div>
               <div class="action-buttons">
                 <div class="action-top">
-                  <button class="game-btn action-btn btn-select" @touchstart.prevent="pressBtn('select')" @touchend.prevent="releaseBtn('select')" @mousedown.prevent="pressBtn('select')" @mouseup.prevent="releaseBtn('select')">Select</button>
-                  <button class="game-btn action-btn btn-start" @touchstart.prevent="pressBtn('start')" @touchend.prevent="releaseBtn('start')" @mousedown.prevent="pressBtn('start')" @mouseup.prevent="releaseBtn('start')">Start</button>
+                  <button class="game-btn action-btn btn-select" data-btn="select" @mousedown.prevent="pressBtn('select')" @mouseup.prevent="releaseBtn('select')">Select</button>
+                  <button class="game-btn action-btn btn-start" data-btn="start" @mousedown.prevent="pressBtn('start')" @mouseup.prevent="releaseBtn('start')">Start</button>
                 </div>
                 <div class="action-bottom">
-                  <button class="game-btn action-btn btn-b" @touchstart.prevent="pressBtn('b')" @touchend.prevent="releaseBtn('b')" @mousedown.prevent="pressBtn('b')" @mouseup.prevent="releaseBtn('b')">B</button>
-                  <button class="game-btn action-btn btn-a" @touchstart.prevent="pressBtn('a')" @touchend.prevent="releaseBtn('a')" @mousedown.prevent="pressBtn('a')" @mouseup.prevent="releaseBtn('a')">A</button>
+                  <button class="game-btn action-btn btn-b" data-btn="b" @mousedown.prevent="pressBtn('b')" @mouseup.prevent="releaseBtn('b')">B</button>
+                  <button class="game-btn action-btn btn-a" data-btn="a" @mousedown.prevent="pressBtn('a')" @mouseup.prevent="releaseBtn('a')">A</button>
                 </div>
               </div>
             </div>
@@ -144,9 +144,12 @@
               <el-button :disabled="saveable" @click="save">Save</el-button>
               <el-button :disabled="saveable" @click="load">Load</el-button>
             </el-button-group>
+            <el-button class="audio-btn" @click="toggleAudio">
+              {{ audioOn ? '🔊' : '🔇' }}
+            </el-button>
           </div>
 
-          <div class="scroll-hint" v-if="isMobile">
+          <div class="scroll-hint" v-if="layoutsStore.isMobile">
             <span>↓ 在此处向下滑动可滚动页面，上方区域滑动无效 ↓</span>
           </div>
         </div>
@@ -177,6 +180,7 @@ import NesPlayer from '@/components/NesPlayer.vue'
 import CommentArea from '@/components/CommentArea.vue'
 import { useUserStore } from '@/store/user'
 import { mapState } from 'pinia'
+import { useLayoutsStore } from '@/store/layouts'
 
 export default {
   name: 'GamePlay',
@@ -190,26 +194,33 @@ export default {
       default: ''
     }
   },
+  setup () {
+    const layoutsStore = useLayoutsStore()
+    return {
+      layoutsStore
+    }
+  },
   data () {
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
     return {
       gameId: 0,
       gameUrl: '',
       currentFPS: '0',
       saveable: true,
       gameName: '',
-      isMobile: false
+      audioOn: !isIOS,
+      isIOS,
+      activeTouches: {} // touchId → btnName
     }
   },
   computed: {
     ...mapState(useUserStore, ['user'])
   },
   mounted () {
-    this.isMobile = window.innerWidth <= 768
     this.fetchGameDetail()
-    window.addEventListener('resize', this.onResize, { passive: true })
+    this.layoutsStore.setShowSiteInfo(false)
   },
   beforeUnmount () {
-    window.removeEventListener('resize', this.onResize)
   },
   watch: {
     slug (newVal, oldVal) {
@@ -227,8 +238,44 @@ export default {
     releaseBtn (name) {
       if (this.$refs.nes) this.$refs.nes.releaseButton(name)
     },
-    onResize () {
-      this.isMobile = window.innerWidth <= 768
+    getBtnNameFromTouch (touch) {
+      const el = document.elementFromPoint(touch.clientX, touch.clientY)
+      if (!el) return null
+      const btn = el.closest('[data-btn]')
+      return btn ? btn.dataset.btn : null
+    },
+    onGameTouchStart (e) {
+      for (const touch of e.changedTouches) {
+        const name = this.getBtnNameFromTouch(touch)
+        if (name) {
+          this.activeTouches[touch.identifier] = name
+          this.pressBtn(name)
+        }
+      }
+    },
+    onGameTouchMove (e) {
+      for (const touch of e.changedTouches) {
+        const newName = this.getBtnNameFromTouch(touch)
+        const oldName = this.activeTouches[touch.identifier]
+        if (newName !== oldName) {
+          if (oldName) {
+            this.releaseBtn(oldName)
+          }
+          if (newName) {
+            this.pressBtn(newName)
+          }
+          this.activeTouches[touch.identifier] = newName
+        }
+      }
+    },
+    onGameTouchEnd (e) {
+      for (const touch of e.changedTouches) {
+        const name = this.activeTouches[touch.identifier]
+        if (name) {
+          this.releaseBtn(name)
+          delete this.activeTouches[touch.identifier]
+        }
+      }
     },
     async fetchGameDetail () {
       const slug = this.slug
@@ -270,6 +317,10 @@ export default {
     },
     onSuccess () {
       this.saveable = false
+      // 非 iOS 设备自动开启音频
+      if (this.audioOn && this.$refs.nes) {
+        this.$refs.nes.unmuteAudio()
+      }
       console.log('Load successful')
     },
     onError (error) {
@@ -280,6 +331,16 @@ export default {
     },
     onLoaded ({ id }) {
       console.log(id + ' loaded')
+    },
+    toggleAudio () {
+      this.audioOn = !this.audioOn
+      if (this.$refs.nes) {
+        if (this.audioOn) {
+          this.$refs.nes.unmuteAudio()
+        } else {
+          this.$refs.nes.muteAudio()
+        }
+      }
     }
   }
 }
@@ -396,9 +457,16 @@ export default {
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 8px;
 
     .el-button {
       padding: 10px 20px;
+    }
+
+    .audio-btn {
+      padding: 10px 14px;
+      font-size: 18px;
     }
   }
 }

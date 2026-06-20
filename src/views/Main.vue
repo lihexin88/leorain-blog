@@ -33,7 +33,7 @@
     </header>
 
     <main class="body">
-      <site-info/>
+      <site-info v-if="layoutsStore.showSiteInfo"/>
       <!-- 子组件将在这里渲染 -->
       <router-view v-slot="{ Component }">
         <transition name="fade-slide" mode="out-in">

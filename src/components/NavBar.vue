@@ -374,6 +374,12 @@ export default {
   margin-right: 8px;
   object-fit: contain;
 }
+@include mobile {
+  .menu-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
 .login-icon {
   cursor: pointer;
   &:hover{
