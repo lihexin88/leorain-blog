@@ -303,7 +303,6 @@ export default {
   height: 360px;
   border-radius: 8px;
   overflow: hidden;
-  background: #fafafa;
 
   .image-area {
     width: 55%;
