@@ -13,7 +13,7 @@ import topicApi from './topic'
 import clipboardApi from './clipboard'
 import requestLogApi from './request-log'
 import responseApi from './response'
-import videoMemoryApi from './videoMemory'
+import siteAssetsApi from './siteAssets'
 import rssApi from './rss'
 
 export default {
@@ -31,7 +31,7 @@ export default {
   topicApi,
   clipboardApi,
   responseApi,
-  videoMemoryApi,
+  siteAssetsApi,
   rssApi
 }
 
@@ -52,6 +52,6 @@ export {
   clipboardApi,
   requestLogApi,
   responseApi,
-  videoMemoryApi,
+  siteAssetsApi,
   rssApi
 }
