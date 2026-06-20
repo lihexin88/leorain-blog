@@ -315,7 +315,7 @@ export default {
 
 <style scoped lang="scss">
 .nav-el-menu {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: var(--header-bg);
   backdrop-filter: blur(8px) saturate(180%);
   display: flex;
   align-items: center;
