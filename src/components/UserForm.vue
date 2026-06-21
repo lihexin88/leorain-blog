@@ -220,7 +220,7 @@ export default {
     },
     validateData () {
       return this.$refs.guestFormRef?.validate().catch(() => false) || false
-    },
+    }
   }
 }
 </script>
