@@ -4,41 +4,43 @@
     <div v-if="configStore.backgroundImage" class="background-container">
       <!-- 判断是视频还是图片 -->
       <video
-          v-if="isVideo(configStore.backgroundImage)"
-          class="background-video"
-          autoplay
-          loop
-          muted
-          playsinline
-          width="100%"
-          height="100%"
+        v-if="isVideo(configStore.backgroundImage)"
+        class="background-video"
+        autoplay
+        loop
+        muted
+        playsinline
+        width="100%"
+        height="100%"
       >
-        <source :src="configStore.backgroundImage" type="video/mp4">
+        <source :src="configStore.backgroundImage" type="video/mp4" />
         您的浏览器不支持视频标签。
       </video>
       <img
-          v-else
-          class="background-image"
-          :src="configStore.backgroundImage"
-          alt="背景图片"
-          width="100%"
-          height="100%"
-      >
+        v-else
+        class="background-image"
+        :src="configStore.backgroundImage"
+        alt="背景图片"
+        width="100%"
+        height="100%"
+      />
     </div>
 
     <header class="header">
       <!-- Header内容 -->
-      <ScrollProgress style="z-index: 1"/>
-      <NavBar/>
+      <ScrollProgress style="z-index: 1" />
+      <NavBar />
     </header>
 
     <main class="body">
-      <site-info v-if="layoutsStore.showSiteInfo"/>
+      <site-info v-if="layoutsStore.showSiteInfo" />
       <!-- 子组件将在这里渲染 -->
       <router-view v-slot="{ Component }">
-        <transition name="fade-slide" mode="out-in">
-          <component :is="Component" />
-        </transition>
+        <keep-alive>
+          <transition name="fade-slide" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </keep-alive>
       </router-view>
     </main>
 
@@ -87,7 +89,7 @@ export default {
     const layoutsStore = useLayoutsStore()
 
     // 判断URL是否为视频
-    const isVideo = (url) => {
+    const isVideo = url => {
       if (!url) return false
       const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov']
       const extension = url.split('.').pop().toLowerCase()
@@ -151,7 +153,9 @@ export default {
 
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .fade-slide-enter-from {
@@ -176,7 +180,9 @@ export default {
   max-width: 100vw;
   overflow-x: hidden;
   background-color: var(--header-bg);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .header h1 {
@@ -198,7 +204,9 @@ export default {
   bottom: 0;
   width: 100%;
   background-color: var(--footer-bg);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   color: var(--footer-text-color);
 }
 
