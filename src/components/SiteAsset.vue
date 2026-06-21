@@ -28,17 +28,21 @@
         <el-empty v-else :description="errorMessage || '暂无视频'"></el-empty>
       </div>
       <div class="random-image">
+        <div v-if="imageLoading" class="image-area image-area--loading">
+          <div class="loading-spinner"></div>
+          <span class="loading-text">加载中</span>
+        </div>
         <el-image
           title="随机图片"
           preview-teleported
           :alt="imageUrl"
-          v-if="imageUrl"
-          :preview-src-list="[imageUrl]"
+          v-else-if="imageBlob"
+          :preview-src-list="[imageBlob]"
           class="image-area"
           fit="cover"
-          :src="imageUrl"
+          :src="imageBlob"
         ></el-image>
-        <div v-else class="image-area image-area--empty">加载中...</div>
+        <div v-else class="image-area image-area--empty">加载失败</div>
         <div class="image-info">
           <div class="image-info__title">随机图片</div>
           <div class="image-info__list">
@@ -50,7 +54,9 @@
             <div class="image-info__item">
               <el-icon class="image-info__icon"><PriceTag /></el-icon>
               <span class="image-info__label">标签</span>
-              <span class="image-info__value">[开发中]</span>
+              <div class="image-info__value image-info-label">
+                <span v-for="label in imageLabels">{{ label }}</span>
+              </div>
             </div>
           </div>
           <div class="image-info__actions">
@@ -111,7 +117,10 @@ export default {
       videoInfo: defaultVideoInfo(),
       lastSavedTime: 0,
       imageUrl: null,
-      imageSize: 0
+      imageBlob: null,
+      imageLoading: true,
+      imageSize: 0,
+      imageLabels: []
     }
   },
   computed: {
@@ -153,9 +162,31 @@ export default {
       }
     },
     getRandomImage () {
+      this.imageLoading = true
       siteAssetsApi.takeImage().then(res => {
         this.imageUrl = res.url
         this.imageSize = res.size
+        this.imageLabels = JSON.parse(res.labels)
+        fetch(res.url)
+          .then(response => {
+            if (!response.ok) throw new Error('Fetch failed')
+            return response.blob()
+          })
+          .then(blob => {
+            if (this.imageBlob) {
+              URL.revokeObjectURL(this.imageBlob)
+            }
+            this.imageBlob = URL.createObjectURL(blob)
+            this.imageLoading = false
+          })
+          .catch(() => {
+            // Fallback: use original URL directly
+            if (this.imageBlob) {
+              URL.revokeObjectURL(this.imageBlob)
+            }
+            this.imageBlob = res.url
+            this.imageLoading = false
+          })
       })
     },
     getSavedPlaybackProgress () {
@@ -233,6 +264,9 @@ export default {
   },
   beforeUnmount () {
     this.savePlaybackProgress(true)
+    if (this.imageBlob && this.imageBlob.startsWith('blob:')) {
+      URL.revokeObjectURL(this.imageBlob)
+    }
   }
 }
 </script>
@@ -309,13 +343,30 @@ export default {
     flex-shrink: 0;
     border-radius: 8px 0 0 8px;
 
-    &--empty {
+    &--empty,
+    &--loading {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 10px;
       color: #c0c4cc;
       font-size: 14px;
       background: #f5f7fa;
+
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e4e7ed;
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .loading-text {
+        font-size: 13px;
+        color: #909399;
+      }
     }
   }
 
@@ -401,5 +452,24 @@ export default {
       padding: 16px;
     }
   }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.image-info-label{
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  flex-wrap: wrap;
+  text-wrap: wrap!important;
+  text-overflow: clip;
+  overflow: auto!important;
+  white-space: wrap!important;
 }
 </style>

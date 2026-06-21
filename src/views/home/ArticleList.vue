@@ -64,11 +64,19 @@
               <a v-else class="article-item-link" @click="openArticle(article.slug)">
                 <div class="none-image-wrapper">
                   <span class="none-image-label">随机</span>
-                  <img
-                    v-if="article.page_image !== undefined && nonePageImageUrl"
+                  <div
+                    v-if="noneImageLoading"
+                    class="none-image-placeholder"
+                  >
+                    <div class="loading-spinner"></div>
+                    <span class="loading-text">加载中</span>
+                  </div>
+                  <el-image
+                    v-else-if="article.page_image !== undefined && noneImageBlob"
+                    fit="cover"
                     class="article-media none-image"
                     :alt="article.slug"
-                    :src="nonePageImageUrl"
+                    :src="noneImageBlob"
                     data-holder-rendered="true"
                   />
                 </div>
@@ -121,10 +129,6 @@
                   </i>
                   <i class="fas fa-eye">{{ article.view_count }}</i>
                   <i class="fas fa-comments">{{ article.comments_count }}</i>
-                  <a @click="openArticle(article.slug)" class="float-right info-clickable" :title="article.slug">
-                    More
-                    <i class="fas fa-chevron-right"></i>
-                  </a>
                 </div>
               </div>
             </div>
@@ -178,7 +182,8 @@ export default {
       currentRotations: [],
       articleTouchState: null,
       lastArticleTouchAt: 0,
-      nonePageImageUrl: null
+      noneImageBlob: null,
+      noneImageLoading: true
     }
   },
   methods: {
@@ -247,7 +252,27 @@ export default {
     },
     getNonePageImage () {
       siteAssetsApi.takeImage().then(res => {
-        this.nonePageImageUrl = res.url
+        this.noneImageLoading = true
+        fetch(res.url)
+          .then(response => {
+            if (!response.ok) throw new Error('Fetch failed')
+            return response.blob()
+          })
+          .then(blob => {
+            if (this.noneImageBlob) {
+              URL.revokeObjectURL(this.noneImageBlob)
+            }
+            this.noneImageBlob = URL.createObjectURL(blob)
+            this.noneImageLoading = false
+          })
+          .catch(() => {
+            // Fallback: use original URL directly
+            if (this.noneImageBlob) {
+              URL.revokeObjectURL(this.noneImageBlob)
+            }
+            this.noneImageBlob = res.url
+            this.noneImageLoading = false
+          })
       })
     },
     load () {
@@ -327,6 +352,11 @@ export default {
     this.layout = articlePaginateLayouts.layout
     this.getNonePageImage()
     this.load()
+  },
+  beforeUnmount () {
+    if (this.noneImageBlob && this.noneImageBlob.startsWith('blob:')) {
+      URL.revokeObjectURL(this.noneImageBlob)
+    }
   }
 }
 </script>
@@ -886,6 +916,15 @@ export default {
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -913,6 +952,32 @@ export default {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 4px;
     pointer-events: none;
+  }
+
+  .none-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--skeleton-bg, rgba(148, 163, 184, 0.12));
+    border-radius: 14px;
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--skeleton-line-bg, rgba(148, 163, 184, 0.2));
+      border-top-color: var(--theme-accent-color, #6366f1);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+      font-size: 12px;
+      color: var(--muted-text-color, #9ca3af);
+    }
   }
 }
 </style>
