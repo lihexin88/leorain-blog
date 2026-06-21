@@ -369,8 +369,8 @@ export default {
 }
 
 .menu-icon {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   margin-right: 8px;
   object-fit: contain;
 }
