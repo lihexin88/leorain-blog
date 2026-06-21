@@ -342,6 +342,11 @@ export default {
     width: 55%;
     flex-shrink: 0;
     border-radius: 8px 0 0 8px;
+    :deep(img) {
+      image-rendering: -webkit-optimize-contrast; /* Chrome/Safari */
+      image-rendering: high-quality; /* 现代浏览器标准 */
+      will-change: transform;
+    }
 
     &--empty,
     &--loading {
@@ -462,14 +467,14 @@ export default {
     transform: rotate(360deg);
   }
 }
-.image-info-label{
+.image-info-label {
   display: flex;
   gap: 5px;
   padding: 5px;
   flex-wrap: wrap;
-  text-wrap: wrap!important;
+  text-wrap: wrap !important;
   text-overflow: clip;
-  overflow: auto!important;
-  white-space: wrap!important;
+  overflow: auto !important;
+  white-space: wrap !important;
 }
 </style>
