@@ -9,7 +9,7 @@
       @select="handleSelect"
   >
     <el-menu-item index="/">
-      <img src="/images/logo.png" class="menu-icon"/>
+      <img src="/images/logo.png" class="menu-icon-logo"/>
       <span>首页</span>
     </el-menu-item>
 
@@ -369,6 +369,12 @@ export default {
 }
 
 .menu-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  object-fit: contain;
+}
+.menu-icon-logo {
   width: 48px;
   height: 48px;
   margin-right: 8px;
