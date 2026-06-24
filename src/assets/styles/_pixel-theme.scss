@@ -1,0 +1,455 @@
+// Pixel-light theme: light pixel-art style overrides for Element Plus & global UI
+// All rules are scoped under [data-theme="pixel-light"] to avoid affecting other themes.
+
+[data-theme="pixel-light"] {
+  // ── Pixel font stack ──────────────────────────────────────
+  --pixel-font-heading: 'Press Start 2P', monospace;
+  --pixel-font-body: 'VT323', monospace;
+
+  // ── Global resets ─────────────────────────────────────────
+  &,
+  *,
+  *::before,
+  *::after {
+    border-radius: 0 !important;
+  }
+
+  // Hard shadow helper (applied via box-shadow on key elements)
+  --pixel-shadow: 4px 4px 0px #8a917a;
+  --pixel-shadow-sm: 2px 2px 0px #8a917a;
+  --pixel-shadow-hover: 6px 6px 0px #8a917a;
+
+  font-family: var(--pixel-font-body);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+
+  // ── Body & root ───────────────────────────────────────────
+  body {
+    font-family: var(--pixel-font-body);
+    font-size: 18px; // VT323 reads well at larger sizes
+    -webkit-font-smoothing: none;
+  }
+
+  // ── Headings ──────────────────────────────────────────────
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--pixel-font-heading);
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  // ── Element Plus: Buttons ─────────────────────────────────
+  .el-button {
+    font-family: var(--pixel-font-heading) !important;
+    font-size: 14px !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow-sm) !important;
+    transition: transform 0.1s, box-shadow 0.1s !important;
+
+    &:hover,
+    &:focus {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--pixel-shadow) !important;
+    }
+
+    &:active {
+      transform: translate(2px, 2px);
+      box-shadow: none !important;
+    }
+
+    // Primary variant
+    &.el-button--primary {
+      background-color: #5b8c5a !important;
+      border-color: #3d5e3c !important;
+      color: #f5f0e1 !important;
+
+      &:hover,
+      &:focus {
+        background-color: #4a7a49 !important;
+      }
+    }
+
+    // Success variant
+    &.el-button--success {
+      background-color: #7bc67e !important;
+      border-color: #4d8a50 !important;
+      color: #2d3a2d !important;
+    }
+
+    // Warning variant
+    &.el-button--warning {
+      background-color: #e8c54a !important;
+      border-color: #a68c30 !important;
+      color: #2d3a2d !important;
+    }
+
+    // Danger variant
+    &.el-button--danger {
+      background-color: #d45d5d !important;
+      border-color: #8e3535 !important;
+      color: #f5f0e1 !important;
+    }
+
+    // Info / default variant
+    &.el-button--info,
+    &.el-button--default {
+      background-color: #e8e0cc !important;
+      border-color: #b0a88e !important;
+      color: #2d3a2d !important;
+    }
+
+    // Text & link buttons
+    &.el-button--text,
+    &.is-text,
+    &.is-link {
+      border: none !important;
+      box-shadow: none !important;
+      color: #5b8c5a !important;
+
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+
+  // ── Element Plus: Progress ────────────────────────────────
+  .el-progress {
+    .el-progress-bar__outer {
+      border: 2px solid #5a6b4a;
+      background-color: #e8e0cc;
+      overflow: hidden;
+    }
+
+    .el-progress-bar__inner {
+      background-color: #5b8c5a;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 4px,
+        rgba(0, 0, 0, 0.08) 4px,
+        rgba(0, 0, 0, 0.08) 8px
+      );
+    }
+
+    .el-progress-bar__innerText {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      color: #f5f0e1;
+    }
+
+    .el-progress__text {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      color: #2d3a2d;
+    }
+  }
+
+  // ── Element Plus: Switch ──────────────────────────────────
+  .el-switch {
+    .el-switch__core {
+      border: 2px solid #5a6b4a;
+      background-color: #c5b99a;
+      overflow: hidden;
+
+      .el-switch__action {
+        border: 2px solid #5a6b4a;
+        background-color: #f5f0e1;
+      }
+    }
+
+    &.is-checked .el-switch__core {
+      background-color: #5b8c5a;
+
+      .el-switch__action {
+        background-color: #f5f0e1;
+      }
+    }
+  }
+
+  // ── Element Plus: Drawer ──────────────────────────────────
+  .el-drawer {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    background-color: #fffdf4 !important;
+
+    .el-drawer__body {
+      font-family: var(--pixel-font-body);
+    }
+  }
+
+  // ── Element Plus: Dialog ──────────────────────────────────
+  .el-dialog {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    background-color: #fffdf4 !important;
+
+    .el-dialog__header {
+      font-family: var(--pixel-font-heading);
+      border-bottom: 2px solid #5a6b4a;
+
+      .el-dialog__title {
+        font-family: var(--pixel-font-heading);
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+    }
+
+    .el-dialog__body {
+      font-family: var(--pixel-font-body);
+      font-size: 18px;
+    }
+  }
+
+  // ── Element Plus: Divider ─────────────────────────────────
+  .el-divider {
+    .el-divider__text {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: #fffdf4;
+    }
+
+    .el-divider--horizontal {
+      border-top: 2px dashed #5a6b4a;
+    }
+  }
+
+  // ── Element Plus: Input ───────────────────────────────────
+  .el-input {
+    .el-input__wrapper {
+      border: 2px solid #5a6b4a !important;
+      box-shadow: none !important;
+      background-color: #fffdf4 !important;
+      font-family: var(--pixel-font-body);
+      font-size: 18px;
+
+      &:hover,
+      &.is-focus {
+        box-shadow: 4px 4px 0px #5b8c5a !important;
+      }
+    }
+  }
+
+  // ── Element Plus: Textarea ────────────────────────────────
+  .el-textarea {
+    .el-textarea__inner {
+      border: 2px solid #5a6b4a !important;
+      box-shadow: none !important;
+      background-color: #fffdf4 !important;
+      font-family: var(--pixel-font-body);
+      font-size: 18px;
+
+      &:focus {
+        box-shadow: 4px 4px 0px #5b8c5a !important;
+      }
+    }
+  }
+
+  // ── Element Plus: Select ──────────────────────────────────
+  .el-select {
+    .el-select__wrapper {
+      border: 2px solid #5a6b4a !important;
+      box-shadow: none !important;
+      background-color: #fffdf4 !important;
+      font-family: var(--pixel-font-body);
+    }
+  }
+
+  .el-select__popper {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+
+    .el-select-dropdown__item {
+      font-family: var(--pixel-font-body);
+      font-size: 18px;
+
+      &.is-selected {
+        font-family: var(--pixel-font-heading);
+        font-size: 14px;
+      }
+    }
+  }
+
+  // ── Element Plus: Card ────────────────────────────────────
+  .el-card {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    background-color: #fffdf4 !important;
+
+    .el-card__header {
+      border-bottom: 2px solid #5a6b4a;
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .el-card__body {
+      font-family: var(--pixel-font-body);
+    }
+  }
+
+  // ── Element Plus: Tag ─────────────────────────────────────
+  .el-tag {
+    border: 2px solid #5a6b4a !important;
+    font-family: var(--pixel-font-heading) !important;
+    font-size: 13px !important;
+    text-transform: uppercase;
+  }
+
+  // ── Element Plus: Table ───────────────────────────────────
+  .el-table {
+    border: 2px solid #5a6b4a;
+    font-family: var(--pixel-font-body);
+    font-size: 18px;
+
+    th.el-table__cell {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      text-transform: uppercase;
+      background-color: #e8e0cc;
+      border-color: #5a6b4a;
+    }
+
+    td.el-table__cell {
+      border-color: #c5b99a;
+    }
+
+    .el-table__row:hover > td {
+      background-color: #f0e8d0 !important;
+    }
+  }
+
+  // ── Element Plus: Tabs ────────────────────────────────────
+  .el-tabs {
+    .el-tabs__item {
+      font-family: var(--pixel-font-heading);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .el-tabs__active-bar {
+      background-color: #5b8c5a;
+      height: 3px !important;
+    }
+  }
+
+  // ── Element Plus: Menu / Nav ──────────────────────────────
+  .el-menu {
+    font-family: var(--pixel-font-heading);
+
+    .el-menu-item,
+    .el-sub-menu__title {
+      font-family: var(--pixel-font-heading);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  }
+
+  // ── Element Plus: Breadcrumb ──────────────────────────────
+  .el-breadcrumb {
+    font-family: var(--pixel-font-body);
+    font-size: 18px;
+  }
+
+  // ── Element Plus: Pagination ──────────────────────────────
+  .el-pagination {
+    font-family: var(--pixel-font-body);
+
+    .el-pager li {
+      border: 2px solid #5a6b4a;
+      font-family: var(--pixel-font-heading);
+      font-size: 12px;
+
+      &.is-active {
+        background-color: #5b8c5a;
+        color: #f5f0e1;
+      }
+    }
+
+    button {
+      border: 2px solid #5a6b4a;
+      font-family: var(--pixel-font-heading);
+    }
+  }
+
+  // ── Element Plus: Message / Notification ──────────────────
+  .el-message {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    font-family: var(--pixel-font-body);
+    font-size: 18px;
+  }
+
+  .el-notification {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    font-family: var(--pixel-font-body);
+
+    .el-notification__title {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+    }
+  }
+
+  // ── Element Plus: Tooltip / Popover ───────────────────────
+  .el-tooltip__popper,
+  .el-popover {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow-sm) !important;
+    font-family: var(--pixel-font-body);
+  }
+
+  // ── Element Plus: Form ────────────────────────────────────
+  .el-form-item {
+    .el-form-item__label {
+      font-family: var(--pixel-font-heading);
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+  }
+
+  // ── Element Plus: Skeleton ────────────────────────────────
+  .el-skeleton {
+    .el-skeleton__item {
+      border: 2px solid #c5b99a;
+      background: repeating-linear-gradient(
+        -45deg,
+        #e8e0cc,
+        #e8e0cc 4px,
+        #f0e8d0 4px,
+        #f0e8d0 8px
+      );
+    }
+  }
+
+  // ── Custom: Article items ─────────────────────────────────
+  .article-item,
+  .info-div-card {
+    border: 2px solid #5a6b4a !important;
+    box-shadow: var(--pixel-shadow) !important;
+    font-family: var(--pixel-font-body);
+  }
+
+  // ── Custom: Settings drawer (SiteInfo) ────────────────────
+  .site-info-drawer,
+  .site-info-drawer .el-drawer__body {
+    background-color: #fffdf4 !important;
+    font-family: var(--pixel-font-body);
+  }
+
+  // ── Scrollbar pixel style ─────────────────────────────────
+  ::-webkit-scrollbar-thumb {
+    background-color: #5b8c5a;
+    border: 2px solid #5a6b4a;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #e8e0cc;
+    border: 1px solid #b0a88e;
+  }
+}

@@ -20,8 +20,8 @@
         <el-input autofocus clearable style="width: 300px" :prefix-icon="Search"
                   placeholder="输入文本进行搜索，例如：睡觉的猫咪"
                   @change="load(true)" v-model="keywords"></el-input>
-        <el-button @click="fileNameSearch()">文件名搜索</el-button>
-        <el-button @click="vectorSearch()">语义搜索</el-button>
+        <el-button :class="{ 'search-type-active': isVectorSearch === 0 }" @click="fileNameSearch()">文件名搜索</el-button>
+        <el-button :class="{ 'search-type-active': isVectorSearch === 1 }" @click="vectorSearch()">按内容搜索</el-button>
         <el-button type="primary" @click="openUploadDialog">上传</el-button>
         <el-button type="primary" @click="openDirCreateDialog">创建目录</el-button>
       </div>
@@ -72,7 +72,7 @@
               </template>
             </el-dropdown>
             <div class="asset-info-wrapper">
-              <div v-if="asset.score" class="asset-info">
+              <div v-if="asset.score !== undefined" class="asset-info">
                 <span>余弦距离：{{ asset.score }}</span>
               </div>
               <div class="asset-info">
@@ -181,7 +181,7 @@
                 </el-table-column>
                 <el-table-column label="操作" width="140" fixed="right">
                   <template v-slot="scope">
-                    <el-button type="primary" link @click="copyToClipboard(scope.row.full_text)">复制</el-button>
+                    <el-button type="success" link @click="copyToClipboard(scope.row.full_text)">复制</el-button>
                     <el-button type="danger" link @click="deleteAsr(scope.row)">删除</el-button>
                   </template>
                 </el-table-column>
@@ -1502,8 +1502,7 @@ export default {
 }
 
 .asset-info {
-  margin-top: 6px;
-  font-size: .85em;
+  font-size: 12px;
   color: var(--card-text-color);
   display: flex;
   justify-content: center;
@@ -1616,6 +1615,26 @@ export default {
 .move-dir-selected {
   background: #e6f0ff;
   outline: 1px solid #409eff;
+}
+
+.search-type-active {
+  color: var(--el-color-primary) !important;
+  border-color: var(--el-color-primary) !important;
+  background-color: var(--el-color-primary-light-9) !important;
+  box-shadow: 0 0 0 1px var(--el-color-primary-light-7) inset;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--el-color-primary);
+  }
 }
 </style>
 
