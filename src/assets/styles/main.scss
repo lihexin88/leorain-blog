@@ -316,6 +316,40 @@ body.el-popup-parent--hidden {
   --theme-el-fill-color-blank: #0f172a;
 }
 
+/* Pixel-light theme (浅色像素风) */
+[data-theme="pixel-light"] {
+  --header-bg: rgba(232, 224, 204, 0.92);
+  --footer-bg: rgba(232, 224, 204, 0.92);
+  --body-bg: #f5f0e1;
+  --footer-text-color: #2d3a2d;
+  --article-item-bg: #fffdf4;
+  --article-item-bg-transparent: rgba(255, 253, 244, 0.85);
+  --article-border: #5a6b4a;
+  --article-box-shadow: 4px 4px 0px #8a917a;
+  --info-card-bg: #fffdf4;
+  --text-color: #2d3a2d;
+  --card-text-color: #2d3a2d;
+  --muted-text-color: #6b7a5c;
+  --theme-accent-color: #5b8c5a;
+  --theme-primary-light-3: #7ea87e;
+  --theme-primary-light-5: #a1c4a1;
+  --theme-primary-light-7: #c4ddc4;
+  --theme-primary-light-8: #d5ead5;
+  --theme-primary-light-9: #e8f4e8;
+  --theme-primary-dark-2: #3d6b3d;
+  --theme-el-bg-color: #fffdf4;
+  --theme-el-bg-color-page: #f5f0e1;
+  --theme-el-bg-color-overlay: #fffdf4;
+  --theme-el-border-color: #5a6b4a;
+  --theme-el-border-color-light: #8a917a;
+  --theme-el-border-color-lighter: #c5b99a;
+  --theme-el-border-color-extra-light: #e8e0cc;
+  --theme-el-fill-color: #e8e0cc;
+  --theme-el-fill-color-light: #f0e8d0;
+  --theme-el-fill-color-lighter: #f5f0e1;
+  --theme-el-fill-color-blank: #fffdf4;
+}
+
 .info-div-card {
   border-radius: 5px;
   background: var(--info-card-bg);
@@ -341,4 +375,7 @@ body.el-popup-parent--hidden {
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+// Pixel-light theme structural overrides (border-radius, shadows, fonts, Element Plus components)
+@import 'pixel-theme';
 
