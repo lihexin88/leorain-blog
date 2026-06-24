@@ -1177,6 +1177,8 @@ export default {
       this.loadDirPath(dirId)
     },
     openAssetDir (asset) {
+      this.keywords = null
+      this.isVectorSearch = 0
       this.dirId = asset.asset_id
       this.load(true)
       this.loadDirPath(this.dirId)
