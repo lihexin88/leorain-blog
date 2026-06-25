@@ -147,7 +147,8 @@ export default {
         { id: 'red', label: '红色' },
         { id: 'cyan', label: '青色' },
         { id: 'dark', label: '暗黑' },
-        { id: 'pixel-light', label: '像素' }
+        { id: 'pixel-light', label: '像素' },
+        { id: 'genshin', label: '原神' }
       ],
       themeColors: {
         pink: '#f472b6',
@@ -159,7 +160,8 @@ export default {
         red: '#ef4444',
         cyan: '#06b6d4',
         dark: '#1e293b',
-        'pixel-light': '#a3e635'
+        'pixel-light': '#a3e635',
+        genshin: '#d4a574'
       },
       systemThemeQuery: null,
       systemThemeChangeHandler: null
@@ -397,6 +399,7 @@ export default {
         this.currentTheme = selectedTheme
         localStorage.setItem('site_theme', selectedTheme)
         this.togglePixelFont(resolved === 'pixel-light')
+        this.toggleGenshinFont(resolved === 'genshin')
       } catch (e) {
         console.error('设置主题失败', e)
       }
@@ -424,6 +427,29 @@ export default {
         if (existing) existing.remove()
       }
     },
+    toggleGenshinFont (enable) {
+      const LINK_ID = 'genshin-font-link'
+      const existing = document.getElementById(LINK_ID)
+      if (enable) {
+        if (existing) return
+        const preconnect1 = document.createElement('link')
+        preconnect1.rel = 'preconnect'
+        preconnect1.href = 'https://fonts.googleapis.com'
+        document.head.appendChild(preconnect1)
+        const preconnect2 = document.createElement('link')
+        preconnect2.rel = 'preconnect'
+        preconnect2.href = 'https://fonts.gstatic.com'
+        preconnect2.crossOrigin = ''
+        document.head.appendChild(preconnect2)
+        const link = document.createElement('link')
+        link.id = LINK_ID
+        link.rel = 'stylesheet'
+        link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+XiaoWei&display=swap'
+        document.head.appendChild(link)
+      } else {
+        if (existing) existing.remove()
+      }
+    },
     setupSystemThemeListener () {
       if (!window.matchMedia) return
       this.systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -432,6 +458,7 @@ export default {
           const resolved = this.resolveTheme('system')
           document.documentElement.setAttribute('data-theme', resolved)
           this.togglePixelFont(resolved === 'pixel-light')
+          this.toggleGenshinFont(resolved === 'genshin')
         }
       }
       if (this.systemThemeQuery.addEventListener) {

@@ -1,4 +1,8 @@
 // 全局样式
+// Pixel-light theme loaded via @use at top of file
+@use 'pixel-theme';
+// Genshin Impact theme
+@use 'genshin-theme';
 html {
   scrollbar-gutter: stable;
 }
@@ -350,6 +354,40 @@ body.el-popup-parent--hidden {
   --theme-el-fill-color-blank: #fffdf4;
 }
 
+/* Genshin Impact theme (原神) */
+[data-theme="genshin"] {
+  --header-bg: rgba(255, 252, 245, 0.92);
+  --footer-bg: rgba(255, 252, 245, 0.88);
+  --body-bg: #faf6f0;
+  --footer-text-color: #5d4e3a;
+  --article-item-bg: rgba(255, 252, 245, 0.95);
+  --article-item-bg-transparent: rgba(255, 252, 245, 0.82);
+  --article-border: #c9a87c;
+  --article-box-shadow: 0 4px 20px rgba(180, 130, 70, 0.12), 0 1px 3px rgba(160, 110, 50, 0.08);
+  --info-card-bg: linear-gradient(135deg, rgba(255, 250, 240, 0.92) 0%, rgba(250, 240, 220, 0.92) 50%, rgba(248, 235, 210, 0.92) 100%);
+  --text-color: #3d3226;
+  --card-text-color: #3d2e1f;
+  --muted-text-color: #8a7a6a;
+  --theme-accent-color: #d4a574;
+  --theme-primary-light-3: #e0b885;
+  --theme-primary-light-5: #eac896;
+  --theme-primary-light-7: #f2d8b0;
+  --theme-primary-light-8: #f5e0c0;
+  --theme-primary-light-9: #faf0e0;
+  --theme-primary-dark-2: #b0834d;
+  --theme-el-bg-color: #fffdf8;
+  --theme-el-bg-color-page: #faf6f0;
+  --theme-el-bg-color-overlay: #fffdf8;
+  --theme-el-border-color: #d4c4a8;
+  --theme-el-border-color-light: #e0d0b8;
+  --theme-el-border-color-lighter: #e8dcc8;
+  --theme-el-border-color-extra-light: #f0e8d8;
+  --theme-el-fill-color: #f0e8d8;
+  --theme-el-fill-color-light: #f5edd8;
+  --theme-el-fill-color-lighter: #faf6f0;
+  --theme-el-fill-color-blank: #fffdf8;
+}
+
 .info-div-card {
   border-radius: 5px;
   background: var(--info-card-bg);
@@ -376,6 +414,4 @@ body.el-popup-parent--hidden {
   outline: none;
 }
 
-// Pixel-light theme structural overrides (border-radius, shadows, fonts, Element Plus components)
-@import 'pixel-theme';
 
