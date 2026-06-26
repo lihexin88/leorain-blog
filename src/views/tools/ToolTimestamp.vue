@@ -429,6 +429,7 @@ export default {
   padding: 15px 0;
   border-radius: 8px;
   margin-bottom: 25px;
+  width: 100%;
   font-size: 2em;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }

@@ -5,8 +5,14 @@
         class="site-info-lines"
         @click="handleSettingsClick"
         @touchend.prevent="handleSettingsTouch"
-        :class="{ 'stats-flash': isStatsFlashing }"
       >
+        <img
+          v-if="currentTheme === 'genshin'"
+          class="genshin-paimon"
+          src="/images/genshin/paimon-sprite.webp"
+          alt=""
+          aria-hidden="true"
+        />
         <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
         <div class="mini-progress">
           <span>cpu:</span>
@@ -320,6 +326,11 @@ export default {
       if (theme.id === 'white') {
         style.border = '1px solid #ddd'
       }
+      if (theme.id === 'genshin') {
+        style.backgroundImage = 'url(\'/images/genshin/paimon.webp\')'
+        style.backgroundSize = 'cover'
+        style.backgroundPosition = 'center'
+      }
       return style
     },
     resolveTheme (theme) {
@@ -526,6 +537,14 @@ export default {
   right: 20px;
   position: fixed;
   z-index: 1000;
+  .genshin-paimon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    object-fit: contain;
+    pointer-events: none;
+    animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
+  }
   .site-info-lines{
     display: flex;
     align-items: center;
@@ -563,6 +582,15 @@ export default {
   }
   100% {
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
+  }
+}
+
+@keyframes genshin-paimon-bob {
+  0% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  100% {
+    transform: translateY(-6px) rotate(2deg);
   }
 }
 

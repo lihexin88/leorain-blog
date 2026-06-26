@@ -61,6 +61,9 @@
     >
       <UserLogin :is-dialog="true" />
     </el-dialog>
+
+    <!-- 返回顶部（原神主题下显示为传送锚点） -->
+    <el-backtop :right="40" :bottom="120" />
   </div>
 </template>
 

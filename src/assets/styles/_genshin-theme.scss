@@ -66,15 +66,19 @@
   h2 {
     font-size: 1.5rem;
     position: relative;
-    padding-left: 0.6em;
+    padding-left: 1.6em;
 
     &::before {
-      content: '◆';
+      content: '';
       position: absolute;
-      left: 0;
-      color: var(--genshin-gold);
-      font-size: 0.55em;
-      top: 0.35em;
+      left: 0.2em;
+      top: 50%;
+      width: 1em;
+      height: 1em;
+      transform: translateY(-50%);
+      background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 3px rgba(212, 165, 116, 0.35));
     }
   }
 
@@ -309,12 +313,18 @@
         letter-spacing: 0.05em;
         color: #3d2e1f;
         position: relative;
+        padding-left: 1.4em;
 
         &::before {
-          content: '◆ ';
-          color: var(--genshin-gold);
-          font-size: 0.6em;
-          vertical-align: middle;
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          width: 1em;
+          height: 1em;
+          transform: translateY(-50%);
+          background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
+          opacity: 0.9;
         }
       }
     }
@@ -346,12 +356,14 @@
 
       &::before,
       &::after {
-        content: '◆';
-        color: var(--genshin-gold);
-        font-size: 8px;
-        vertical-align: middle;
-        margin: 0 6px;
+        content: '';
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
         opacity: 0.7;
+        margin: 0 6px;
+        vertical-align: middle;
       }
     }
 
@@ -782,10 +794,37 @@
   // ════════════════════════════════════════════════════════════
   // Element Plus: Loading
   // ════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════
+  // Element Plus: Loading — rotating Anemoculus spinner
+  // ════════════════════════════════════════════════════════════
   .el-loading-mask {
     background-color: rgba(255, 252, 245, 0.7);
     backdrop-filter: blur(2px);
     border-radius: 8px;
+  }
+
+  .el-loading-spinner {
+    .circular {
+      display: none; // hide the default SVG ring
+    }
+
+    // Render a rotating Anemoculus in place of the spinner
+    &::after {
+      content: '';
+      display: block;
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
+      animation: loading-rotate 2s linear infinite;
+      filter: drop-shadow(0 0 4px rgba(212, 165, 116, 0.4));
+    }
+
+    .el-loading-text {
+      font-family: var(--genshin-font-body);
+      color: var(--genshin-gold-dark);
+      margin-top: 6px;
+    }
   }
 
   // ════════════════════════════════════════════════════════════
@@ -862,11 +901,55 @@
   }
 
   // ════════════════════════════════════════════════════════════
-  // Decorative: star particles on cards (pure CSS)
+  // Decorative: star particles + oculus watermarks on cards
   // ════════════════════════════════════════════════════════════
   .el-card {
     position: relative;
     overflow: hidden;
+
+    // Faint oculus watermark in the bottom-right corner (::before is free on .el-card)
+    &::before {
+      content: '';
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 56px;
+      height: 56px;
+      background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::before {
+      opacity: 0.58;
+    }
+
+    // Cycle oculus designs across sibling cards.
+    // .el-card elements are rarely direct siblings in Element Plus —
+    // they are typically wrapped in .el-col or other containers.
+    // We use :nth-child(n of S) (Selectors Level 4) to count only
+    // .el-card siblings, plus target the common .el-col parent wrapper.
+    &:nth-child(6n+2 of .el-card)::before {
+      background-image: url('/images/genshin/geoculus.webp');
+    }
+
+    &:nth-child(6n+3 of .el-card)::before {
+      background-image: url('/images/genshin/electroculus.webp');
+    }
+
+    &:nth-child(6n+4 of .el-card)::before {
+      background-image: url('/images/genshin/dendroculus.webp');
+    }
+
+    &:nth-child(6n+5 of .el-card)::before {
+      background-image: url('/images/genshin/hydroculus.webp');
+    }
+
+    &:nth-child(6n+6 of .el-card)::before {
+      background-image: url('/images/genshin/pyroculus.webp');
+    }
 
     // Subtle star particle in corners via radial-gradient overlay
     &::after {
@@ -883,6 +966,115 @@
         radial-gradient(1px 1px at 25px 70px, rgba(212, 165, 116, 0.15), transparent);
       pointer-events: none;
       z-index: 0;
+    }
+  }
+
+  // When .el-card elements are wrapped in .el-col (the common Element Plus
+  // grid layout pattern), the cards themselves are not siblings — but .el-col
+  // elements ARE. Target those parent containers to cycle oculus watermarks.
+  .el-col:nth-child(6n+2 of .el-col) .el-card::before {
+    background-image: url('/images/genshin/geoculus.webp');
+  }
+
+  .el-col:nth-child(6n+3 of .el-col) .el-card::before {
+    background-image: url('/images/genshin/electroculus.webp');
+  }
+
+  .el-col:nth-child(6n+4 of .el-col) .el-card::before {
+    background-image: url('/images/genshin/dendroculus.webp');
+  }
+
+  .el-col:nth-child(6n+5 of .el-col) .el-card::before {
+    background-image: url('/images/genshin/hydroculus.webp');
+  }
+
+  .el-col:nth-child(6n+6 of .el-col) .el-card::before {
+    background-image: url('/images/genshin/pyroculus.webp');
+  }
+
+  // Oculus watermark on article/info cards (::after is free on .article-item;
+  // its ::before is the top accent line)
+  .article-item,
+  .info-div-card {
+    &::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 56px;
+      height: 56px;
+      background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
+      opacity: 0.1;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover::after {
+      opacity: 0.18;
+    }
+
+    // Cycle oculus designs — use :nth-child(n of S) (Selectors Level 4)
+    // instead of :nth-of-type, so we count only matching elements regardless
+    // of intervening elements or container wrapping.
+    &:nth-child(6n+2 of .article-item)::after,
+    &:nth-child(6n+2 of .info-div-card)::after {
+      background-image: url('/images/genshin/geoculus.webp');
+    }
+
+    &:nth-child(6n+3 of .article-item)::after,
+    &:nth-child(6n+3 of .info-div-card)::after {
+      background-image: url('/images/genshin/electroculus.webp');
+    }
+
+    &:nth-child(6n+4 of .article-item)::after,
+    &:nth-child(6n+4 of .info-div-card)::after {
+      background-image: url('/images/genshin/dendroculus.webp');
+    }
+
+    &:nth-child(6n+5 of .article-item)::after,
+    &:nth-child(6n+5 of .info-div-card)::after {
+      background-image: url('/images/genshin/hydroculus.webp');
+    }
+
+    &:nth-child(6n+6 of .article-item)::after,
+    &:nth-child(6n+6 of .info-div-card)::after {
+      background-image: url('/images/genshin/pyroculus.webp');
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // Element Plus: Backtop — teleport waypoint button
+  // ════════════════════════════════════════════════════════════
+  .el-backtop {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4a574 0%, #c08a50 100%);
+    border: 1px solid var(--genshin-gold-dark);
+    box-shadow: var(--genshin-glow);
+    // opacity + visibility 配合 Element Plus 内置的 el-fade-in 过渡，
+    // 避免出现/消失过于生硬；box-shadow / transform 用于 hover 动效。
+    transition: opacity 0.4s ease, visibility 0.4s ease, box-shadow 0.25s ease, transform 0.2s ease;
+
+    // Hide the default CaretTop icon — render the teleport waypoint image instead
+    i,
+    .el-icon,
+    .el-backtop__icon {
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('/images/genshin/teleport-waypoint.webp') center / 55% no-repeat;
+      opacity: 0.92;
+    }
+
+    &:hover {
+      box-shadow: var(--genshin-glow-strong);
+      transform: translateY(-2px);
     }
   }
 
