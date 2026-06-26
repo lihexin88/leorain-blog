@@ -907,12 +907,12 @@
     position: relative;
     overflow: hidden;
 
-    // Faint oculus watermark in the bottom-right corner (::before is free on .el-card)
+    // Faint oculus watermark in the top-right corner (::before is free on .el-card)
     &::before {
       content: '';
       position: absolute;
       right: 8px;
-      bottom: 8px;
+      top: 8px;
       width: 56px;
       height: 56px;
       background: url('/images/genshin/anemoculus.webp') center / contain no-repeat;
@@ -950,6 +950,11 @@
     &:nth-child(6n+6 of .el-card)::before {
       background-image: url('/images/genshin/pyroculus.webp');
     }
+  }
+
+  // Hide oculus watermark on el-card inside article-item
+  .article-item .el-card::before {
+    content: none;
   }
 
   // When .el-card elements are wrapped in .el-col (the common Element Plus
@@ -1005,7 +1010,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: url('/images/genshin/teleport-waypoint.webp') center / 55% no-repeat;
+      background: url('/images/genshin/statue-of-the-seven.webp') center / 55% no-repeat;
       opacity: 0.92;
     }
 

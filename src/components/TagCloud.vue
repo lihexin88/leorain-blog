@@ -16,7 +16,12 @@ const props = defineProps({
 })
 
 const container = ref(null)
-let scene; let camera; let renderer; let webglRenderer; let controls; let objects = []
+let scene
+let camera
+let renderer
+let webglRenderer
+let controls
+let objects = []
 let animationId
 let isHovered = false
 const worldPos = new THREE.Vector3()
@@ -91,8 +96,12 @@ const init = () => {
   controls.autoRotateSpeed = 1.5
 
   // 绑定悬停事件
-  container.value.addEventListener('mouseenter', () => { isHovered = true })
-  container.value.addEventListener('mouseleave', () => { isHovered = false })
+  container.value.addEventListener('mouseenter', () => {
+    isHovered = true
+  })
+  container.value.addEventListener('mouseleave', () => {
+    isHovered = false
+  })
 
   createTags()
   animate()
@@ -175,9 +184,13 @@ const animate = () => {
   if (webglRenderer) webglRenderer.render(scene, camera)
 }
 
-watch(() => props.tags, () => {
-  if (scene) createTags()
-}, { deep: true })
+watch(
+  () => props.tags,
+  () => {
+    if (scene) createTags()
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   init()
@@ -224,8 +237,13 @@ const onResize = () => {
 }
 
 :deep(.el-tag) {
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
   user-select: none;
+  border-color: var(--body-bg);
+  background-color: var(--body-bg);
+  color: var(--tag-cloud-text-color) !important;
 }
 
 :deep(.el-tag:hover) {

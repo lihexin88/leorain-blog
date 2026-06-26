@@ -139,7 +139,7 @@
       <div class="pagination-wrap">
         <el-pagination
           v-model:page-size="per_page"
-          :page-sizes="[27, 30, 39]"
+          :page-sizes="[30, 36, 39]"
           v-model:current-page="page"
           @current-change="load"
           background
@@ -174,7 +174,7 @@ export default {
       page: 1,
       activeIndex: -1,
       total: null,
-      per_page: 27,
+      per_page: 30,
       smallWindowSize: false,
       layout: null,
       articles: [],
