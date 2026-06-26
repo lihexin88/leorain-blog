@@ -196,8 +196,8 @@
             </el-row>
             <el-form-item style="margin-top: 15px;">
               <el-button-group>
-                <el-button type="primary" icon="el-icon-plus" @click="calculateDate('add')">增加</el-button>
-                <el-button type="warning" icon="el-icon-minus" @click="calculateDate('subtract')">减少</el-button>
+                <el-button type="primary" @click="calculateDate('add')">增加</el-button>
+                <el-button type="warning" @click="calculateDate('subtract')">减少</el-button>
               </el-button-group>
             </el-form-item>
             <el-alert :title="'计算结果: ' + dateCalcResult" type="success" :closable="false"
