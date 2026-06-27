@@ -5,6 +5,7 @@
         class="site-info-lines"
         @click="handleSettingsClick"
         @touchend.prevent="handleSettingsTouch"
+        :class="{ 'stats-flash': isStatsFlashing }"
       >
         <img
           v-if="currentTheme === 'genshin'"
@@ -16,20 +17,35 @@
         <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
         <div class="mini-progress">
           <span>cpu:</span>
-          <el-progress :percentage="parseFloat(formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num * 100) : 0),2)" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+          <el-progress
+            :percentage="parseFloat(formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num) * 100 : 0), 2)"
+            :stroke-width="3"
+            :text-inside="false"
+            :show-text="false"
+          ></el-progress>
         </div>
         <div class="mini-progress">
           <span>mem:</span>
-          <el-progress :percentage="parseFloat(formatNumber(stats.memory_usage))" :stroke-width="3" :text-inside="false" :show-text="false"></el-progress>
+          <el-progress
+            :percentage="parseFloat(formatNumber(stats.memory_usage))"
+            :stroke-width="3"
+            :text-inside="false"
+            :show-text="false"
+          ></el-progress>
         </div>
       </div>
     </div>
-    <el-drawer v-model="show_settings_draw" class="site-info-drawer" direction="rtl" :with-header="false" :size="360" :lock-scroll="false">
+    <el-drawer
+      v-model="show_settings_draw"
+      class="site-info-drawer"
+      direction="rtl"
+      :with-header="false"
+      :size="360"
+      :lock-scroll="false"
+    >
       <div class="settings-container">
         <div>
-          <el-divider>
-            站点信息
-          </el-divider>
+          <el-divider> 站点信息 </el-divider>
         </div>
         <div>
           <span>同步访客</span>
@@ -45,39 +61,46 @@
         <div>
           <div>
             系统负载:
-            <el-progress :text-inside="true" :stroke-width="26"
-                         :percentage="stats.load_average / stats.cpu_num * 100" :format="formatProgress"></el-progress>
+            <el-progress
+              :text-inside="true"
+              :stroke-width="26"
+              :percentage="(stats.load_average / stats.cpu_num) * 100"
+              :format="formatProgress"
+            ></el-progress>
           </div>
           <div>
             内存用量:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.memory_usage" :format="formatProgress"></el-progress>
+            <el-progress
+              :text-inside="true"
+              :stroke-width="26"
+              :percentage="stats.memory_usage"
+              :format="formatProgress"
+            ></el-progress>
           </div>
           <div>
             磁盘用量:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.disk_usage" :format="formatProgress"></el-progress>
+            <el-progress
+              :text-inside="true"
+              :stroke-width="26"
+              :percentage="stats.disk_usage"
+              :format="formatProgress"
+            ></el-progress>
           </div>
           <div>
             交换分区:
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="stats.swap_usage" :format="formatProgress"></el-progress>
+            <el-progress
+              :text-inside="true"
+              :stroke-width="26"
+              :percentage="stats.swap_usage"
+              :format="formatProgress"
+            ></el-progress>
           </div>
-          <div>
-            启动时间: {{ getHumanReadableDate(stats.uptime * 1000) }} s
-          </div>
-          <div>
-            在线人数: {{ formatNumber(stats.online) }}
-          </div>
-          <div>
-            实时qps: {{ formatNumber(stats.qps) }}
-          </div>
-          <div>
-            最大qps: {{ formatNumber(stats.max_qps) }}
-          </div>
-          <div>
-            启动后访客: {{ formatNumber(stats.count) }}
-          </div>
-          <div>
-            今日访客: {{ formatNumber(stats.today_count) }}
-          </div>
+          <div>启动时间: {{ getHumanReadableDate(stats.uptime * 1000) }} s</div>
+          <div>在线人数: {{ formatNumber(stats.online) }}</div>
+          <div>实时qps: {{ formatNumber(stats.qps) }}</div>
+          <div>最大qps: {{ formatNumber(stats.max_qps) }}</div>
+          <div>启动后访客: {{ formatNumber(stats.count) }}</div>
+          <div>今日访客: {{ formatNumber(stats.today_count) }}</div>
         </div>
         <div>
           <el-divider> 主题颜色 </el-divider>
@@ -144,30 +167,18 @@ export default {
       currentTheme: 'white',
       themes: [
         { id: 'system', label: '系统' },
-        { id: 'pink', label: '粉色' },
-        { id: 'purple', label: '紫色' },
         { id: 'white', label: '白色' },
-        { id: 'orange', label: '桔色' },
-        { id: 'blue', label: '蓝色' },
-        { id: 'green', label: '绿色' },
-        { id: 'red', label: '红色' },
-        { id: 'cyan', label: '青色' },
         { id: 'dark', label: '暗黑' },
         { id: 'pixel-light', label: '像素' },
-        { id: 'genshin', label: '原神' }
+        { id: 'genshin', label: '原神' },
+        { id: 'colorful', label: '彩色' }
       ],
       themeColors: {
-        pink: '#f472b6',
-        purple: '#7c3aed',
         white: '#ffffff',
-        orange: '#f59e0b',
-        blue: '#3b82f6',
-        green: '#10b981',
-        red: '#ef4444',
-        cyan: '#06b6d4',
         dark: '#1e293b',
         'pixel-light': '#a3e635',
-        genshin: '#d4a574'
+        genshin: '#d4a574',
+        colorful: '#ff6b9d'
       },
       systemThemeQuery: null,
       systemThemeChangeHandler: null
@@ -240,7 +251,7 @@ export default {
         configStore.showSiteInfo = true
         this.connection_retried = 0
         this.button_type = 'success'
-        this.stompClient.subscribe('/info/visitors', (message) => {
+        this.stompClient.subscribe('/info/visitors', message => {
           this.flashStatsButton()
           const visitor = message.body.split('-')
           this.messages.unshift({
@@ -253,7 +264,7 @@ export default {
           }
         })
         // 模拟用户访问
-        this.stompClient.subscribe('/info/visitors/location', (message) => {
+        this.stompClient.subscribe('/info/visitors/location', message => {
           this.flashStatsButton()
           const visitor = message.body.split('-')
           this.messages.unshift({
@@ -266,7 +277,7 @@ export default {
           }
         })
         // 订阅服务端的频道 "/topic/timestamp"
-        this.stompClient.subscribe('/info/stats', (message) => {
+        this.stompClient.subscribe('/info/stats', message => {
           this.flashStatsButton()
           const stats = message.body.split('-')
           this.stats.disk_usage = stats[0] * 100
@@ -287,7 +298,7 @@ export default {
       this.stompClient.onStompError = () => {
         console.log('错误')
       }
-      this.stompClient.onWebSocketClose = (frame) => {
+      this.stompClient.onWebSocketClose = frame => {
         configStore.showSiteInfo = false
         if (frame.code === 2000) {
           this.$accessToken(2)
@@ -327,17 +338,19 @@ export default {
         style.border = '1px solid #ddd'
       }
       if (theme.id === 'genshin') {
-        style.backgroundImage = 'url(\'/images/genshin/paimon.webp\')'
+        style.backgroundImage = "url('/images/genshin/paimon.webp')"
         style.backgroundSize = 'cover'
         style.backgroundPosition = 'center'
+      }
+      if (theme.id === 'colorful') {
+        style.background = 'linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd)'
       }
       return style
     },
     resolveTheme (theme) {
       if (theme !== 'system') return theme
-      const query = this.systemThemeQuery || (window.matchMedia
-        ? window.matchMedia('(prefers-color-scheme: dark)')
-        : null)
+      const query =
+        this.systemThemeQuery || (window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null)
       return query && query.matches ? 'dark' : 'white'
     },
     isSupportedTheme (theme) {
@@ -395,7 +408,15 @@ export default {
 
     hexToRgba (hex, alpha) {
       const c = hex.replace('#', '')
-      const num = parseInt(c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c, 16)
+      const num = parseInt(
+        c.length === 3
+          ? c
+            .split('')
+            .map(ch => ch + ch)
+            .join('')
+          : c,
+        16
+      )
       const r = (num >> 16) & 255
       const g = (num >> 8) & 255
       const b = num & 255
@@ -455,7 +476,8 @@ export default {
         const link = document.createElement('link')
         link.id = LINK_ID
         link.rel = 'stylesheet'
-        link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+XiaoWei&display=swap'
+        link.href =
+          'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+XiaoWei&display=swap'
         document.head.appendChild(link)
       } else {
         if (existing) existing.remove()
@@ -522,7 +544,7 @@ export default {
 .visitor-display-area {
   height: 200px;
   overflow-y: hidden;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .settings-container {
@@ -545,7 +567,7 @@ export default {
     pointer-events: none;
     animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
   }
-  .site-info-lines{
+  .site-info-lines {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -558,10 +580,10 @@ export default {
     touch-action: manipulation;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    .mini-progress{
+    .mini-progress {
       font-size: 10px;
-      :deep(.el-progress__text){
-        span{
+      :deep(.el-progress__text) {
+        span {
           font-size: 10px;
         }
       }
@@ -570,7 +592,7 @@ export default {
 }
 
 .stats-flash {
-  animation: stats-flash .4s ease;
+  animation: stats-flash 0.4s ease;
 }
 
 @keyframes stats-flash {
@@ -578,7 +600,7 @@ export default {
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
   }
   50% {
-    box-shadow: 0 0 12px rgba(64, 158, 255, .65);
+    box-shadow: 0 0 12px rgba(64, 158, 255, 0.65);
   }
   100% {
     box-shadow: 0 0 0 rgba(64, 158, 255, 0);
@@ -607,9 +629,12 @@ export default {
   height: 30px;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   border: 2px solid transparent;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .theme-swatch.system-theme-swatch {
@@ -623,22 +648,28 @@ export default {
 
 .theme-swatch.selected {
   border-color: var(--el-color-primary, #409eff);
-  box-shadow: 0 0 0 2px var(--el-color-primary, #409eff), 0 6px 18px rgba(0,0,0,0.18);
+  box-shadow:
+    0 0 0 2px var(--el-color-primary, #409eff),
+    0 6px 18px rgba(0, 0, 0, 0.18);
   transform: translateY(-2px) scale(1.08);
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
-:deep(.el-progress-bar__innerText){
+:deep(.el-progress-bar__innerText) {
   color: #000000;
 }
-
 </style>
 <style lang="scss">
 .site-info-drawer,
 .site-info-drawer .el-drawer__body {
-  background-color: var(--header-bg, rgba(255, 255, 255, 0.15))!important;
+  background-color: var(--header-bg, rgba(255, 255, 255, 0.15)) !important;
   backdrop-filter: blur(12px) saturate(180%);
   color: var(--text-color, #111827);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .theme-ripple {
@@ -647,6 +678,6 @@ export default {
   transform-origin: center center;
   pointer-events: none;
   will-change: transform, opacity;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
 }
 </style>

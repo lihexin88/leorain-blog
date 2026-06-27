@@ -439,15 +439,6 @@ export default {
     }
   }
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    background: inherit;
-    border-radius: 16px;
-    z-index: -1;
-  }
-
   &::after {
     content: '';
     position: absolute;
