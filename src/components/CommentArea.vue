@@ -5,9 +5,7 @@
         <h5>{{ title }}</h5>
         <div :class="nullClass" v-if="comments.length == this.commentsCount" class="heading">
           <a href="javascript:;" @click="commentLoad()">
-            <el-icon>
-              <Plus/>
-            </el-icon>&nbsp;&nbsp;&nbsp;&nbsp; load more comments
+            <el-icon> <Plus /> </el-icon>&nbsp;&nbsp;&nbsp;&nbsp; load more comments
           </a>
         </div>
       </div>
@@ -17,7 +15,7 @@
           <div class="media-body box-body">
             <div class="comment-heading">
               <div class="header-avatar" v-if="comment.user_id != null">
-                <router-link :to="`/user/profile?uid=`+comment.uid">
+                <router-link :to="`/user/profile?uid=` + comment.uid">
                   <el-avatar :size="40" class="media-object rounded-circle" :src="comment.avatar"></el-avatar>
                 </router-link>
               </div>
@@ -27,81 +25,89 @@
               <div class="comment-heading-tips-container">
                 <div class="comment-heading-tips" v-if="comment.user_id != null">
                   <el-icon>
-                    <User/>
+                    <User />
                   </el-icon>
                   <span>{{ comment.username }}</span>
                 </div>
                 <div class="comment-heading-tips" v-else>
                   <el-icon>
-                    <User/>
+                    <User />
                   </el-icon>
                   <span><em>游客</em></span>
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week">
                   <el-icon>
-                    <Clock/>
+                    <Clock />
                   </el-icon>
                   {{ comment.created_at }}
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week" v-if="comment.visitor">
                   <el-icon>
-                    <Location/>
+                    <Location />
                   </el-icon>
                   {{ comment.visitor?.country ?? null }}
                 </div>
                 <div class="comment-heading-tips comment-heading-tips-week" v-if="comment.visitor">
                   <el-icon>
-                    <ChromeFilled/>
+                    <ChromeFilled />
                   </el-icon>
                   {{ comment.visitor?.user_agent ?? null }}
                 </div>
                 <div class="comment-heading-tips comment-heading-actions">
                   <vote-button v-if="user?.uid !== comment.uid" :item="comment"></vote-button>
                   <el-popconfirm
-                      title="确认删除这条评论吗？"
-                      confirm-button-text="确定"
-                      cancel-button-text="取消"
-                      @confirm="commentDelete(index, comment.id)"
+                    title="确认删除这条评论吗？"
+                    confirm-button-text="确定"
+                    cancel-button-text="取消"
+                    @confirm="commentDelete(index, comment.id)"
                   >
                     <template #reference>
                       <el-icon class="pointer" v-if="user?.uid === comment.uid || user?.is_admin">
-                        <Delete/>
+                        <Delete />
                       </el-icon>
                     </template>
                   </el-popconfirm>
                   <el-icon class="pointer" @click="reply(comment.uid)">
-                    <ChatDotRound/>
+                    <ChatDotRound />
                   </el-icon>
                 </div>
               </div>
             </div>
-            <markdown-parse class="comment-content" v-if="comment.content_html" :class="comment.is_down_voted ? 'downvoted' : ''"
-                            :content="comment.content_html"></markdown-parse>
+            <markdown-parse
+              class="comment-content"
+              v-if="comment.content_html"
+              :class="comment.is_down_voted ? 'downvoted' : ''"
+              :content="comment.content_html"
+            ></markdown-parse>
           </div>
         </div>
-        <el-form class="mt-4" style="margin-top: 30px;" @submit.prevent="comment" v-if="canComment">
+        <el-form class="mt-4" style="margin-top: 30px" @submit.prevent="comment" v-if="canComment">
           <el-row :gutter="20" class="comment-submit-area">
             <el-col :span="24" class="comment-area">
               <div class="comment-editor-wrapper" @click="handleCommentAreaClick">
-                <div v-show="show_emoji_picker"
-                     ref="emojiPickerContainer"
-                     class="emoji-picker-container"
-                     :style="{ left: emojiPickerPosition.left + 'px', top: emojiPickerPosition.top + 'px' }">
-                </div>
+                <div
+                  v-show="show_emoji_picker"
+                  ref="emojiPickerContainer"
+                  class="emoji-picker-container"
+                  :style="{ left: emojiPickerPosition.left + 'px', top: emojiPickerPosition.top + 'px' }"
+                ></div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
               </div>
               <div class="user-avatar-in-toolbar">
                 <user-form ref="userForm" v-if="!isLoggedIn" @update="onUserFormUpdate"></user-form>
-                <el-avatar v-else alt="user avatar" :size="40" class="avatar rounded-circle"
-                           :src="currentUserAvatar"></el-avatar>
+                <el-avatar
+                  v-else
+                  alt="user avatar"
+                  :size="40"
+                  class="avatar rounded-circle"
+                  :src="currentUserAvatar"
+                ></el-avatar>
               </div>
             </el-col>
           </el-row>
           <el-row class="mt-2">
             <el-col :span="24" class="text-right">
-              <el-button type="success" :loading="isSubmiting" native-type="submit">
-                提交
-              </el-button>
+              <el-button type="success" :loading="isSubmiting" native-type="submit"> 提交 </el-button>
             </el-col>
           </el-row>
         </el-form>
@@ -206,7 +212,7 @@ export default {
   async mounted () {
     // 表情包
     try {
-      await getEmojiData().then((res) => {
+      await getEmojiData().then(res => {
         this.custom_emojis = res
         this.emojiI18n = emojiI18n
       })
@@ -220,11 +226,10 @@ export default {
       this.emojiPicker = new Picker({
         parent: this.$refs.emojiPickerContainer,
         data: emojiData,
-        onEmojiSelect: (emoji) => {
+        onEmojiSelect: emoji => {
           this.addEmoji(emoji)
         },
-        onClickOutside: () => {
-        },
+        onClickOutside: () => {},
         custom: [
           {
             id: 'custom',
@@ -239,7 +244,7 @@ export default {
       // 如果 CDN 加载失败，至少初始化一个只有自定义表情的 Picker
       this.emojiPicker = new Picker({
         parent: this.$refs.emojiPickerContainer,
-        onEmojiSelect: (emoji) => {
+        onEmojiSelect: emoji => {
           this.addEmoji(emoji)
         },
         custom: [
@@ -264,7 +269,7 @@ export default {
       previewRender (plainText, preview) {
         preview.className += ' markdown'
         marked.setOptions({
-          highlight: (code) => {
+          highlight: code => {
             return hljs.highlightAuto(code).value
           },
           sanitize: true
@@ -272,10 +277,21 @@ export default {
         return emojione.toImage(marked(plainText))
       },
       toolbar: [
-        'bold', 'italic', '|',
-        'quote', 'code', 'table', '|',
-        'preview', 'side-by-side', 'fullscreen', '|',
-        'link', 'guide', '|', {
+        'bold',
+        'italic',
+        '|',
+        'quote',
+        'code',
+        'table',
+        '|',
+        'preview',
+        'side-by-side',
+        'fullscreen',
+        '|',
+        'link',
+        'guide',
+        '|',
+        {
           name: 'emoji',
           action: () => {
             // 获取点击事件的目标元素
@@ -326,19 +342,21 @@ export default {
       })
     })
 
-    commentApi.getComments({
-      commentable_id: this.commentableId,
-      commentable_type: this.commentableType,
-      commentsCount: this.commentsCount
-    }).then(async (response) => {
-      for (const data of response.data) {
-        data.content_html = await emojiToImage(data.content_html)
-        if (!data.avatar || data.avatar === '/images/default.png') {
-          data.avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + data.user_email_hash
+    commentApi
+      .getComments({
+        commentable_id: this.commentableId,
+        commentable_type: this.commentableType,
+        commentsCount: this.commentsCount
+      })
+      .then(async response => {
+        for (const data of response.data) {
+          data.content_html = await emojiToImage(data.content_html)
+          if (!data.avatar || data.avatar === '/images/default.png') {
+            data.avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + data.user_email_hash
+          }
         }
-      }
-      this.comments = response.data
-    })
+        this.comments = response.data
+      })
 
     if (this.login_user_avatar === '') {
       this.login_user_avatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + this.emailHash
@@ -369,13 +387,17 @@ export default {
       const doc = editor.getDoc()
       const lastLine = doc.lastLine()
 
-      doc.replaceRange(value, {
-        line: doc.firstLine(),
-        ch: 0
-      }, {
-        line: lastLine,
-        ch: doc.getLine(lastLine).length
-      })
+      doc.replaceRange(
+        value,
+        {
+          line: doc.firstLine(),
+          ch: 0
+        },
+        {
+          line: lastLine,
+          ch: doc.getLine(lastLine).length
+        }
+      )
 
       const cursor = doc.posFromIndex(value.length)
       editor.setCursor(cursor)
@@ -413,6 +435,7 @@ export default {
           this.$refs.userForm.showDialog = true
           return
         }
+        console.log(12127)
         data.name = this.$refs.userForm.guest.name
         data.email = this.$refs.userForm.guest.email
         data.website = this.$refs.userForm.guest.website
@@ -426,8 +449,9 @@ export default {
 
       this.isSubmiting = true
 
-      commentApi.createComment(data)
-        .then(async (response) => {
+      commentApi
+        .createComment(data)
+        .then(async response => {
           let comment = null
           comment = response.data
           comment.content_html = await emojiToImage(comment.content_html)
@@ -436,11 +460,12 @@ export default {
           this.content = ''
           this.replaceEditorValue('')
           this.isSubmiting = false
-        }).catch(({ response }) => {
+        })
+        .catch(({ response }) => {
           this.isSubmiting = false
           const errors = response.data.errors
           for (const key in errors) {
-            errors[key].forEach((value) => {
+            errors[key].forEach(value => {
               this.$message.error(value)
               console.error(value)
             })
@@ -451,23 +476,24 @@ export default {
       this.replaceEditorValue('@' + uid + ' ', true)
     },
     commentDelete (index, id) {
-      commentApi.deleteComment(id)
-        .then(() => {
-          this.comments.splice(index, 1)
-        })
+      commentApi.deleteComment(id).then(() => {
+        this.comments.splice(index, 1)
+      })
     },
     commentLoad () {
-      commentApi.getComments({
-        commentable_id: this.commentableId,
-        commentable_type: this.commentableType,
-        commentsCount: this.commentsCount + 1
-      }).then(async (response) => {
-        for (const data of response.data) {
-          data.content_html = await emojiToImage(data.content_html)
-        }
-        this.comments = response.data
-        this.commentsCount += 1
-      })
+      commentApi
+        .getComments({
+          commentable_id: this.commentableId,
+          commentable_type: this.commentableType,
+          commentsCount: this.commentsCount + 1
+        })
+        .then(async response => {
+          for (const data of response.data) {
+            data.content_html = await emojiToImage(data.content_html)
+          }
+          this.comments = response.data
+          this.commentsCount += 1
+        })
     },
     onUserFormUpdate () {
       const guestInfo = localStorage.getItem('guest_info')
@@ -478,7 +504,7 @@ export default {
     async parse (html) {
       html = await emojiToImage(html)
       marked.setOptions({
-        highlight: (code) => {
+        highlight: code => {
           return hljs.highlightAuto(code).value
         }
       })
@@ -507,7 +533,7 @@ export default {
 }
 
 .comment-heading-tips-week {
-  font-size: .9em;
+  font-size: 0.9em;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -521,7 +547,7 @@ export default {
   margin-left: 10px;
 }
 
-.comment-heading-actions{
+.comment-heading-actions {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -535,12 +561,14 @@ export default {
 
 .comment-heading {
   padding: 8px;
-  background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / .16));
+  background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / 0.16));
   display: flex;
   align-content: center;
   align-items: center;
   border-radius: 999px;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -551,11 +579,11 @@ export default {
     display: flex;
   }
 }
-:deep(.comment-content){
-  .markdown{
+:deep(.comment-content) {
+  .markdown {
     margin: 0 25px 5px 25px;
     padding: 10px 0 10px 20px;
-    background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / .16));
+    background: linear-gradient(135deg, var(--theme-el-fill-color), rgb(255 255 255 / 0.16));
     border-radius: 0 0 5px 5px;
   }
 }
@@ -649,5 +677,4 @@ export default {
     content: '11';
   }
 }
-
 </style>

@@ -1,18 +1,26 @@
 <template>
   <div class="guest-input-form">
     <div>
-      <div style="padding-right: 5px;cursor: pointer" role="button" tabindex="0" @click="openDialog" @keydown.enter="openDialog">
+      <div
+        style="padding-right: 5px; cursor: pointer"
+        role="button"
+        tabindex="0"
+        @click="openDialog"
+        @keydown.enter="openDialog"
+      >
         <el-avatar shape="circle" :size="40" :src="avatar"></el-avatar>
       </div>
     </div>
-    <el-dialog v-model="dialogVisible"
-               v-if="isDialogOwner"
-               class="guest-dialog"
-               width="400px"
-               :align-center="true"
-               :append-to-body="true"
-               @mousemove="handleMouseMove"
-               @mouseleave="handleMouseLeave">
+    <el-dialog
+      v-model="dialogVisible"
+      v-if="isDialogOwner"
+      class="guest-dialog"
+      width="400px"
+      :align-center="true"
+      :append-to-body="true"
+      @mousemove="handleMouseMove"
+      @mouseleave="handleMouseLeave"
+    >
       <template v-slot:header>
         <div class="guest-dialog-header">
           <span class="header-title">访客信息</span>
@@ -29,8 +37,7 @@
             <el-input v-model="guest.name" :clearable="true" placeholder="如何称呼您？"></el-input>
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
-            <el-input type="email" v-model="guest.email" :clearable="true"
-                      placeholder="用于接收回复通知"></el-input>
+            <el-input type="email" v-model="guest.email" :clearable="true" placeholder="用于接收回复通知"></el-input>
           </el-form-item>
           <el-form-item label="网址">
             <el-input v-model="guest.website" :clearable="true" placeholder="您的博客或个人主页 (选填)"></el-input>
@@ -125,7 +132,7 @@ export default {
     }
   },
   created () {
-    this.debouncedUpdateAvatar = debounce((val) => {
+    this.debouncedUpdateAvatar = debounce(val => {
       this.updateAvatar(val)
     }, 1000)
   },
@@ -201,31 +208,60 @@ export default {
     },
     saveGuestInfo () {
       if (this.saving) return
-      this.$refs.guestFormRef?.validate().then(() => {
-        this.saving = true
-        localStorage.setItem('guest_info', JSON.stringify({
-          nickname: this.guest.name,
-          email: this.guest.email,
-          website: this.guest.website
-        }))
-        if (this.userStore) {
-          this.userStore.setShowGuestDialog(false)
-        }
-        this.$emit('update')
-      }).catch(() => {
-        // validation failed, inline errors shown
-      }).finally(() => {
-        this.saving = false
-      })
+      this.$refs.guestFormRef
+        ?.validate()
+        .then(() => {
+          this.saving = true
+          localStorage.setItem(
+            'guest_info',
+            JSON.stringify({
+              nickname: this.guest.name,
+              email: this.guest.email,
+              website: this.guest.website
+            })
+          )
+          if (this.userStore) {
+            this.userStore.setShowGuestDialog(false)
+          }
+          this.$emit('update')
+        })
+        .catch(() => {
+          // validation failed, inline errors shown
+        })
+        .finally(() => {
+          this.saving = false
+        })
     },
     validateData () {
-      return this.$refs.guestFormRef?.validate().catch(() => false) || false
+      // 检查本地是否有缓存信息，如果有且有效，则无需通过 ref 校验
+      const guestInfo = localStorage.getItem('guest_info')
+      if (guestInfo) {
+        try {
+          const guestObject = JSON.parse(guestInfo)
+          if (guestObject.nickname && guestObject.email) {
+            return true
+          }
+        } catch (e) {
+          console.error('Failed to parse guest_info', e)
+        }
+      }
+
+      if (!this.$refs.guestFormRef) {
+        console.warn('guestFormRef is not rendered yet. Opening dialog...')
+        this.openDialog()
+        return false
+      }
+      return (
+        this.$refs.guestFormRef?.validate().catch(e => {
+          console.log(e)
+          return false
+        }) || false
+      )
     }
   }
 }
 </script>
 <style scoped lang="scss">
-
 :deep(.guest-dialog) {
   border-radius: 20px;
   overflow: hidden;
@@ -258,7 +294,7 @@ export default {
   .header-title {
     font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(45deg, #409EFF, #67C23A);
+    background: linear-gradient(45deg, #409eff, #67c23a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -309,9 +345,18 @@ export default {
 }
 
 @keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
-  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.5;
+  }
 }
 
 .guest-input-form {
@@ -338,12 +383,15 @@ export default {
     background-color: #f5f7fa;
     box-shadow: none;
     border: 2px solid transparent;
-    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    transition:
+      background-color 0.3s,
+      border-color 0.3s,
+      box-shadow 0.3s;
     padding: 5px 15px;
 
     &.is-focus {
       background-color: #fff;
-      border-color: #409EFF;
+      border-color: #409eff;
       box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.1);
     }
   }
@@ -357,15 +405,18 @@ export default {
     font-size: 1.1rem;
     font-weight: 600;
     color: #fff;
-    background: linear-gradient(45deg, #409EFF, #007aff);
+    background: linear-gradient(45deg, #409eff, #007aff);
     border: none;
     box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
-    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    transition:
+      transform 0.3s,
+      box-shadow 0.3s,
+      background 0.3s;
 
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(64, 158, 255, 0.4);
-      background: linear-gradient(45deg, #66b1ff, #409EFF);
+      background: linear-gradient(45deg, #66b1ff, #409eff);
     }
 
     &:active {
