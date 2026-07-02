@@ -64,10 +64,7 @@
               <a v-else class="article-item-link" @click="openArticle(article.slug)">
                 <div class="none-image-wrapper">
                   <span class="none-image-label">随机</span>
-                  <div
-                    v-if="noneImageLoading"
-                    class="none-image-placeholder"
-                  >
+                  <div v-if="noneImageLoading" class="none-image-placeholder">
                     <div class="loading-spinner"></div>
                     <span class="loading-text">加载中</span>
                   </div>
@@ -481,6 +478,9 @@ export default {
         transform: translateX(10px);
       }
     }
+    :deep(.article-media .el-image__inner) {
+      filter: none;
+    }
   }
   @include mobile {
     width: 100%;
@@ -603,6 +603,12 @@ export default {
   will-change: transform, filter;
   transform-origin: center;
   display: block;
+  :deep(.el-image__inner) {
+    filter: blur(1px) opacity(.3);
+    transition:
+      filter 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      filter 0.4s ease;
+  }
 }
 
 .article-body {
