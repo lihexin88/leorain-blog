@@ -92,6 +92,10 @@
                   :style="{ left: emojiPickerPosition.left + 'px', top: emojiPickerPosition.top + 'px' }"
                 ></div>
                 <textarea id="comment_textarea_id" placeholder="Markdown"></textarea>
+                <div v-if="isLoadingMentionUser" class="comment-editor-loading">
+                  <el-icon class="is-loading"><Loading /></el-icon>
+                  <span>加载用户信息中...</span>
+                </div>
               </div>
               <div class="user-avatar-in-toolbar">
                 <user-form ref="userForm" v-if="!isLoggedIn" @update="onUserFormUpdate"></user-form>
@@ -129,14 +133,15 @@ import { Picker } from 'emoji-mart'
 import { emojiI18n, emojiToImage, getEmojiData } from '@/services/customEmoji'
 import UserForm from './UserForm.vue'
 import { commentApi } from '@/apis'
-import { Plus, User, Clock, Location, Delete, ChatDotRound, ChromeFilled } from '@element-plus/icons-vue'
+import userApi from '@/apis/user'
+import { Plus, User, Clock, Location, Delete, ChatDotRound, ChromeFilled, Loading } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { mapState } from 'pinia'
 import MD5 from 'crypto-js/md5'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
-  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, ChatDotRound },
+  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, ChatDotRound, Loading },
   props: {
     contentWrapperClass: {
       type: String,
@@ -206,7 +211,11 @@ export default {
       emojiI18n,
       login_user_avatar: this.userAvatar,
       guestInfo: null,
-      emojiPickerPosition: { left: 0, top: 0 }
+      emojiPickerPosition: { left: 0, top: 0 },
+      rawContent: '',
+      uidNameMap: {},
+      pendingUidRequests: {},
+      isReplacingMentionText: false
     }
   },
   async mounted () {
@@ -342,6 +351,10 @@ export default {
       })
     })
 
+    this.rawContent = this.simplemde.value()
+    this.simplemde.codemirror.on('change', this.handleEditorChange)
+    this.simplemde.codemirror.on('beforeChange', this.handleEditorBeforeChange)
+
     commentApi
       .getComments({
         commentable_id: this.commentableId,
@@ -421,12 +434,123 @@ export default {
         }
       }
     },
+    handleEditorChange () {
+      if (this.isReplacingMentionText) {
+        return
+      }
+
+      const value = this.simplemde.value()
+      this.rawContent = this.toRawContent(value)
+      this.loadMentionUsers(value)
+    },
+    handleEditorBeforeChange (editor, change) {
+      if (this.isReplacingMentionText || !this.isDeleteChange(change)) {
+        return
+      }
+
+      const mentionRange = this.getMentionRangeForChange(editor.getDoc(), change)
+      if (!mentionRange) {
+        return
+      }
+
+      change.update(mentionRange.from, mentionRange.to, [''])
+    },
+    isDeleteChange (change) {
+      return ['+delete', 'delete', 'cut'].includes(change.origin)
+    },
+    getMentionRangeForChange (doc, change) {
+      const mentionNames = Object.values(this.uidNameMap)
+        .filter(Boolean)
+        .sort((a, b) => b.length - a.length)
+
+      for (let line = change.from.line; line <= change.to.line; line++) {
+        const text = doc.getLine(line)
+        const deleteFrom = line === change.from.line ? change.from.ch : 0
+        const deleteTo = line === change.to.line ? change.to.ch : text.length
+
+        for (const name of mentionNames) {
+          const mention = '@' + name
+          let index = text.indexOf(mention)
+
+          while (index !== -1) {
+            const mentionFrom = index
+            const mentionTo = index + mention.length
+            if (deleteFrom < mentionTo && deleteTo > mentionFrom) {
+              return {
+                from: { line, ch: mentionFrom },
+                to: { line, ch: mentionTo }
+              }
+            }
+            index = text.indexOf(mention, mentionTo)
+          }
+        }
+      }
+
+      return null
+    },
+    loadMentionUsers (value) {
+      const uids = [...new Set([...value.matchAll(/@([a-z0-9]{32})/g)].map(match => match[1]))]
+
+      uids.forEach(uid => {
+        if (this.uidNameMap[uid] || this.pendingUidRequests[uid]) {
+          return
+        }
+
+        this.pendingUidRequests[uid] = true
+        userApi
+          .getUserByUid(uid)
+          .then(response => {
+            const name = response?.data?.user?.name || response?.user?.name
+            if (!name) {
+              return
+            }
+            this.uidNameMap[uid] = name
+            this.replaceKnownUidMentions()
+          })
+          .catch(error => {
+            console.error('Failed to load mention user:', error)
+          })
+          .finally(() => {
+            delete this.pendingUidRequests[uid]
+          })
+      })
+    },
+    replaceKnownUidMentions () {
+      const value = this.simplemde.value()
+      const replacedValue = value.replace(/@([a-z0-9]{32})/g, (mention, uid) => {
+        return this.uidNameMap[uid] ? '@' + this.uidNameMap[uid] : mention
+      })
+
+      if (replacedValue === value) {
+        return
+      }
+
+      const editor = this.simplemde.codemirror
+      const cursorIndex = editor.getDoc().indexFromPos(editor.getCursor())
+      const replacedBeforeCursor = value.slice(0, cursorIndex).replace(/@([a-z0-9]{32})/g, (mention, uid) => {
+        return this.uidNameMap[uid] ? '@' + this.uidNameMap[uid] : mention
+      })
+
+      this.isReplacingMentionText = true
+      this.replaceEditorValue(replacedValue)
+      editor.setCursor(editor.getDoc().posFromIndex(replacedBeforeCursor.length))
+      this.isReplacingMentionText = false
+      this.rawContent = this.toRawContent(replacedValue)
+    },
+    toRawContent (value) {
+      return Object.entries(this.uidNameMap)
+        .filter(([, name]) => name)
+        .sort(([, a], [, b]) => b.length - a.length)
+        .reduce((content, [uid, name]) => {
+          return content.split('@' + name).join('@' + uid)
+        }, value)
+    },
     comment () {
       if (!this.simplemde.value()) {
         return
       }
       const data = {
-        content: this.simplemde.value(),
+        content: this.rawContent || this.toRawContent(this.simplemde.value()),
         commentable_id: this.commentableId,
         commentable_type: this.commentableType
       }
@@ -435,7 +559,6 @@ export default {
           this.$refs.userForm.showDialog = true
           return
         }
-        console.log(12127)
         data.name = this.$refs.userForm.guest.name
         data.email = this.$refs.userForm.guest.email
         data.website = this.$refs.userForm.guest.website
@@ -458,6 +581,7 @@ export default {
 
           this.comments.push(comment)
           this.content = ''
+          this.rawContent = ''
           this.replaceEditorValue('')
           this.isSubmiting = false
         })
@@ -474,6 +598,8 @@ export default {
     },
     reply (uid) {
       this.replaceEditorValue('@' + uid + ' ', true)
+      this.rawContent = '@' + uid + ' '
+      this.loadMentionUsers(this.simplemde.value())
     },
     commentDelete (index, id) {
       commentApi.deleteComment(id).then(() => {
@@ -521,6 +647,9 @@ export default {
         return 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + MD5(this.guestInfo.email).toString()
       }
       return 'https://api.dicebear.com/9.x/adventurer/svg?seed=default'
+    },
+    isLoadingMentionUser () {
+      return Object.keys(this.pendingUidRequests).length > 0
     }
   },
   watch: {}
@@ -543,7 +672,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
-  align-content: center;
+  align-items: center;
   margin-left: 10px;
 }
 
@@ -556,7 +685,6 @@ export default {
   margin-left: auto;
   padding-right: 0;
   display: flex;
-  align-items: flex-end;
 }
 
 .comment-heading {
@@ -616,6 +744,22 @@ export default {
   border-radius: 3px;
   border: 1px solid #dcdfe6;
   position: relative;
+}
+
+.comment-editor-loading {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
+  background: rgb(255 255 255 / 0.82);
+  border-radius: 999px;
 }
 
 .comment-area {
