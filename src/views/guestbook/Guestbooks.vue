@@ -157,7 +157,7 @@ export default {
   }
 }
 
-::v-deep .el-card {
+:deep(.el-card) {
   border: 0;
 }
 
@@ -265,12 +265,12 @@ export default {
   }
 }
 
-::v-deep .modal-header {
+:deep(.modal-header) {
   padding: 5px !important;
 }
 
 @media screen and (max-aspect-ratio: 1/1) {
-  ::v-deep .modal-body {
+  :deep(.modal-body) {
     padding: 5px;
   }
 }

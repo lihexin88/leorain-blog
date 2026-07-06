@@ -140,23 +140,23 @@ export default {
 }
 
 /*打开时文字位置设置*/
-::v-deep .el-switch__label--right {
+:deep(.el-switch__label--right) {
   z-index: 1;
   right: 20px;
 }
 
 /*关闭时文字位置设置*/
-::v-deep .el-switch__label--left {
+:deep(.el-switch__label--left) {
   z-index: 1;
   left: 20px;
 }
 
 /*显示文字*/
-::v-deep .el-switch__label.is-active {
+:deep(.el-switch__label.is-active) {
   display: block;
 }
 
-::v-deep .el-switch .el-switch__core,
+:deep(.el-switch .el-switch__core),
 .el-switch .el-switch__label {
   width: 55px;
 }

@@ -667,11 +667,11 @@ export default {
   padding-right: 10px;
 }
 
-::v-deep .el-timeline-item__timestamp {
+:deep(.el-timeline-item__timestamp) {
   color: #666;
 }
 
-::v-deep .lottery-dialog .el-dialog__body {
+:deep(.lottery-dialog .el-dialog__body) {
   padding: 10px 20px 30px 20px;
 }
 

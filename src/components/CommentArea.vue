@@ -588,20 +588,20 @@ export default {
   }
 }
 
-::v-deep .editor-toolbar.fullscreen {
+:deep(.editor-toolbar.fullscreen) {
   z-index: 15 !important;
   margin-top: 40px;
 }
 
-::v-deep .CodeMirror-scroll {
+:deep(.CodeMirror-scroll) {
   margin-top: 0;
 }
 
-::v-deep .CodeMirror-lines {
+:deep(.CodeMirror-lines) {
   padding-top: 25px;
 }
 
-::v-deep .editor-preview-side {
+:deep(.editor-preview-side) {
   padding-top: 25px;
 }
 

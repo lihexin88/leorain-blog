@@ -900,7 +900,7 @@ export default {
 
 // 响应式对话框宽度
 @include mobile {
-  ::v-deep .el-dialog {
+  :deep(.el-dialog) {
     width: 90% !important;
   }
 }
