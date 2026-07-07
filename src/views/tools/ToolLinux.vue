@@ -55,6 +55,27 @@
       </el-col>
     </el-row>
 
+    <!-- 终端快捷工具栏 —— 用于发送会被浏览器截获的组合键 -->
+    <el-row v-if="status === 'connected'" :gutter="20" class="shortcut-row">
+      <el-col :span="24">
+        <div class="shortcut-bar">
+          <span class="shortcut-label">终端快捷键：</span>
+          <el-button
+              v-for="btn in shortcutButtons"
+              :key="btn.label"
+              size="small"
+              @click="sendControlChar(btn.seq)"
+          >{{ btn.label }}</el-button>
+          <el-tooltip
+              content="为防止浏览器截获组合键（如 Ctrl+W 关标签页），请点击按钮发送对应控制码"
+              placement="top"
+          >
+            <el-icon class="shortcut-help"><QuestionFilled /></el-icon>
+          </el-tooltip>
+        </div>
+      </el-col>
+    </el-row>
+
     <!-- 终端区域 -->
     <el-row :gutter="20" class="terminal-row">
       <el-col :span="24">
@@ -77,6 +98,7 @@
             <li>会话有效期 <strong>10 分钟</strong>，到期前 5 分钟会收到提醒</li>
             <li>容器资源限制：1 CPU · 512 MB 内存 · 3 GB 存储</li>
             <li>断开连接后容器及其数据将被自动清除</li>
+            <li>部分组合键（Ctrl+W / Ctrl+T / Ctrl+N / Ctrl+Q）会被浏览器截获，请使用终端上方的快捷键按钮</li>
           </ul>
         </el-card>
       </el-col>
@@ -89,7 +111,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import { markRaw } from 'vue'
-import { Connection, Close, Delete } from '@element-plus/icons-vue'
+import { Connection, Close, Delete, QuestionFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { USER_LOGOUT_SUCCESS_EVENT } from '@/utils/auth-events'
 
@@ -105,6 +127,7 @@ export default {
       Connection: markRaw(Connection),
       Close: markRaw(Close),
       Delete: markRaw(Delete),
+      QuestionFilled: markRaw(QuestionFilled),
       ws: null,
       terminal: null,
       fitAddon: null,
@@ -112,7 +135,16 @@ export default {
       status: 'disconnected',
       queuePosition: 0,
       warnMessage: '',
-      countdownMessage: ''
+      countdownMessage: '',
+      // 终端快捷键按钮（这些组合键被浏览器截获，无法通过键盘直接发送）
+      shortcutButtons: [
+        { label: 'Ctrl+W', seq: '\x17', desc: '删除前一个单词' },
+        { label: 'Ctrl+U', seq: '\x15', desc: '删除光标前所有字符' },
+        { label: 'Ctrl+K', seq: '\x0B', desc: '删除光标后所有字符' },
+        { label: 'Ctrl+L', seq: '\x0C', desc: '清屏' },
+        { label: 'Ctrl+D', seq: '\x04', desc: 'EOF / 退出' },
+        { label: 'Ctrl+C', seq: '\x03', desc: 'SIGINT / 中断' }
+      ]
     }
   },
 
@@ -142,6 +174,8 @@ export default {
   },
 
   mounted () {
+    this._beforeUnload = this._beforeUnload.bind(this)
+    window.addEventListener('beforeunload', this._beforeUnload)
     window.addEventListener('resize', this.onResize)
     window.addEventListener(USER_LOGOUT_SUCCESS_EVENT, () => {
       this.doDisconnect()
@@ -150,6 +184,7 @@ export default {
   },
 
   beforeUnmount () {
+    window.removeEventListener('beforeunload', this._beforeUnload)
     window.removeEventListener('resize', this.onResize)
     this.doDisconnect()
     if (this.terminal) {
@@ -223,6 +258,28 @@ export default {
         }
       }
       this.terminal.textarea.addEventListener('compositionend', this._imeHandler)
+    },
+
+    /**
+     * 浏览器 beforeunload 事件：终端已连接时弹出确认，防止误关标签页
+     */
+    _beforeUnload (event) {
+      if (this.status === 'connected') {
+        event.preventDefault()
+        // 兼容旧浏览器
+        event.returnValue = '终端已连接，关闭标签页将断开连接并清除容器数据。确定要离开吗？'
+        return event.returnValue
+      }
+    },
+
+    /**
+     * 通过 WebSocket 向终端发送控制字符
+     */
+    sendControlChar (seq) {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(seq)
+        this.terminal.focus()
+      }
     },
 
     onResize () {
@@ -373,7 +430,7 @@ export default {
 
   /* 状态栏 */
   .status-card {
-    margin-bottom: 16px;
+    margin-bottom: 4px;
   }
 
   .status-bar {
@@ -422,6 +479,35 @@ export default {
 
   .status-alert {
     margin-top: 12px;
+  }
+
+  /* 终端快捷键工具栏 */
+  .shortcut-row {
+    margin-bottom: 8px;
+  }
+
+  .shortcut-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--el-fill-color-light);
+    border-radius: 6px;
+    font-size: 13px;
+    flex-wrap: wrap;
+
+    .shortcut-label {
+      color: var(--el-text-color-secondary);
+      margin-right: 2px;
+      white-space: nowrap;
+    }
+
+    .shortcut-help {
+      margin-left: auto;
+      color: var(--el-text-color-placeholder);
+      cursor: help;
+      font-size: 16px;
+    }
   }
 
   /* 终端区域 */

@@ -8,13 +8,13 @@
       </template>
 
       <div class="login-content" :class="{ 'is-dialog': isDialog }">
-        <div class="login-animation-panel">
+        <div class="login-animation-panel" v-if="!layoutsStore.isMobile">
           <div class="login-animation-card">
             <AnimatedCharacters
-                class="login-animation"
-                :is-typing="isInputFocused"
-                :password-visible="passwordVisible"
-                :password-length="loginForm.password.length"
+              class="login-animation"
+              :is-typing="isInputFocused"
+              :password-visible="passwordVisible"
+              :password-length="loginForm.password.length"
             />
             <div class="animation-copy">
               <h3>欢迎回来</h3>
@@ -24,50 +24,48 @@
         </div>
 
         <el-form
-            ref="loginFormRef"
-            :model="loginForm"
-            :rules="loginRules"
-            label-position="top"
-            class="login-form"
-            @submit.prevent="handleLogin"
+          ref="loginFormRef"
+          :model="loginForm"
+          :rules="loginRules"
+          label-position="top"
+          class="login-form"
+          @submit.prevent="handleLogin"
         >
           <el-form-item label="邮箱" prop="email">
             <el-input
-                v-model="loginForm.email"
-                placeholder="请输入邮箱"
-                clearable
-                class="login-input"
-                autofocus
-                @focus="isInputFocused = true"
-                @blur="isInputFocused = false"
+              v-model="loginForm.email"
+              placeholder="请输入邮箱"
+              clearable
+              class="login-input"
+              autofocus
+              @focus="isInputFocused = true"
+              @blur="isInputFocused = false"
             >
               <template #prefix>
                 <el-icon>
-                  <Message/>
+                  <Message />
                 </el-icon>
               </template>
             </el-input>
-            <div class="form-tip">
-              如果您在本站评论或者留言过，请点击下面的忘记密码，重置您的密码即可登录
-            </div>
+            <div class="form-tip">如果您在本站评论或者留言过，请点击下面的忘记密码，重置您的密码即可登录</div>
           </el-form-item>
 
           <el-form-item label="密码" prop="password">
             <el-input
-                v-model="loginForm.password"
-                class="login-input"
-                :type="passwordVisible ? 'text' : 'password'"
-                placeholder="请输入密码"
+              v-model="loginForm.password"
+              class="login-input"
+              :type="passwordVisible ? 'text' : 'password'"
+              placeholder="请输入密码"
             >
               <template #suffix>
                 <el-icon style="cursor: pointer" @click="passwordVisible = !passwordVisible">
-                  <ViewIcon v-if="!passwordVisible"/>
-                  <HideIcon v-else/>
+                  <ViewIcon v-if="!passwordVisible" />
+                  <HideIcon v-else />
                 </el-icon>
               </template>
               <template #prefix>
                 <el-icon>
-                  <Lock/>
+                  <Lock />
                 </el-icon>
               </template>
             </el-input>
@@ -78,18 +76,11 @@
           </el-form-item>
 
           <el-form-item label="验证码" required>
-            <Validator ref="validatorRef"/>
+            <Validator ref="validatorRef" />
           </el-form-item>
 
           <el-form-item>
-            <el-button
-                type="primary"
-                class="login-button"
-                :loading="loading"
-                native-type="submit"
-            >
-              登录
-            </el-button>
+            <el-button type="primary" class="login-button" :loading="loading" native-type="submit"> 登录 </el-button>
           </el-form-item>
 
           <div class="divider-container" v-if="authConfig.length > 2">
@@ -97,12 +88,8 @@
           </div>
 
           <el-form-item v-if="authConfig">
-            <el-button @click="handleGithubLogin">
-              <i class="fab fa-github"></i>&nbsp;GitHub 登录
-            </el-button>
-            <el-button @click="handleGiteeLogin">
-              <i class="fab fa-gitee"></i>&nbsp;Gitee 登录
-            </el-button>
+            <el-button @click="handleGithubLogin"> <i class="fab fa-github"></i>&nbsp;GitHub 登录 </el-button>
+            <el-button @click="handleGiteeLogin"> <i class="fab fa-gitee"></i>&nbsp;Gitee 登录 </el-button>
           </el-form-item>
 
           <div class="login-footer">
@@ -123,6 +110,7 @@ import authApi from '@/apis/auth.js'
 import { mapActions } from 'pinia'
 import { Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
+import { useLayoutsStore } from '@/store/layouts'
 
 export default {
   name: 'UserLogin',
@@ -141,11 +129,13 @@ export default {
     }
   },
   setup () {
+    const layoutsStore = useLayoutsStore()
     return {
       Message,
       Lock,
       ViewIcon,
-      HideIcon
+      HideIcon,
+      layoutsStore
     }
   },
   data () {
@@ -175,7 +165,7 @@ export default {
     ...mapActions(useUserStore, ['login', 'setShowLoginDialog']),
     async handleLogin () {
       // 表单预验证
-      await this.$refs.loginFormRef.validate(async (valid) => {
+      await this.$refs.loginFormRef.validate(async valid => {
         if (!valid) return
 
         const validator = this.$refs.validatorRef
@@ -358,7 +348,8 @@ export default {
   border-color: #24292e;
   color: #fff;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     background-color: #444d56;
     border-color: #444d56;
     color: #fff;
@@ -395,7 +386,7 @@ export default {
   }
 
   .login-form {
-    padding: 24px 20px 28px;
+    padding: 24px 0 28px;
   }
   .login-input {
     :deep(.el-input__inner) {
