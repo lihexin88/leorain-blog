@@ -490,9 +490,15 @@ export default {
     },
     loadMentionUsers (value) {
       const uids = [...new Set([...value.matchAll(/@([a-z0-9]{32})/g)].map(match => match[1]))]
+      let hasKnownMention = false
 
       uids.forEach(uid => {
-        if (this.uidNameMap[uid] || this.pendingUidRequests[uid]) {
+        if (this.uidNameMap[uid]) {
+          hasKnownMention = true
+          return
+        }
+
+        if (this.pendingUidRequests[uid]) {
           return
         }
 
@@ -514,6 +520,10 @@ export default {
             delete this.pendingUidRequests[uid]
           })
       })
+
+      if (hasKnownMention) {
+        this.replaceKnownUidMentions()
+      }
     },
     replaceKnownUidMentions () {
       const value = this.simplemde.value()
