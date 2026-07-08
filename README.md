@@ -89,17 +89,15 @@ npm install
 ### 2. Configure the local environment
 
 ```bash
-cp .js.env.example .js.env
+cp .env.example .env.local
 ```
 
-Update `.js.env` for your local or deployment environment:
+Update `.env.local` for your local or deployment environment (variables must be prefixed with `VITE_` and are read in client code via `import.meta.env`):
 
-- `API_HOST`: Backend API service address. The Vite development proxy forwards `/api` requests to this address.
-- `DRAW_WS_HOST`: WebSocket or tool service address for the drawing board, request logs, online terminal, and related features.
-- `ARTISAN_HOST`: Local Artisan or backend helper service address.
-- `BROWSERSYNC_PROXY`: Optional proxy address for BrowserSync.
+- `VITE_API_HOST`: Backend API service address. The Vite development proxy forwards `/api` requests to this address.
+- `VITE_TOOL_HOST`: WebSocket or tool service address for the drawing board, request logs, online terminal, and related features.
 
-`.js.env` is only for local environments and is ignored by `.gitignore`. Do not commit real deployment addresses, tokens, or secrets.
+`.env.local` is only for local environments and is ignored by `.gitignore`. Do not commit real deployment addresses, tokens, or secrets.
 
 ### 3. Start local development
 
@@ -132,7 +130,7 @@ npm run format
 
 ## Public release notes
 
-- Do not commit sensitive files such as `.js.env`, `.env`, certificates, private keys, or access tokens.
+- Do not commit sensitive files such as `.env.local`, `.env`, certificates, private keys, or access tokens.
 - Put deployment domains, API addresses, and download URLs in local environment files, hosting platform environment variables, or backend configuration.
 - This project uses npm and `package-lock.json` for dependency management. Avoid mixing lock files from other package managers.
 

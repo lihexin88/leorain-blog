@@ -89,17 +89,15 @@ npm install
 ### 2. 配置本地环境
 
 ```bash
-cp .js.env.example .js.env
+cp .env.example .env.local
 ```
 
-根据本地或部署环境修改 `.js.env`：
+根据本地或部署环境修改 `.env.local`（变量需以 `VITE_` 开头，前端通过 `import.meta.env` 读取）：
 
-- `API_HOST`: 后端 API 服务地址，Vite 开发代理会将 `/api` 转发到该地址。
-- `DRAW_WS_HOST`: 画板、请求日志、在线终端等 WebSocket/工具服务地址。
-- `ARTISAN_HOST`: 本地 Artisan/后端辅助服务地址。
-- `BROWSERSYNC_PROXY`: 如需 BrowserSync，可配置代理地址。
+- `VITE_API_HOST`: 后端 API 服务地址，Vite 开发代理会将 `/api` 转发到该地址。
+- `VITE_TOOL_HOST`: 画板、请求日志、在线终端等 WebSocket/工具服务地址。
 
-`.js.env` 只用于本地环境，已被 `.gitignore` 忽略，请不要提交真实部署地址、令牌或密钥。
+`.env.local` 只用于本地环境，已被 `.gitignore` 忽略，请不要提交真实部署地址、令牌或密钥。
 
 ### 3. 本地开发
 
@@ -132,7 +130,7 @@ npm run format
 
 ## 公开发布说明
 
-- 仓库不应提交 `.js.env`、`.env`、证书、私钥、访问令牌等敏感文件。
+- 仓库不应提交 `.env.local`、`.env`、证书、私钥、访问令牌等敏感文件。
 - 部署相关的域名、API 地址、下载地址请放在本地环境配置、托管平台环境变量或后端配置中。
 - 本项目使用 npm 和 `package-lock.json` 管理依赖，避免混用其他包管理器生成的锁文件。
 

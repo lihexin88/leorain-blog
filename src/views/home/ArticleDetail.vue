@@ -141,7 +141,7 @@ export default {
   computed: {
     ...mapState(useUserStore, { userInfo: 'user' }),
     apiHost () {
-      return process.env.API_HOST || ''
+      return import.meta.env.VITE_API_HOST || ''
     }
   },
   components: {

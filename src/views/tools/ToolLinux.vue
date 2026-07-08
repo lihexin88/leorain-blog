@@ -113,7 +113,7 @@ import '@xterm/xterm/css/xterm.css'
 import { markRaw } from 'vue'
 import { Connection, Close, Delete, QuestionFilled } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
-import { USER_LOGOUT_SUCCESS_EVENT } from '@/utils/auth-events'
+import { USER_LOGOUT_SUCCESS_EVENT, USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   tdk: {
@@ -144,7 +144,8 @@ export default {
         { label: 'Ctrl+L', seq: '\x0C', desc: '清屏' },
         { label: 'Ctrl+D', seq: '\x04', desc: 'EOF / 退出' },
         { label: 'Ctrl+C', seq: '\x03', desc: 'SIGINT / 中断' }
-      ]
+      ],
+      waitingLogin: false
     }
   },
 
@@ -166,7 +167,7 @@ export default {
       }[this.status] || '未连接'
     },
     wsUrl () {
-      const host = (process.env.DRAW_WS_HOST || 'http://localhost:8082')
+      const host = (import.meta.env.VITE_TOOL_HOST || 'http://localhost:8082')
         .replace('https://', 'wss://')
         .replace('http://', 'ws://')
       return host + '/container/run'
@@ -179,6 +180,12 @@ export default {
     window.addEventListener('resize', this.onResize)
     window.addEventListener(USER_LOGOUT_SUCCESS_EVENT, () => {
       this.doDisconnect()
+    })
+    window.addEventListener(USER_LOGIN_SUCCESS_EVENT, () => {
+      if (this.waitingLogin) {
+        this.connect()
+      }
+      this.waitingLogin = false
     })
     this.initTerminal()
   },
@@ -288,6 +295,7 @@ export default {
 
     /* ── 连接 / 断开 ── */
     connect () {
+      this.waitingLogin = true
       const userStore = useUserStore()
       if (!userStore.isLoggedIn) {
         this.$message.warning('请先登录后再使用 Linux 在线终端')

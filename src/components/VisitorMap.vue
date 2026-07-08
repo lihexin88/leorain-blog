@@ -168,7 +168,7 @@ export default {
 
     async connectWebSocket () {
       // 1. 创建 SockJS 连接
-      const socket = new SockJS(process.env.DRAW_WS_HOST + '/ws') // WebSocket 端点
+      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/ws') // WebSocket 端点
 
       // 2. 创建 STOMP 客户端
       this.stompClient = new Client({

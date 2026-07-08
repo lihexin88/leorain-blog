@@ -33,16 +33,12 @@
 </template>
 
 <script>
-import { paginate_layouts } from '../../../configApi/helper'
 import moment from 'moment'
 
 export default {
-  components: {
-    moment
-  },
   methods: {
     load () {
-      const url = process.env.DRAW_WS_HOST + '/request/log'
+      const url = import.meta.env.VITE_TOOL_HOST + '/request/log'
       this.$http.get(url, {
         params: {
           page: this.page,
@@ -68,8 +64,6 @@ export default {
     }
   },
   mounted () {
-    // 如果是竖屏，设置windowSize为6
-    const paginateLayouts = paginate_layouts()
     this.load()
   }
 }

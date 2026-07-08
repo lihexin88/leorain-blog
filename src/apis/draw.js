@@ -24,7 +24,7 @@ export function createDraw (name) {
  * @returns {Promise}
  */
 export function saveDraw (drawId) {
-  return http.post(`${process.env.DRAW_WS_HOST}/draw/paint/save`, {
+  return http.post(`${import.meta.env.VITE_TOOL_HOST}/draw/paint/save`, {
     draw_id: drawId
   })
 }
@@ -63,7 +63,7 @@ export function getDraws (params) {
  * @returns {Promise}
  */
 export function getDrawInitData (drawId) {
-  return http.get(`${process.env.DRAW_WS_HOST}/draw/paint/init`, {
+  return http.get(`${import.meta.env.VITE_TOOL_HOST}/draw/paint/init`, {
     params: {
       draw_id: drawId
     }
@@ -76,7 +76,7 @@ export function getDrawInitData (drawId) {
  * @returns {Promise}
  */
 export function getDrawLock (drawId) {
-  return http.post(`${process.env.DRAW_WS_HOST}/draw/lock/get`, {
+  return http.post(`${import.meta.env.VITE_TOOL_HOST}/draw/lock/get`, {
     type: 0,
     draw_id: drawId
   })
