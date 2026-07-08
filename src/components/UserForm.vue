@@ -36,11 +36,11 @@
           <el-form-item label="昵称" prop="name">
             <el-input v-model="guest.name" :clearable="true" placeholder="如何称呼您？"></el-input>
           </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input type="email" v-model="guest.email" :clearable="true" placeholder="用于接收回复通知"></el-input>
-          </el-form-item>
           <el-form-item label="网址">
             <el-input v-model="guest.website" :clearable="true" placeholder="您的博客或个人主页 (选填)"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input type="email" v-model="guest.email" :clearable="true" placeholder="用于接收回复通知"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -76,6 +76,7 @@ export default {
         ]
       },
       avatar: '',
+      avatarRequestId: 0,
       guestAvatarPrefix: 'https://api.dicebear.com/9.x/adventurer/svg?seed=',
       // pinia
       userStore: null,
@@ -90,14 +91,15 @@ export default {
   },
   watch: {
     'guest.email': {
-      handler (val) {
-        if (!this.avatar || this.avatar === this.guestAvatarPrefix + MD5('').toString()) {
-          this.updateAvatar(val)
-        } else {
-          this.debouncedUpdateAvatar(val)
-        }
+      handler () {
+        this.scheduleAvatarUpdate()
       },
       immediate: true
+    },
+    'guest.website': {
+      handler () {
+        this.scheduleAvatarUpdate()
+      }
     },
     // 监听对话框显隐，关闭时释放拥有者
     dialogVisible (val) {
@@ -132,8 +134,8 @@ export default {
     }
   },
   created () {
-    this.debouncedUpdateAvatar = debounce(val => {
-      this.updateAvatar(val)
+    this.debouncedUpdateAvatar = debounce(() => {
+      this.updateAvatar()
     }, 1000)
   },
   mounted () {
@@ -171,8 +173,51 @@ export default {
       }
       this.userStore.setShowGuestDialog(true)
     },
-    updateAvatar (val) {
-      this.avatar = this.guestAvatarPrefix + MD5(val || '').toString()
+    getFallbackAvatar (email) {
+      return this.guestAvatarPrefix + MD5(email || '').toString()
+    },
+    buildFaviconUrl (website) {
+      let url = website.trim()
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url
+      }
+      return url.replace(/\/+$/, '') + '/favicon.ico'
+    },
+    checkFaviconExists (url) {
+      return new Promise(resolve => {
+        const img = new Image()
+        img.onload = () => resolve(true)
+        img.onerror = () => resolve(false)
+        img.src = url
+      })
+    },
+    scheduleAvatarUpdate () {
+      const fallback = this.getFallbackAvatar(this.guest.email)
+      if (!this.avatar || this.avatar === fallback || this.avatar === this.getFallbackAvatar('')) {
+        this.updateAvatar()
+      } else {
+        this.debouncedUpdateAvatar()
+      }
+    },
+    async updateAvatar () {
+      const email = this.guest.email || ''
+      const fallback = this.getFallbackAvatar(email)
+      const requestId = ++this.avatarRequestId
+      const website = (this.guest.website || '').trim()
+
+      if (website) {
+        const faviconUrl = this.buildFaviconUrl(website)
+        const exists = await this.checkFaviconExists(faviconUrl)
+        if (requestId !== this.avatarRequestId) return
+        if (exists) {
+          this.avatar = faviconUrl
+          return
+        }
+      }
+
+      if (requestId === this.avatarRequestId) {
+        this.avatar = fallback
+      }
     },
     handleMouseMove (e) {
       const dialog = e.currentTarget.querySelector('.el-dialog')
