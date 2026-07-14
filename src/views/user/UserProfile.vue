@@ -170,7 +170,8 @@ export default {
       authConfig: {},
       oauthProviders: [
         { provider: 'github', label: 'GitHub', icon: 'fab fa-github' },
-        { provider: 'gitee', label: 'Gitee', icon: 'fab fa-gitee' }
+        { provider: 'gitee', label: 'Gitee', icon: 'fab fa-gitee' },
+        { provider: 'linuxdo', label: 'LinuxDo', icon: 'fab fa-linuxdo' }
       ],
       editForm: {
         name: '',

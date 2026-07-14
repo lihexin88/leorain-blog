@@ -135,7 +135,7 @@ const routes = [
         path: 'games/play',
         name: 'GamePlay',
         component: () => import('../views/games/GamePlay.vue'),
-        props: (route) => ({ slug: route.query.slug })
+        props: route => ({ slug: route.query.slug })
       },
       {
         path: 'guestbook',
@@ -212,6 +212,17 @@ const routes = [
                 path: 'callback',
                 name: 'GiteeCallback',
                 component: () => import('../views/auth/gitee/GiteeCallback.vue')
+              }
+            ]
+          },
+          {
+            path: 'linuxdo',
+            name: 'Linuxdo',
+            children: [
+              {
+                path: 'callback',
+                name: 'LinuxDoCallback',
+                component: () => import('../views/auth/linuxdo/LinuxDoCallback.vue')
               }
             ]
           }
