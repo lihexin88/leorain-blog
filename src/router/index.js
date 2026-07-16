@@ -34,6 +34,11 @@ const routes = [
         component: () => import('../views/user/UserProfile.vue')
       },
       {
+        path: 'oauth/authorize',
+        name: 'OAuthAuthorize',
+        component: () => import('../views/user/OAuthAuthorize.vue')
+      },
+      {
         path: 'register',
         name: 'Register',
         component: () => import('../views/user/UserRegister.vue')

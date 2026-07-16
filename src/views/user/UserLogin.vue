@@ -111,6 +111,7 @@ import { mapActions } from 'pinia'
 import { Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
 import { useLayoutsStore } from '@/store/layouts'
+import { consumePostLoginRedirect } from '@/utils/redirect'
 
 export default {
   name: 'UserLogin',
@@ -191,7 +192,12 @@ export default {
           this.$message.success('登录成功')
           if (this.isDialog) {
             this.setShowLoginDialog(false)
-          } else {
+          }
+          const redirect = consumePostLoginRedirect()
+          if (redirect) {
+            // 完整路径（含 query），用于授权页回跳
+            this.$router.push(redirect)
+          } else if (!this.isDialog) {
             this.$router.push('/')
           }
         } catch (error) {

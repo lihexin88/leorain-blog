@@ -128,6 +128,7 @@ import authApi from '@/apis/auth'
 import { User, Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
+import { consumePostLoginRedirect, savePostLoginRedirect } from '@/utils/redirect'
 
 export default {
   name: 'UserRegister',
@@ -208,9 +209,37 @@ export default {
             validate_key: validator.validateKey,
             validate_result: validator.validateResult
           }
-          await authApi.register(payload)
+          const response = await authApi.register(payload)
+          // 注册接口可能直接返回 token
+          const token = response?.access_token || response?.token || response?.data?.access_token
+          if (token) {
+            localStorage.setItem('token', token)
+            const userStore = useUserStore()
+            userStore.token = token
+            try {
+              await userStore.fetchUserInfo()
+            } catch (e) {
+              // ignore fetch error, still try redirect
+            }
+            this.$message.success('注册成功')
+            const redirect = consumePostLoginRedirect()
+            if (redirect) {
+              this.$router.push(redirect)
+            } else {
+              this.$router.push('/')
+            }
+            return
+          }
+
           this.$message.success('注册成功，请登录')
-          this.$router.push('/')
+          // 未自动登录时：若有回跳地址则先回原页再弹登录
+          const redirect = consumePostLoginRedirect()
+          if (redirect) {
+            savePostLoginRedirect(redirect)
+            this.$router.push(redirect)
+          } else {
+            this.$router.push('/')
+          }
           this.setShowLoginDialog(true)
         } catch (error) {
           console.error(error)
