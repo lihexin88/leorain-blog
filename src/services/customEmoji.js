@@ -3,29 +3,58 @@ import customEmojiApi from '@/apis/customEmoji'
 let customEmojiMap = {}
 export let customEmoji = []
 
-export async function getEmojiData () {
-  const response = await customEmojiApi.getEmojiData()
-  const result = response.data.map(item => {
-    if (item.image_url.match(/\.(png|jpg|jpeg|gif|PNG|JPG|JPEG|GIF)$/)) {
-      let url = new URL(item.image_url)
-      url.searchParams.set('x-oss-process', 'style/emoji')
-      item.image_url = url.href
-    }
+// 合并并发请求：多个组件同时调用时只发一次网络请求
+let emojiDataPromise = null
+let emojiDataLoaded = false
 
-    // 转换为short name 和 imageUrl 的映射，方便进行表情和地址的替换
-    customEmojiMap[item.short_names[0]] = item.image_url
-    return {
-      id: item.short_names[0],
-      name: item.name,
-      short_names: item.short_names,
-      text: item.text,
-      emoticons: item.emoticons,
-      keywords: item.keywords,
-      skins: [{ src: item.image_url }]
+function normalizeEmojiItem (item) {
+  if (item.image_url.match(/\.(png|jpg|jpeg|gif|PNG|JPG|JPEG|GIF)$/)) {
+    const url = new URL(item.image_url)
+    url.searchParams.set('x-oss-process', 'style/emoji')
+    item.image_url = url.href
+  }
+
+  // short name -> imageUrl，供表情文本替换
+  customEmojiMap[item.short_names[0]] = item.image_url
+  return {
+    id: item.short_names[0],
+    name: item.name,
+    short_names: item.short_names,
+    text: item.text,
+    emoticons: item.emoticons,
+    keywords: item.keywords,
+    skins: [{ src: item.image_url }]
+  }
+}
+
+export async function getEmojiData () {
+  // 已加载成功则直接返回缓存，避免重复请求
+  if (emojiDataLoaded) {
+    return customEmoji
+  }
+
+  // 已有进行中的请求则复用同一 Promise
+  if (emojiDataPromise) {
+    return emojiDataPromise
+  }
+
+  emojiDataPromise = (async () => {
+    try {
+      const response = await customEmojiApi.getEmojiData()
+      const list = Array.isArray(response?.data) ? response.data : []
+      customEmojiMap = {}
+      const result = list.map(normalizeEmojiItem)
+      customEmoji = result
+      emojiDataLoaded = true
+      return result
+    } catch (error) {
+      // 失败时清空 promise，允许后续重试
+      emojiDataPromise = null
+      throw error
     }
-  })
-  customEmoji = result
-  return result
+  })()
+
+  return emojiDataPromise
 }
 
 export const emojiI18n = {
@@ -56,14 +85,20 @@ export const emojiI18n = {
 }
 
 export async function emojiToImage (text) {
-  if (Object.keys(customEmojiMap).length === 0) {
-    await getEmojiData()
+  if (!emojiDataLoaded) {
+    try {
+      await getEmojiData()
+    } catch (error) {
+      // 拉取失败时保持原文，不阻塞渲染
+      console.error('Failed to load custom emoji data:', error)
+      return text
+    }
   }
+
   return text.replace(/:([a-z0-9_+-]+):/g, (match, emoji) => {
     if (!customEmojiMap[emoji]) {
       return match
-    } else {
-      return '<img class="emoji-image" width="64" alt="emoji:' + emoji + '" src="' + customEmojiMap[emoji] + '" />'
     }
+    return '<img class="emoji-image" width="64" alt="emoji:' + emoji + '" src="' + customEmojiMap[emoji] + '" />'
   })
 }
