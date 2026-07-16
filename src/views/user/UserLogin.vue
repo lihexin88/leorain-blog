@@ -87,9 +87,10 @@
             <el-divider>or</el-divider>
           </div>
 
-          <el-form-item v-if="authConfig">
-            <el-button @click="handleGithubLogin"> <i class="fab fa-github"></i>&nbsp;GitHub 登录 </el-button>
-            <el-button @click="handleGiteeLogin"> <i class="fab fa-gitee"></i>&nbsp;Gitee 登录 </el-button>
+          <el-form-item v-if="authConfig" label="快捷登录">
+            <el-button @click="handleGithubLogin"> <i class="fab fa-github"></i>GitHub</el-button>
+            <el-button @click="handleGiteeLogin"> <i class="fab fa-gitee"></i>Gitee</el-button>
+            <el-button @click="handleLinuxDoLogin"> <i class="fab fa-gitee"></i>LinuxDo</el-button>
           </el-form-item>
 
           <div class="login-footer">
@@ -218,6 +219,9 @@ export default {
     },
     handleGiteeLogin () {
       window.location.href = this.authConfig.gitee.auth_url
+    },
+    handleLinuxDoLogin () {
+      window.location.href = this.authConfig.linuxdo.auth_url
     },
     handleRegister () {
       if (this.isDialog) {

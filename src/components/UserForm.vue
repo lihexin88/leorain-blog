@@ -42,6 +42,11 @@
           <el-form-item label="邮箱" prop="email">
             <el-input type="email" v-model="guest.email" :clearable="true" placeholder="用于接收回复通知"></el-input>
           </el-form-item>
+          <el-form-item v-if="authConfig" label="快捷登录">
+            <el-button @click="handleGithubLogin"> <i class="fab fa-github"></i>GitHub</el-button>
+            <el-button @click="handleGiteeLogin"> <i class="fab fa-gitee"></i>Gitee</el-button>
+            <el-button @click="handleLinuxDoLogin"> <i class="fab fa-gitee"></i>LinuxDo</el-button>
+          </el-form-item>
         </el-form>
       </div>
       <template v-slot:footer>
@@ -57,6 +62,7 @@
 import MD5 from 'crypto-js/md5'
 import debounce from 'lodash/debounce'
 import { useUserStore } from '@/store/user'
+import authApi from '@/apis/auth'
 
 export default {
   components: {},
@@ -86,7 +92,8 @@ export default {
       saving: false,
       tiltStyle: {
         transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)'
-      }
+      },
+      authConfig: {}
     }
   },
   watch: {
@@ -152,6 +159,9 @@ export default {
         this.userStore.registerLoginDialogOwner(this.instanceId)
       }
     }
+    authApi.getConfig().then(res => {
+      this.authConfig = res
+    })
   },
   beforeUnmount () {
     if (this.debouncedUpdateAvatar) {
@@ -163,6 +173,15 @@ export default {
     }
   },
   methods: {
+    handleGithubLogin () {
+      window.location.href = this.authConfig.github.auth_url
+    },
+    handleGiteeLogin () {
+      window.location.href = this.authConfig.gitee.auth_url
+    },
+    handleLinuxDoLogin () {
+      window.location.href = this.authConfig.linuxdo.auth_url
+    },
     openDialog () {
       if (!this.userStore) this.userStore = useUserStore()
       // 若当前无拥有者，抢占拥有者
