@@ -182,7 +182,8 @@ export default {
   margin: 0;
   max-width: 100vw;
   overflow-x: hidden;
-  background-color: var(--header-bg);
+  /* 背景交给 NavBar 的渐变 / 粒子层，避免双重遮罩 */
+  background-color: transparent;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
