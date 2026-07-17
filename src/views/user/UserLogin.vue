@@ -83,14 +83,12 @@
             <el-button type="primary" class="login-button" :loading="loading" native-type="submit"> 登录 </el-button>
           </el-form-item>
 
-          <div class="divider-container" v-if="authConfig.length > 2">
+          <div class="divider-container">
             <el-divider>or</el-divider>
           </div>
 
-          <el-form-item v-if="authConfig" label="快捷登录">
-            <el-button @click="handleGithubLogin"> <i class="fab fa-github"></i>GitHub</el-button>
-            <el-button @click="handleGiteeLogin"> <i class="fab fa-gitee"></i>Gitee</el-button>
-            <el-button @click="handleLinuxDoLogin"> <i class="fab fa-gitee"></i>LinuxDo</el-button>
+          <el-form-item label="三方登录">
+            <oauth-buttons />
           </el-form-item>
 
           <div class="login-footer">
@@ -105,14 +103,15 @@
 
 <script>
 import HumanValidator from '@/components/HumanValidator.vue'
+import OauthButtons from '@/components/OauthButtons.vue'
 import AnimatedCharacters from '@/components/AnimatedCharacters.vue'
 import { useUserStore } from '@/store/user'
-import authApi from '@/apis/auth.js'
 import { mapActions } from 'pinia'
 import { Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
 import { useLayoutsStore } from '@/store/layouts'
 import { consumePostLoginRedirect } from '@/utils/redirect'
+import { watchCrossTabLogin } from '@/utils/auth-events'
 
 export default {
   name: 'UserLogin',
@@ -122,7 +121,8 @@ export default {
     Lock,
     Message,
     ViewIcon,
-    HideIcon
+    HideIcon,
+    OauthButtons
   },
   props: {
     isDialog: {
@@ -160,11 +160,46 @@ export default {
         ]
       },
       loading: false,
-      authConfig: []
+      unwatchCrossTabLogin: null
     }
   },
   methods: {
     ...mapActions(useUserStore, ['login', 'setShowLoginDialog']),
+    /**
+     * 其他标签页已登录：同步当前页登录态并离开登录界面
+     */
+    async handleCrossTabLogin ({ token }) {
+      const userStore = useUserStore()
+      // 本页已是同一 token 的登录态时无需处理
+      if (userStore.isLoggedIn && userStore.token === token) {
+        if (this.isDialog) {
+          this.setShowLoginDialog(false)
+        }
+        return
+      }
+
+      userStore.token = token
+      try {
+        await userStore.fetchUserInfo()
+      } catch (e) {
+        // 用户信息拉取失败仍以 token 为准，刷新整页恢复状态
+        window.location.reload()
+        return
+      }
+
+      this.$message.success('已在其他标签页登录，正在同步…')
+      if (this.isDialog) {
+        this.setShowLoginDialog(false)
+        return
+      }
+
+      const redirect = consumePostLoginRedirect()
+      if (redirect) {
+        this.$router.push(redirect)
+      } else {
+        this.$router.push('/')
+      }
+    },
     async handleLogin () {
       // 表单预验证
       await this.$refs.loginFormRef.validate(async valid => {
@@ -214,15 +249,6 @@ export default {
         }
       })
     },
-    handleGithubLogin () {
-      window.location.href = this.authConfig.github.auth_url
-    },
-    handleGiteeLogin () {
-      window.location.href = this.authConfig.gitee.auth_url
-    },
-    handleLinuxDoLogin () {
-      window.location.href = this.authConfig.linuxdo.auth_url
-    },
     handleRegister () {
       if (this.isDialog) {
         this.setShowLoginDialog(false)
@@ -234,15 +260,19 @@ export default {
         this.setShowLoginDialog(false)
       }
       this.$router.push('/password/reset')
-    },
-    getAuthConfig () {
-      authApi.getConfig().then(res => {
-        this.authConfig = res
-      })
     }
   },
   mounted () {
-    this.getAuthConfig()
+    // 多标签：其他页登录成功后，本页自动同步
+    this.unwatchCrossTabLogin = watchCrossTabLogin(payload => {
+      this.handleCrossTabLogin(payload)
+    })
+  },
+  beforeUnmount () {
+    if (typeof this.unwatchCrossTabLogin === 'function') {
+      this.unwatchCrossTabLogin()
+      this.unwatchCrossTabLogin = null
+    }
   }
 }
 </script>

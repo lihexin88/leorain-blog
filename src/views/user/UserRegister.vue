@@ -22,100 +22,89 @@
           </div>
         </div>
 
-      <el-form
-        ref="registerFormRef"
-        :model="registerForm"
-        :rules="registerRules"
-        label-position="top"
-        @submit.prevent="handleRegister"
-      >
-        <el-form-item label="用户名" prop="name">
-          <el-input
-            v-model="registerForm.name"
-            placeholder="请输入用户名"
-            clearable
-            autofocus
-            @focus="isInputFocused = true"
-            @blur="isInputFocused = false"
-          >
-            <template #prefix>
-              <el-icon><User /></el-icon>
-            </template>
-          </el-input>
-          <div class="form-tip">
-            如果您在本站评论或者留言过，请在登录页面点击忘记密码，重置您的密码即可登录
+        <el-form
+          ref="registerFormRef"
+          :model="registerForm"
+          :rules="registerRules"
+          label-position="top"
+          @submit.prevent="handleRegister"
+        >
+          <el-form-item label="用户名" prop="name">
+            <el-input
+              v-model="registerForm.name"
+              placeholder="请输入用户名"
+              clearable
+              autofocus
+              @focus="isInputFocused = true"
+              @blur="isInputFocused = false"
+            >
+              <template #prefix>
+                <el-icon><User /></el-icon>
+              </template>
+            </el-input>
+            <div class="form-tip">如果您在本站评论或者留言过，请在登录页面点击忘记密码，重置您的密码即可登录</div>
+          </el-form-item>
+
+          <el-form-item label="邮箱" prop="email">
+            <el-input
+              v-model="registerForm.email"
+              placeholder="请输入邮箱"
+              clearable
+              @focus="isInputFocused = true"
+              @blur="isInputFocused = false"
+            >
+              <template #prefix>
+                <el-icon><Message /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="密码" prop="password">
+            <el-input
+              v-model="registerForm.password"
+              :type="passwordVisible ? 'text' : 'password'"
+              placeholder="请输入密码"
+            >
+              <template #suffix>
+                <el-icon style="cursor: pointer" @click="passwordVisible = !passwordVisible">
+                  <ViewIcon v-if="!passwordVisible" />
+                  <HideIcon v-else />
+                </el-icon>
+              </template>
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="确认密码" prop="password_confirmation">
+            <el-input
+              v-model="registerForm.password_confirmation"
+              :type="passwordVisible ? 'text' : 'password'"
+              placeholder="请再次输入密码"
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="验证码" required>
+            <Validator ref="validatorRef" />
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" class="register-button" :loading="loading" native-type="submit"> 注册 </el-button>
+          </el-form-item>
+          <el-form-item label="三方登录">
+            <oauth-buttons />
+          </el-form-item>
+
+          <div class="register-footer">
+            <span>已有账号？</span>
+            <el-link type="primary" @click="goToLogin">立即登录</el-link>
           </div>
-        </el-form-item>
-
-        <el-form-item label="邮箱" prop="email">
-          <el-input
-            v-model="registerForm.email"
-            placeholder="请输入邮箱"
-            clearable
-            @focus="isInputFocused = true"
-            @blur="isInputFocused = false"
-          >
-            <template #prefix>
-              <el-icon><Message /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-
-        <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="registerForm.password"
-            :type="passwordVisible ? 'text' : 'password'"
-            placeholder="请输入密码"
-          >
-            <template #suffix>
-              <el-icon style="cursor: pointer" @click="passwordVisible = !passwordVisible">
-                <ViewIcon v-if="!passwordVisible" />
-                <HideIcon v-else />
-              </el-icon>
-            </template>
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-
-        <el-form-item label="确认密码" prop="password_confirmation">
-          <el-input
-            v-model="registerForm.password_confirmation"
-            :type="passwordVisible ? 'text' : 'password'"
-            placeholder="请再次输入密码"
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-
-        <el-form-item label="验证码" required>
-          <Validator ref="validatorRef" />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="register-button"
-            :loading="loading"
-            native-type="submit"
-          >
-            注册
-          </el-button>
-        </el-form-item>
-        <el-form-item v-if="authConfig.github">
-          <el-button class="github-button" @click="handleGithubLogin">
-            <i class="fab fa-github"></i>&nbsp;GitHub 注册
-          </el-button>
-        </el-form-item>
-
-        <div class="register-footer">
-          <span>已有账号？</span>
-          <el-link type="primary" @click="goToLogin">立即登录</el-link>
-        </div>
-      </el-form>
+        </el-form>
       </div>
     </el-card>
   </div>
@@ -123,12 +112,14 @@
 
 <script>
 import HumanValidator from '@/components/HumanValidator.vue'
+import OauthButtons from '@/components/OauthButtons.vue'
 import AnimatedCharacters from '@/components/AnimatedCharacters.vue'
 import authApi from '@/apis/auth'
 import { User, Message, Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { consumePostLoginRedirect, savePostLoginRedirect } from '@/utils/redirect'
+import { watchCrossTabLogin } from '@/utils/auth-events'
 
 export default {
   name: 'UserRegister',
@@ -139,7 +130,8 @@ export default {
     Message,
     Lock,
     ViewIcon,
-    HideIcon
+    HideIcon,
+    OauthButtons
   },
   setup () {
     return {
@@ -163,7 +155,6 @@ export default {
     return {
       isInputFocused: false,
       passwordVisible: false,
-      authConfig: [],
       registerForm: {
         name: '',
         email: '',
@@ -183,17 +174,41 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
         ],
-        password_confirmation: [
-          { required: true, validator: validateConfirmPassword, trigger: 'blur' }
-        ]
+        password_confirmation: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }]
       },
-      loading: false
+      loading: false,
+      unwatchCrossTabLogin: null
     }
   },
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
+    /**
+     * 其他标签页已登录：同步当前页登录态并离开注册界面
+     */
+    async handleCrossTabLogin ({ token }) {
+      const userStore = useUserStore()
+      if (userStore.isLoggedIn && userStore.token === token) {
+        return
+      }
+
+      userStore.token = token
+      try {
+        await userStore.fetchUserInfo()
+      } catch (e) {
+        window.location.reload()
+        return
+      }
+
+      this.$message.success('已在其他标签页登录，正在同步…')
+      const redirect = consumePostLoginRedirect()
+      if (redirect) {
+        this.$router.push(redirect)
+      } else {
+        this.$router.push('/')
+      }
+    },
     async handleRegister () {
-      await this.$refs.registerFormRef.validate(async (valid) => {
+      await this.$refs.registerFormRef.validate(async valid => {
         if (!valid) return
 
         const validator = this.$refs.validatorRef
@@ -256,18 +271,19 @@ export default {
     goToLogin () {
       this.$router.push('/')
       this.setShowLoginDialog(true)
-    },
-    handleGithubLogin () {
-      window.location.href = this.authConfig.github.auth_url
-    },
-    getAuthConfig () {
-      authApi.getConfig().then(res => {
-        this.authConfig = res
-      })
     }
   },
   mounted () {
-    this.getAuthConfig()
+    // 多标签：其他页登录成功后，本页自动同步
+    this.unwatchCrossTabLogin = watchCrossTabLogin(payload => {
+      this.handleCrossTabLogin(payload)
+    })
+  },
+  beforeUnmount () {
+    if (typeof this.unwatchCrossTabLogin === 'function') {
+      this.unwatchCrossTabLogin()
+      this.unwatchCrossTabLogin = null
+    }
   }
 }
 </script>
@@ -400,7 +416,8 @@ export default {
   border-color: #24292e;
   color: #fff;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     background-color: #444d56;
     border-color: #444d56;
     color: #fff;
