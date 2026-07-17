@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthCallbackStatus from '@/views/auth/AuthCallbackStatus.vue'
 import { useOauthStore } from '@/store/oauth'
+import { consumePostLoginRedirect } from '@/utils/redirect'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,7 +72,8 @@ onMounted(async () => {
     authStatus.value = 'success'
     activeStep.value = 3
     window.setTimeout(() => {
-      router.push('/')
+      const redirect = consumePostLoginRedirect()
+      router.push(redirect || '/')
     }, 800)
   } catch (error) {
     stopProgress()
