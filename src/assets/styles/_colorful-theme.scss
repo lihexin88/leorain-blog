@@ -562,51 +562,53 @@
   // ════════════════════════════════════════════════════════════
   // Element Plus: Card
   // ════════════════════════════════════════════════════════════
+  // 注意：border-image 会强制矩形边框，使 border-radius 失效。
+  // 用「双层 background + transparent border」模拟彩虹描边，才能保留圆角。
   .el-card {
     border: 2px solid transparent;
-    border-image: var(--colorful-rainbow-h) 1;
     border-radius: 16px;
+    overflow: hidden;
     box-shadow: var(--colorful-shadow);
-    background: var(--colorful-card-bg);
+    background:
+      linear-gradient(var(--colorful-card-bg, #fff), var(--colorful-card-bg, #fff)) padding-box,
+      var(--colorful-rainbow-h) border-box;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
     backdrop-filter: blur(12px) saturate(180%);
     transition: box-shadow 0.3s ease, transform 0.25s ease;
     position: relative;
 
-    // Animated rainbow border glow on hover
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      border-radius: inherit;
-      background: var(--colorful-rainbow-h);
-      background-size: 200% 100%;
-      animation: colorful-gradient-shift 4s ease infinite;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      filter: blur(6px);
-    }
-
+    // Hover 外发光：不用负 inset 的伪元素（会被 overflow:hidden 裁掉），改用 box-shadow
     &:hover {
       box-shadow: var(--colorful-glow-strong);
       transform: translateY(-2px);
-
-      &::after {
-        opacity: 0.4;
-      }
     }
 
     .el-card__header {
-      border-bottom: 2px solid transparent;
-      border-image: var(--colorful-rainbow-h) 1;
+      border-bottom: none;
       font-size: 15px;
       font-weight: 700;
+      // 彩虹文字
       background: var(--colorful-rainbow-h);
       background-size: 200% 100%;
       animation: colorful-gradient-shift 4s ease infinite;
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
+      // 底部分割线用伪元素，避免 border-image 破坏圆角
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 2px;
+        background: var(--colorful-rainbow-h);
+        background-size: 200% 100%;
+        animation: colorful-gradient-shift 4s ease infinite;
+      }
     }
 
     .el-card__body {
@@ -652,11 +654,27 @@
   // ════════════════════════════════════════════════════════════
   // Element Plus: Table
   // ════════════════════════════════════════════════════════════
+  // 注意：border-image 会强制矩形边框，使 border-radius 失效。
+  // 改用「双层 background + transparent border」模拟彩虹描边，才能保留圆角。
   .el-table {
     border: 2px solid transparent;
-    border-image: var(--colorful-rainbow-h) 1;
     border-radius: 16px;
     overflow: hidden;
+    background:
+      linear-gradient(var(--theme-el-bg-color, #fff), var(--theme-el-bg-color, #fff)) padding-box,
+      var(--colorful-rainbow-h) border-box;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+
+    // Element Plus 内部层默认有实色背景，需透明才能露出上面的圆角底
+    .el-table__inner-wrapper::before {
+      display: none;
+    }
+
+    &::before {
+      // EP 默认顶部边线伪元素会盖住圆角，去掉
+      display: none;
+    }
 
     th.el-table__cell {
       font-weight: 700;
@@ -677,6 +695,12 @@
 
     .el-table__row:hover > td {
       background-color: rgba(255, 107, 157, 0.04);
+    }
+
+    // 表头/表体区域也跟圆角裁剪，避免四角直角露出来
+    .el-table__header-wrapper,
+    .el-table__body-wrapper {
+      border-radius: inherit;
     }
   }
 

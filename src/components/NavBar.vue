@@ -16,8 +16,8 @@
       aria-hidden="true"
     />
 
-    <!-- 底部彩虹流光边 -->
-    <div class="nav-gradient-line" aria-hidden="true" />
+    <!-- 底部彩虹流光边：仅彩色主题显示 -->
+    <div v-if="isColorful" class="nav-gradient-line" aria-hidden="true" />
 
     <!-- 扫描高光 -->
     <div class="nav-scan-light" aria-hidden="true" />
@@ -551,6 +551,12 @@ export default {
         duration: 280,
         easing: 'easeOutQuad'
       })
+      // 鼠标移出时立刻复位高光，避免 anime 留下的 translateX 卡在中间
+      const shine = el.querySelector('.nav-item-shine')
+      if (shine) {
+        anime.remove(shine)
+        anime.set(shine, { translateX: '-120%' })
+      }
     },
     onLogoHover () {
       if (this._reducedMotion) return
@@ -769,9 +775,9 @@ export default {
           uTime: { value: 0 },
           uPixelRatio: { value: renderer.getPixelRatio() }
         },
+        // vertexColors: true 时 Three 会注入 attribute vec3 color，勿再声明
         vertexShader: `
           attribute float size;
-          attribute vec3 color;
           varying vec3 vColor;
           uniform float uPixelRatio;
           void main() {
@@ -1260,6 +1266,10 @@ export default {
       transparent
     ) !important;
     color: var(--theme-accent-color, #0ea5e9) !important;
+    // 覆盖彩色主题全局的「渐变文字」：text-fill transparent 会让 color 失效
+    -webkit-text-fill-color: var(--theme-accent-color, #0ea5e9) !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
     font-weight: 600;
 
     &::after {
@@ -1284,6 +1294,9 @@ export default {
 
   :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
     color: var(--theme-accent-color, #0ea5e9) !important;
+    -webkit-text-fill-color: var(--theme-accent-color, #0ea5e9) !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
   }
 }
 
@@ -1305,6 +1318,11 @@ export default {
       rgba(192, 132, 252, 0.16),
       rgba(96, 165, 250, 0.18)
     ) !important;
+    // 全局 colorful 把 is-active 做成了渐变文字（fill transparent），这里恢复可见文字色
+    color: #5f27cd !important;
+    -webkit-text-fill-color: #5f27cd !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
 
     &::after {
       background: linear-gradient(90deg, #ff6b9d, #c084fc, #60a5fa, #34d399);
@@ -1312,6 +1330,13 @@ export default {
       animation: rainbow-flow 3s linear infinite;
       box-shadow: 0 0 10px rgba(96, 165, 250, 0.7);
     }
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+    color: #5f27cd !important;
+    -webkit-text-fill-color: #5f27cd !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
   }
 }
 
@@ -1738,17 +1763,10 @@ export default {
   .el-menu {
     max-height: min(70vh, 520px);
     overflow-y: auto;
-    padding: 8px 8px 22px 8px;
-    border-radius: 14px !important;
-    border: 1px solid transparent !important;
-    background:
-      linear-gradient(var(--theme-el-bg-color-overlay, #fff), var(--theme-el-bg-color-overlay, #fff)) padding-box,
-      linear-gradient(
-        135deg,
-        var(--theme-primary-dark-2, #0b84ba),
-        var(--theme-accent-color, #0ea5e9),
-        var(--theme-primary-light-3, #51bef1)
-      ) border-box !important;
+    padding: 8px 8px 30px 8px;
+    border-radius: 2px !important;
+    border: none !important;
+    background: var(--theme-el-bg-color-overlay, #fff) !important;
     box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12);
   }
 
@@ -1768,9 +1786,7 @@ export default {
 
 [data-theme='colorful'] .nav-tools-popper {
   .el-menu {
-    background:
-      linear-gradient(var(--theme-el-bg-color-overlay, #fff), var(--theme-el-bg-color-overlay, #fff)) padding-box,
-      linear-gradient(135deg, #ff6b9d, #c084fc, #60a5fa, #34d399) border-box !important;
+    background: var(--theme-el-bg-color-overlay, #fff) !important;
   }
 
   .el-menu-item:hover {
