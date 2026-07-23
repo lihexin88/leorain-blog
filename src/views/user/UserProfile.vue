@@ -1,114 +1,168 @@
 <template>
   <div class="user-profile-container">
-    <div class="user-header-jumbotron" v-if="userInfo">
-      <el-row :gutter="20" justify="center" align="middle" class="container">
-        <el-col :xs="24" :sm="6" class="text-center">
-          <el-avatar :size="120" :src="userInfo.avatar || defaultAvatar" class="profile-avatar" shape="circle" fit="cover" :class="{ clickable: isMyProfile }" @click="isMyProfile && $refs.avatarInput.click()" />
-          <input v-if="isMyProfile" ref="avatarInput" type="file" accept="image/*" style="display:none" @change="handleAvatarUpload" />
+    <!-- 顶部资料卡 -->
+    <section class="profile-hero">
+      <div class="profile-hero-bg" aria-hidden="true"></div>
+      <div class="profile-hero-inner container">
+        <div class="profile-card">
+          <div class="profile-main">
+            <div class="avatar-wrap" :class="{ clickable: isMyProfile }" @click="isMyProfile && $refs.avatarInput.click()">
+              <el-avatar
+                :size="112"
+                :src="userInfo.avatar || defaultAvatar"
+                class="profile-avatar"
+                shape="circle"
+                fit="cover"
+              />
+              <span v-if="isMyProfile" class="avatar-edit-hint">
+                <i class="fas fa-camera"></i>
+              </span>
+              <input
+                v-if="isMyProfile"
+                ref="avatarInput"
+                type="file"
+                accept="image/*"
+                class="avatar-input"
+                @change="handleAvatarUpload"
+              />
+            </div>
+
+            <div class="profile-info">
+              <div class="name-row">
+                <h1 class="nickname">{{ userInfo.nickname || userInfo.name || '未命名用户' }}</h1>
+                <el-button
+                  v-if="isMyProfile"
+                  class="edit-btn"
+                  type="primary"
+                  size="small"
+                  round
+                  @click="handleEditProfile"
+                >
+                  <i class="fas fa-pen"></i>
+                  编辑资料
+                </el-button>
+              </div>
+
+              <p class="description">{{ userInfo.description || '这个人不懒，只是还没有写简介～' }}</p>
+
+              <div class="meta-row">
+                <div class="meta-item website" v-if="userInfo.website">
+                  <i class="fas fa-link"></i>
+                  <el-link :href="normalizedWebsite" target="_blank" type="primary" :underline="false">
+                    {{ userInfo.website }}
+                  </el-link>
+                </div>
+                <div class="meta-item website muted" v-else>
+                  <i class="fas fa-link"></i>
+                  <span>暂无网站</span>
+                </div>
+              </div>
+
+              <div class="oauth-accounts">
+                <span class="oauth-title">三方账号</span>
+                <el-link
+                  v-for="item in oauthProviderItems"
+                  :key="item.provider"
+                  :href="item.href"
+                  :target="item.href ? '_blank' : '_self'"
+                  underline="never"
+                  class="oauth-account"
+                  :class="{ bound: item.bound, unbound: !item.bound, 'is-clickable': !!item.href }"
+                >
+                  <i :class="item.icon"></i>
+                  <span class="oauth-label">{{ item.label }}</span>
+                  <span class="oauth-name">{{ item.bound ? item.name : '未绑定' }}</span>
+                </el-link>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-stats">
+            <div class="stat-item">
+              <div class="stat-value">{{ userInfo.followings_count || 0 }}</div>
+              <div class="stat-label">关注</div>
+            </div>
+            <div class="stat-divider" aria-hidden="true"></div>
+            <div class="stat-item">
+              <div class="stat-value">{{ discussions_count || 0 }}</div>
+              <div class="stat-label">讨论</div>
+            </div>
+            <div class="stat-divider" aria-hidden="true"></div>
+            <div class="stat-item">
+              <div class="stat-value">{{ comments_count || 0 }}</div>
+              <div class="stat-label">评论</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 内容区 -->
+    <section class="profile-body container">
+      <el-row :gutter="20">
+        <el-col :xs="24" :md="12">
+          <el-card class="box-card" shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span class="card-header-icon comments"><i class="fas fa-comments"></i></span>
+                <span>最近评论</span>
+              </div>
+            </template>
+            <div v-if="comments && comments.length" class="activity-list">
+              <div v-for="comment in comments" :key="comment.id" class="activity-item">
+                <div class="activity-title">
+                  <router-link :to="getCommentableLink(comment)">
+                    {{ comment.commentable?.title || '未知内容' }}
+                  </router-link>
+                  <span class="activity-time">{{ comment.created_at_human }}</span>
+                </div>
+                <div class="activity-content">
+                  <markdown-parse :content="renderComment(comment)"></markdown-parse>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-state">
+              <i class="fas fa-comment-slash"></i>
+              <p>暂无评论</p>
+            </div>
+          </el-card>
         </el-col>
-        <el-col :xs="24" :sm="10" class="profile-content">
-          <h1 class="nickname">昵称: {{ userInfo.nickname || userInfo.name }}</h1>
-          <p class="description">简介: {{ userInfo.description || '暂无简介' }}</p>
-          <div class="website">
-            网址: <el-link v-if="userInfo.website" :href="userInfo.website" target="_blank" type="primary">{{ userInfo.website }}</el-link>
-            <span v-else>暂无</span>
-          </div>
-          <div class="actions" v-if="isMyProfile">
-            <el-button type="info" size="small" @click="handleEditProfile">编辑资料</el-button>
-          </div>
-          <div class="oauth-accounts">
-            <span class="oauth-title">三方账号：</span>
-            <el-link
-              v-for="item in oauthProviderItems"
-              :key="item.provider"
-              :href="item.href"
-              :target="item.href ? '_blank' : '_self'"
-              :underline="false"
-              class="oauth-account"
-              :class="{ bound: item.bound, unbound: !item.bound, 'is-clickable': !!item.href }"
-            >
-              <i :class="item.icon"></i>
-              <span>{{ item.label }}</span>
-              <span class="oauth-name">{{ item.bound ? item.name : '未绑定' }}</span>
-            </el-link>
-          </div>
-        </el-col>
-        <el-col :xs="24" :sm="8" class="profile-stats">
-          <el-row :gutter="10" class="text-center">
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ userInfo.followings_count || 0 }}</div>
-                <div class="stat-label">关注</div>
+
+        <el-col :xs="24" :md="12">
+          <el-card class="box-card" shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span class="card-header-icon discussions"><i class="fas fa-fire"></i></span>
+                <span>最近讨论</span>
               </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ discussions_count || 0 }}</div>
-                <div class="stat-label">讨论</div>
+            </template>
+            <div v-if="discussions && discussions.length" class="activity-list">
+              <div v-for="discussion in discussions" :key="discussion.id" class="activity-item discussion-item">
+                <router-link class="discussion-link" :to="'/discussion/' + discussion.id">
+                  <i class="fas fa-hashtag"></i>
+                  <span class="discussion-title">{{ discussion.title }}</span>
+                </router-link>
+                <span class="activity-time">{{ discussion.created_at_human }}</span>
               </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="stat-item">
-                <div class="stat-value">{{ comments_count || 0 }}</div>
-                <div class="stat-label">评论</div>
-              </div>
-            </el-col>
-          </el-row>
+            </div>
+            <div v-else class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>暂无讨论</p>
+            </div>
+          </el-card>
+
+          <div v-if="isMyProfile" class="user-items-wrapper">
+            <UserItems />
+          </div>
         </el-col>
       </el-row>
-    </div>
-
-    <el-row :gutter="20" class="container content-row">
-      <el-col :xs="24" :md="12">
-        <el-card class="box-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>最近评论</span>
-            </div>
-          </template>
-          <div v-if="comments && comments.length" class="comment-list">
-            <div v-for="comment in comments" :key="comment.id" class="list-item">
-              <div class="item-title">
-                <router-link :to="getCommentableLink(comment)">
-                  {{ comment.commentable?.title || '未知内容' }}
-                </router-link>
-                <span class="meta"> in {{ comment.created_at_human }}</span>
-              </div>
-              <markdown-parse :content="renderComment(comment)"></markdown-parse>
-            </div>
-          </div>
-          <div v-else class="nothing">暂无数据</div>
-        </el-card>
-      </el-col>
-
-      <el-col :xs="24" :md="12">
-        <el-card class="box-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>最近讨论</span>
-            </div>
-          </template>
-          <div v-if="discussions && discussions.length" class="discussion-list">
-            <div v-for="discussion in discussions" :key="discussion.id" class="list-item">
-              <router-link :to="'/discussion/' + discussion.id">
-                {{ discussion.title }}
-              </router-link>
-              <span class="meta"> in {{ discussion.created_at_human }}</span>
-            </div>
-          </div>
-          <div v-else class="nothing">暂无数据</div>
-        </el-card>
-
-        <div v-if="isMyProfile" class="user-items-wrapper">
-          <UserItems />
-        </div>
-      </el-col>
-    </el-row>
+    </section>
 
     <el-dialog
       v-model="editDialogVisible"
       title="编辑资料"
       append-to-body
+      class="edit-profile-dialog"
       :style="{ width: 'min(520px, calc(100vw - 32px))' }"
     >
       <el-form label-position="top">
@@ -119,10 +173,10 @@
           <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
         </el-form-item>
         <el-form-item label="网站">
-          <el-input v-model="editForm.website" placeholder="请输入网站地址" />
+          <el-input v-model="editForm.website" placeholder="请输入网站地址，如 www.example.com" />
         </el-form-item>
         <el-form-item label="简介">
-          <el-input v-model="editForm.description" type="textarea" :rows="4" placeholder="请输入简介" />
+          <el-input v-model="editForm.description" type="textarea" :rows="4" placeholder="介绍一下自己吧" />
         </el-form-item>
         <el-form-item label="邮件通知">
           <el-switch
@@ -159,7 +213,7 @@ export default {
   },
   data () {
     return {
-      userInfo: null,
+      userInfo: {},
       comments: [],
       discussions: [],
       discussions_count: 0,
@@ -204,6 +258,12 @@ export default {
           href: account?.url || this.authConfig?.[provider.provider]?.auth_url || null
         }
       })
+    },
+    normalizedWebsite () {
+      const url = this.userInfo?.website
+      if (!url) return ''
+      if (/^https?:\/\//i.test(url)) return url
+      return '//' + url
     }
   },
   mounted () {
@@ -315,267 +375,569 @@ export default {
 <style scoped lang="scss">
 .user-profile-container {
   min-height: calc(100vh - 60px);
+  padding-bottom: 48px;
 }
 
-.user-header-jumbotron {
-  color: white;
-  padding: 60px 0;
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .container {
-    width: 100%;
-    max-width: 1140px;
-    margin: 0 auto;
-  }
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.profile-avatar {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  overflow: visible !important;
+/* ========== Hero ========== */
+.profile-hero {
   position: relative;
+  padding: 48px 0 36px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.profile-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 28%, transparent), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 30%, color-mix(in srgb, var(--theme-primary-light-3, #51bef1) 22%, transparent), transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 8%, transparent) 0%, transparent 100%);
+  pointer-events: none;
 
   &::after {
     content: '';
     position: absolute;
-    top: -6px;
-    left: -6px;
-    right: -6px;
-    bottom: -6px;
-    border-radius: 50%;
-    border: 3px solid transparent;
-    border-top-color: #409eff;
-    border-right-color: #67c23a;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    animation: none;
-    pointer-events: none;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.18) 1px, transparent 0);
+    background-size: 28px 28px;
+    opacity: 0.35;
+    mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
   }
+}
 
-  &:hover::after {
-    opacity: 1;
-    animation: spin-border 1s linear infinite;
-  }
+.profile-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px 32px;
+  border-radius: 20px;
+  background: var(--article-item-bg, rgba(255, 255, 255, 0.92));
+  border: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
+  box-shadow: var(
+    --article-box-shadow,
+    0 10px 30px rgba(0, 0, 0, 0.06),
+    0 16px 34px rgba(15, 23, 42, 0.06)
+  );
+  backdrop-filter: blur(12px);
+  color: var(--card-text-color, var(--text-color, #111827));
+}
+
+.profile-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+/* Avatar */
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
 
   &.clickable {
     cursor: pointer;
-  }
-}
-/* 穿透到 el-avatar 内部，找到 img 标签 */
-.profile-avatar :deep(img) {
-  /* 强制图片本身变成圆形 */
-  border-radius: 50%;
-  /* 理论上这就够了，因为 img 标签本身变圆了，就不需要容器剪裁了 */
-}
 
-@keyframes spin-border {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.profile-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 24px;
-  border-radius: 16px;
-  color: var(--text-color);
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(10px);
-
-  .nickname {
-    margin: 0 0 10px;
-    font-size: 28px;
-    font-weight: 600;
-  }
-
-  .description {
-    font-size: 16px;
-    opacity: 0.9;
-    margin-bottom: 10px;
-  }
-
-  .website {
-    margin-bottom: 15px;
-    .el-link {
-      color: #1a1b1e;
-      text-decoration: underline;
-      &:hover {
-        opacity: 0.8;
-      }
-    }
-  }
-
-  .actions {
-    margin-bottom: 15px;
-  }
-
-  .oauth-accounts {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-    font-size: 14px;
-  }
-
-  .oauth-title {
-    opacity: 0.85;
-  }
-
-  .oauth-account {
-    padding: 6px 12px;
-    border-radius: 999px;
-    color: var(--text-color);
-    border: 1px solid transparent;
-    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
-
-    :deep(.el-link__inner) {
-      gap: 6px;
-    }
-
-    &.is-clickable:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    &.bound {
-      background: rgba(103, 194, 58, 0.18);
-      border-color: rgba(103, 194, 58, 0.45);
-      color: #67c23a;
-
-      &:hover {
-        background: rgba(103, 194, 58, 0.25);
-      }
-    }
-
-    &.unbound {
-      background: rgba(144, 147, 153, 0.14);
-      border-color: rgba(144, 147, 153, 0.35);
-      opacity: 0.85;
-      color: #909399;
-
-      &:hover {
-        background: rgba(144, 147, 153, 0.2);
+    &:hover {
+      .avatar-edit-hint {
         opacity: 1;
       }
-    }
-  }
 
-  .oauth-name {
-    opacity: 0.75;
+      .profile-avatar {
+        transform: scale(1.02);
+      }
+    }
   }
 }
 
+.profile-avatar {
+  border: 3px solid color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 45%, #fff);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 12%, transparent),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease;
+  overflow: hidden !important;
+}
+
+.profile-avatar :deep(img) {
+  border-radius: 50%;
+}
+
+.avatar-edit-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.45);
+  color: #fff;
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.avatar-input {
+  display: none;
+}
+
+/* Info */
+.profile-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.nickname {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--card-text-color, var(--text-color, #111827));
+}
+
+.edit-btn {
+  i {
+    margin-right: 6px;
+  }
+}
+
+.description {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted-text-color, #6b7280);
+  word-break: break-word;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-color, #111827);
+
+  i {
+    color: var(--theme-accent-color, #0ea5e9);
+    opacity: 0.9;
+  }
+
+  &.muted {
+    color: var(--muted-text-color, #6b7280);
+
+    i {
+      color: var(--muted-text-color, #6b7280);
+    }
+  }
+
+  :deep(.el-link) {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* OAuth */
+.oauth-accounts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.oauth-title {
+  font-size: 13px;
+  color: var(--muted-text-color, #6b7280);
+  margin-right: 4px;
+}
+
+.oauth-account {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  text-decoration: none !important;
+
+  :deep(.el-link__inner) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &.is-clickable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  &.bound {
+    background: color-mix(in srgb, #67c23a 14%, transparent);
+    border-color: color-mix(in srgb, #67c23a 35%, transparent);
+    color: #67c23a !important;
+
+    &:hover {
+      background: color-mix(in srgb, #67c23a 22%, transparent);
+    }
+  }
+
+  &.unbound {
+    background: color-mix(in srgb, #909399 10%, transparent);
+    border-color: color-mix(in srgb, #909399 28%, transparent);
+    color: #909399 !important;
+    opacity: 0.9;
+
+    &:hover {
+      opacity: 1;
+      background: color-mix(in srgb, #909399 16%, transparent);
+    }
+  }
+}
+
+.oauth-label {
+  font-weight: 500;
+}
+
+.oauth-name {
+  opacity: 0.8;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stats */
 .profile-stats {
-  .stat-item {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 8px;
+  padding: 16px 8px 4px;
+  border-top: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
+}
 
-    .stat-value {
-      font-size: 24px;
-      font-weight: bold;
-    }
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: background 0.2s ease;
 
-    .stat-label {
-      font-size: 14px;
-      opacity: 0.8;
-    }
+  &:hover {
+    background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 6%, transparent);
   }
 }
 
-.content-row {
-  max-width: 1140px;
-  margin: 0 auto !important;
-  padding-bottom: 50px;
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--theme-accent-color, #0ea5e9);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted-text-color, #6b7280);
+}
+
+.stat-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 8px 0;
+  background: var(--article-border, rgba(0, 0, 0, 0.08));
+}
+
+/* ========== Body cards ========== */
+.profile-body {
+  padding-top: 12px;
+  padding-bottom: 24px;
 }
 
 .box-card {
   margin-bottom: 20px;
-  border-radius: 8px;
+  border-radius: 16px !important;
+  border: 1px solid var(--article-border, rgba(0, 0, 0, 0.06)) !important;
+  background: var(--article-item-bg, #fff) !important;
+  box-shadow: var(--article-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.05)) !important;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 
-  .card-header {
-    font-weight: bold;
-    color: #303133;
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  :deep(.el-card__header) {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
+    background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 4%, transparent);
+  }
+
+  :deep(.el-card__body) {
+    padding: 8px 12px 12px;
   }
 }
 
-.list-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #ebeef5;
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--card-text-color, var(--text-color, #303133));
+}
+
+.card-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #fff;
+
+  &.comments {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  }
+
+  &.discussions {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+  }
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-item {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--article-border, #ebeef5);
+  border-radius: 10px;
+  transition: background 0.2s ease;
 
   &:last-child {
     border-bottom: none;
   }
 
-  .item-title {
-    margin-bottom: 5px;
-    a {
-      color: #409eff;
-      text-decoration: none;
-      font-weight: 500;
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .meta {
-    font-size: 12px;
-    color: #909399;
-  }
-
-  .item-content {
-    font-size: 14px;
-    color: #606266;
-    margin-top: 5px;
-    background: #f8f9fa;
-    padding: 8px;
-    border-radius: 4px;
+  &:hover {
+    background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 5%, transparent);
   }
 }
 
-.nothing {
-  text-align: center;
-  padding: 30px;
-  color: #909399;
+.activity-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  a {
+    color: var(--theme-accent-color, #409eff);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.activity-time {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--muted-text-color, #909399);
+  white-space: nowrap;
+}
+
+.activity-content {
+  font-size: 14px;
+  color: var(--text-color, #606266);
+  line-height: 1.55;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--theme-el-fill-color-light, #f5f7fa);
+  border: 1px solid var(--article-border, transparent);
+  overflow: hidden;
+
+  :deep(p) {
+    margin: 0 0 0.4em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(img) {
+    max-width: 100%;
+    border-radius: 6px;
+  }
+}
+
+.discussion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.discussion-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--theme-accent-color, #409eff);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+
+  i {
+    flex-shrink: 0;
+    opacity: 0.7;
+    font-size: 12px;
+  }
+
+  .discussion-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 16px;
+  color: var(--muted-text-color, #909399);
+
+  i {
+    font-size: 28px;
+    opacity: 0.45;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
 }
 
 .user-items-wrapper {
-  margin-top: 20px;
+  margin-top: 4px;
 }
 
-/* 响应式调整 */
+/* ========== Responsive ========== */
 @include mobile {
-  .user-header-jumbotron {
-    padding: 30px 20px;
-    text-align: center;
+  .profile-hero {
+    padding: 24px 0 16px;
   }
 
-  .profile-content {
-    margin-top: 20px;
-    align-items: center;
+  .container {
+    padding: 0 12px;
+  }
 
-    .oauth-accounts {
-      justify-content: center;
-    }
+  .profile-card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .profile-main {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .profile-info {
+    align-items: center;
+    width: 100%;
+  }
+
+  .name-row {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .nickname {
+    font-size: 24px;
+  }
+
+  .meta-row {
+    justify-content: center;
+  }
+
+  .oauth-accounts {
+    justify-content: center;
   }
 
   .profile-stats {
-    margin-top: 20px;
+    padding-top: 12px;
   }
 
-  .content-row {
-    padding: 0 10px;
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .activity-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .discussion-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .discussion-link .discussion-title {
+    white-space: normal;
   }
 }
 </style>
