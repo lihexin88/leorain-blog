@@ -45,52 +45,42 @@
 
               <p class="description">{{ userInfo.description || '这个人不懒，只是还没有写简介～' }}</p>
 
-              <div class="meta-row">
-                <div class="meta-item website" v-if="userInfo.website">
+              <div class="profile-meta">
+                <div class="meta-item" v-if="userInfo.website">
                   <i class="fas fa-link"></i>
                   <el-link :href="normalizedWebsite" target="_blank" type="primary" :underline="false">
                     {{ userInfo.website }}
                   </el-link>
                 </div>
-                <div class="meta-item website muted" v-else>
+                <div class="meta-item muted" v-else>
                   <i class="fas fa-link"></i>
                   <span>暂无网站</span>
                 </div>
+
+                <span class="meta-dot" aria-hidden="true" v-if="userInfo.created_at"></span>
+
+                <div class="meta-item" v-if="userInfo.created_at">
+                  <i class="fas fa-calendar-alt"></i>
+                  <time :datetime="userInfo.created_at">
+                    {{ moment(userInfo.created_at).format('YYYY年MM月DD日') }} 加入
+                  </time>
+                </div>
               </div>
 
-              <div class="oauth-accounts">
-                <span class="oauth-title">三方账号</span>
+              <div class="oauth-row">
                 <el-link
                   v-for="item in oauthProviderItems"
                   :key="item.provider"
                   :href="item.href"
                   :target="item.href ? '_blank' : '_self'"
                   underline="never"
-                  class="oauth-account"
+                  class="oauth-chip"
                   :class="{ bound: item.bound, unbound: !item.bound, 'is-clickable': !!item.href }"
                 >
                   <i :class="item.icon"></i>
-                  <span class="oauth-label">{{ item.label }}</span>
-                  <span class="oauth-name">{{ item.bound ? item.name : '未绑定' }}</span>
+                  <span>{{ item.bound ? (item.name || item.label) : item.label }}</span>
                 </el-link>
               </div>
-            </div>
-          </div>
-
-          <div class="profile-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ userInfo.followings_count || 0 }}</div>
-              <div class="stat-label">关注</div>
-            </div>
-            <div class="stat-divider" aria-hidden="true"></div>
-            <div class="stat-item">
-              <div class="stat-value">{{ discussions_count || 0 }}</div>
-              <div class="stat-label">讨论</div>
-            </div>
-            <div class="stat-divider" aria-hidden="true"></div>
-            <div class="stat-item">
-              <div class="stat-value">{{ comments_count || 0 }}</div>
-              <div class="stat-label">评论</div>
             </div>
           </div>
         </div>
@@ -129,7 +119,7 @@
         </el-col>
 
         <el-col :xs="24" :md="12">
-          <el-card class="box-card" shadow="hover">
+          <el-card class="box-card" shadow="hover" v-if="false">
             <template #header>
               <div class="card-header">
                 <span class="card-header-icon discussions"><i class="fas fa-fire"></i></span>
@@ -204,6 +194,7 @@ import authApi from '@/apis/auth'
 import { uploadToOss } from '@/utils/oss-file'
 import UserItems from '@/components/UserItems.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
+import moment from 'moment'
 
 export default {
   name: 'UserProfile',
@@ -276,6 +267,7 @@ export default {
     this.getAuthConfig()
   },
   methods: {
+    moment,
     ...mapActions(useUserStore, ['setShowLoginDialog', 'fetchUserInfo']),
     getAuthConfig () {
       authApi.getConfig().then(res => {
@@ -503,7 +495,7 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .name-row {
@@ -530,114 +522,132 @@ export default {
 
 .description {
   margin: 0;
+  max-width: 48em;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--muted-text-color, #6b7280);
   word-break: break-word;
 }
 
-.meta-row {
+/* 网站 / 加入时间 —— 同一行扁平 meta */
+.profile-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 20px;
+  align-items: center;
+  gap: 8px 10px;
+  font-size: 13px;
+  color: var(--muted-text-color, #6b7280);
 }
 
 .meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--text-color, #111827);
+  gap: 6px;
+  min-width: 0;
+  line-height: 1.4;
 
   i {
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+    font-size: 12px;
     color: var(--theme-accent-color, #0ea5e9);
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   &.muted {
-    color: var(--muted-text-color, #6b7280);
+    color: var(--muted-text-color, #9ca3af);
 
     i {
-      color: var(--muted-text-color, #6b7280);
+      color: currentColor;
+      opacity: 0.7;
     }
   }
 
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+
   :deep(.el-link) {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-/* OAuth */
-.oauth-accounts {
+.meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+/* 三方账号 —— 简洁 chip，去掉标题文案 */
+.oauth-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
 }
 
-.oauth-title {
-  font-size: 13px;
-  color: var(--muted-text-color, #6b7280);
-  margin-right: 4px;
-}
-
-.oauth-account {
+.oauth-chip {
   display: inline-flex !important;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  max-width: 160px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.4;
   border: 1px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   text-decoration: none !important;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 
   :deep(.el-link__inner) {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    min-width: 0;
   }
 
-  &.is-clickable:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  i {
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &.bound {
-    background: color-mix(in srgb, #67c23a 14%, transparent);
-    border-color: color-mix(in srgb, #67c23a 35%, transparent);
-    color: #67c23a !important;
+    color: var(--card-text-color, var(--text-color, #111827)) !important;
+    background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 10%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 18%, transparent);
 
-    &:hover {
-      background: color-mix(in srgb, #67c23a 22%, transparent);
+    i {
+      color: var(--theme-accent-color, #0ea5e9);
     }
   }
 
   &.unbound {
-    background: color-mix(in srgb, #909399 10%, transparent);
-    border-color: color-mix(in srgb, #909399 28%, transparent);
-    color: #909399 !important;
-    opacity: 0.9;
-
-    &:hover {
-      opacity: 1;
-      background: color-mix(in srgb, #909399 16%, transparent);
-    }
+    color: var(--muted-text-color, #9ca3af) !important;
+    background: color-mix(in srgb, var(--muted-text-color, #9ca3af) 8%, transparent);
+    border-color: color-mix(in srgb, var(--muted-text-color, #9ca3af) 16%, transparent);
+    opacity: 0.85;
   }
-}
 
-.oauth-label {
-  font-weight: 500;
-}
-
-.oauth-name {
-  opacity: 0.8;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  &.is-clickable:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 14%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 28%, transparent);
+  }
 }
 
 /* Stats */
@@ -870,6 +880,10 @@ export default {
 
 .user-items-wrapper {
   margin-top: 4px;
+  transition: all 0.3s ease-in-out;
+  &:hover{
+    transform: translateY(-5px);
+  }
 }
 
 /* ========== Responsive ========== */
@@ -908,11 +922,8 @@ export default {
     font-size: 24px;
   }
 
-  .meta-row {
-    justify-content: center;
-  }
-
-  .oauth-accounts {
+  .profile-meta,
+  .oauth-row {
     justify-content: center;
   }
 

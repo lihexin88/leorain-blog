@@ -5,11 +5,12 @@
         <div class="card-header">
           <span>CPU 十位全加器物理电路模拟器</span>
           <el-button
-              type="text"
-              icon="el-icon-info"
+              link
+              type="primary"
               @click="showIntroDialog = true"
               class="intro-btn"
           >
+            <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
             全加器简介
           </el-button>
         </div>
@@ -66,10 +67,11 @@
       <!-- 全加器简介对话框 -->
       <el-dialog
           title="全加器简介"
-          v-model:visible="showIntroDialog"
+          v-model="showIntroDialog"
           width="70%"
           :close-on-click-modal="false"
           class="intro-dialog"
+          append-to-body
       >
         <div class="intro-content">
           <h3>什么是全加器？</h3>
@@ -106,7 +108,7 @@
             <li>运算结果S通过输出总线输出，进位Cout传递给下一个全加-器</li>
           </ol>
         </div>
-        <template v-slot:footer>
+        <template #footer>
           <div class="dialog-footer">
             <el-button type="primary" @click="showIntroDialog = false">我知道了</el-button>
           </div>

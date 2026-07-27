@@ -1248,95 +1248,176 @@ export default {
     overflow: hidden;
   }
 
-  :deep(.el-menu-item:hover),
+  :deep(.el-menu-item:hover:not(.is-active):not(.nav-logo-item)),
   :deep(.el-sub-menu__title:hover) {
-    background: color-mix(
-      in srgb,
-      var(--theme-accent-color, #0ea5e9) 14%,
-      transparent
+    background: linear-gradient(
+      135deg,
+      var(--theme-primary-dark-2, #0b84ba),
+      var(--theme-accent-color, #0ea5e9) 55%,
+      var(--theme-primary-light-3, #51bef1)
     ) !important;
-    color: var(--theme-accent-color, #0ea5e9) !important;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  }
-
-  :deep(.el-menu-item.is-active) {
-    background: color-mix(
-      in srgb,
-      var(--theme-accent-color, #0ea5e9) 18%,
-      transparent
-    ) !important;
-    color: var(--theme-accent-color, #0ea5e9) !important;
-    // 覆盖彩色主题全局的「渐变文字」：text-fill transparent 会让 color 失效
-    -webkit-text-fill-color: var(--theme-accent-color, #0ea5e9) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
     -webkit-background-clip: border-box !important;
-    font-weight: 600;
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 28%, transparent),
+      0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+
+    .el-icon,
+    .menu-icon {
+      color: #fff !important;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+    }
+  }
+
+  // 选中态：实心胶囊 + 白字，对比更强（排除 logo）
+  :deep(.el-menu-item.is-active:not(.nav-logo-item)) {
+    background: linear-gradient(
+      135deg,
+      var(--theme-primary-dark-2, #0b84ba),
+      var(--theme-accent-color, #0ea5e9) 55%,
+      var(--theme-primary-light-3, #51bef1)
+    ) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow:
+      0 4px 14px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 38%, transparent),
+      0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+
+    .el-icon,
+    .menu-icon {
+      color: #fff !important;
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
+    }
 
     &::after {
       content: '';
       position: absolute;
-      left: 16%;
-      right: 16%;
-      bottom: 4px;
-      height: 3px;
+      left: 22%;
+      right: 22%;
+      bottom: 5px;
+      height: 2px;
       border-radius: 999px;
-      background: linear-gradient(
-        90deg,
-        var(--theme-primary-dark-2, #0b84ba),
-        var(--theme-accent-color, #0ea5e9),
-        var(--theme-primary-light-3, #51bef1)
-      );
-      background-size: 200% 100%;
-      animation: accent-flow 3s linear infinite;
-      box-shadow: 0 0 10px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 70%, transparent);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.55);
+      animation: none;
     }
   }
 
-  :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-    color: var(--theme-accent-color, #0ea5e9) !important;
-    -webkit-text-fill-color: var(--theme-accent-color, #0ea5e9) !important;
+  // logo 在首页激活时只加粗文字，保持透明底
+  :deep(.el-menu-item.nav-logo-item.is-active) {
+    background: transparent !important;
+    color: var(--theme-primary-dark-2, #0b84ba) !important;
+    -webkit-text-fill-color: var(--theme-primary-dark-2, #0b84ba) !important;
     background-clip: border-box !important;
     -webkit-background-clip: border-box !important;
+    font-weight: 800;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+  :deep(.el-sub-menu.is-opened > .el-sub-menu__title) {
+    background: linear-gradient(
+      135deg,
+      var(--theme-primary-dark-2, #0b84ba),
+      var(--theme-accent-color, #0ea5e9) 55%,
+      var(--theme-primary-light-3, #51bef1)
+    ) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+    font-weight: 700;
+    box-shadow:
+      0 4px 14px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 38%, transparent),
+      0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+
+    .el-icon,
+    .menu-icon {
+      color: #fff !important;
+    }
   }
 }
 
 .is-colorful .nav-el-menu {
-  :deep(.el-menu-item:hover),
+  :deep(.el-menu-item:hover:not(.is-active):not(.nav-logo-item)),
   :deep(.el-sub-menu__title:hover) {
     background: linear-gradient(
       135deg,
-      rgba(255, 107, 157, 0.14),
-      rgba(96, 165, 250, 0.14),
-      rgba(52, 211, 153, 0.1)
+      #ff6b9d,
+      #c084fc 45%,
+      #60a5fa
     ) !important;
-  }
-
-  :deep(.el-menu-item.is-active) {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 107, 157, 0.2),
-      rgba(192, 132, 252, 0.16),
-      rgba(96, 165, 250, 0.18)
-    ) !important;
-    // 全局 colorful 把 is-active 做成了渐变文字（fill transparent），这里恢复可见文字色
-    color: #5f27cd !important;
-    -webkit-text-fill-color: #5f27cd !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
     -webkit-background-clip: border-box !important;
+    box-shadow:
+      0 4px 14px rgba(192, 132, 252, 0.32),
+      0 0 0 1px rgba(255, 255, 255, 0.18) inset;
 
-    &::after {
-      background: linear-gradient(90deg, #ff6b9d, #c084fc, #60a5fa, #34d399);
-      background-size: 200% 100%;
-      animation: rainbow-flow 3s linear infinite;
-      box-shadow: 0 0 10px rgba(96, 165, 250, 0.7);
+    .el-icon,
+    .menu-icon {
+      color: #fff !important;
     }
   }
 
-  :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-    color: #5f27cd !important;
-    -webkit-text-fill-color: #5f27cd !important;
+  :deep(.el-menu-item.is-active:not(.nav-logo-item)) {
+    background: linear-gradient(
+      135deg,
+      #ff6b9d,
+      #c084fc 45%,
+      #60a5fa
+    ) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
     -webkit-background-clip: border-box !important;
+    box-shadow:
+      0 4px 16px rgba(192, 132, 252, 0.42),
+      0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+
+    &::after {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.55);
+      animation: none;
+    }
+  }
+
+  :deep(.el-menu-item.nav-logo-item.is-active) {
+    color: #5f27cd !important;
+    -webkit-text-fill-color: #5f27cd !important;
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+  :deep(.el-sub-menu.is-opened > .el-sub-menu__title) {
+    background: linear-gradient(
+      135deg,
+      #ff6b9d,
+      #c084fc 45%,
+      #60a5fa
+    ) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+    font-weight: 700;
+    box-shadow:
+      0 4px 16px rgba(192, 132, 252, 0.42),
+      0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+
+    .el-icon,
+    .menu-icon {
+      color: #fff !important;
+    }
   }
 }
 
