@@ -129,6 +129,7 @@ import moment from 'moment'
 import { getHumanReadableDate } from '@/utils/helpers'
 import RequestLogs from '@/components/RequestLogs.vue'
 import { useConfigStore } from '@/store/config'
+import { useUserStore } from '@/store/user'
 
 export default {
   props: {
@@ -142,7 +143,6 @@ export default {
     return {
       show_request_log: false,
       show_settings_draw: false,
-      tool_access_token: null,
       show_visitor: true,
       messages: [],
       button_type: 'info',
@@ -226,17 +226,11 @@ export default {
       })
     },
     async connectWebSocket () {
-      // const accessToken = await this.$accessToken(1)
-      // if (accessToken === false) {
-      //   this.show_visitor = false
-      //   // toastr.error("获取Access token失败")
-      //   return false
-      // }
-      // this.tool_access_token = accessToken
-      this.tool_access_token = 'null'
+      const userStore = useUserStore()
+      const accessToken = userStore.token
       const configStore = useConfigStore()
       // 1. 创建 SockJS 连接
-      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/info?access_token=' + this.tool_access_token) // WebSocket 端点
+      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/info?access_token=' + accessToken) // WebSocket 端点
 
       // 2. 创建 STOMP 客户端
       this.stompClient = new Client({

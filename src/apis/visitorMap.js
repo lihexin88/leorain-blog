@@ -5,7 +5,8 @@ const visitorMapApi = {
   getCountryMap () {
     return api({
       url: 'https://images.leorain.cn/files/country_map.json',
-      method: 'get'
+      method: 'get',
+      withCredentials: false
     })
   }
 }
