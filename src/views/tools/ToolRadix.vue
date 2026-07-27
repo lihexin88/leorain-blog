@@ -1,51 +1,44 @@
 <template>
   <div class="radix-converter-container">
-    <el-card class="box-card info-card">
-      <template v-slot:header>
-        <div class="clearfix">
-          <i class="el-icon-info"></i>
-          <span>进制介绍</span>
+    <el-card shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>进制转换工具</span>
         </div>
       </template>
-      <p>在数学中，进制是一种记数方式，亦称进位制或进位计数法。最常用的是十进制，它使用10个数字（0-9）。在计算机科学中，二进制（0-1）、八进制（0-7）和十六进制（0-9,
-        A-F）非常重要。</p>
-    </el-card>
 
-    <el-row :gutter="20" style="margin-bottom: 20px">
-      <!-- 常用进制转换 -->
-      <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="box-card">
-          <template v-slot:header>
-            <div class="clearfix">
-              <span>常用进制转换</span>
-            </div>
-          </template>
+      <div class="info-section">
+        <p>
+          在数学中，进制是一种记数方式，亦称进位制或进位计数法。最常用的是十进制，它使用10个数字（0-9）。在计算机科学中，二进制（0-1）、八进制（0-7）和十六进制（0-9, A-F）非常重要。
+        </p>
+      </div>
+
+      <div class="radix-sections">
+        <!-- 常用进制转换 -->
+        <div class="section-box">
+          <div class="section-title">常用进制转换</div>
           <el-form ref="form" :model="radixData" label-width="100px">
             <el-form-item v-for="radix in commonRadixes" :key="radix.base" :label="radix.label">
-              <el-input v-model="radixData['r' + radix.base]" @input="updateFrom(radix.base)"
-                        :placeholder="radix.placeholder">
-                <template v-slot:append>
-                  <el-button icon="el-icon-document-copy" @click="copyValue(radixData['r' + radix.base])"
-                             title="复制"></el-button>
+              <el-input
+                  v-model="radixData['r' + radix.base]"
+                  @input="updateFrom(radix.base)"
+                  :placeholder="radix.placeholder"
+              >
+                <template #append>
+                  <el-button @click="copyValue(radixData['r' + radix.base])" title="复制">复制</el-button>
                 </template>
               </el-input>
             </el-form-item>
           </el-form>
           <div class="button-group">
-            <el-button type="danger" @click="clearAll" icon="el-icon-delete">清空</el-button>
-            <el-button type="primary" @click="saveToHistory" icon="el-icon-plus">保存到历史记录</el-button>
+            <el-button type="danger" @click="clearAll">清空</el-button>
+            <el-button type="primary" @click="saveToHistory">保存到历史记录</el-button>
           </div>
-        </el-card>
-      </el-col>
+        </div>
 
-      <!-- 自定义进制转换 -->
-      <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="box-card">
-          <template v-slot:header>
-            <div class="clearfix">
-              <span>自定义进制转换</span>
-            </div>
-          </template>
+        <!-- 自定义进制转换 -->
+        <div class="section-box">
+          <div class="section-title">自定义进制转换</div>
           <el-form label-width="100px">
             <el-form-item label="数值">
               <el-input v-model="customRadix.number" placeholder="输入要转换的数值"></el-input>
@@ -54,34 +47,27 @@
               <el-input-number v-model="customRadix.from" :min="2" :max="36"></el-input-number>
             </el-form-item>
             <div class="swap-button-container">
-              <el-button @click="swapCustomRadix" icon="el-icon-sort" type="primary" circle></el-button>
+              <el-button @click="swapCustomRadix" type="primary" circle>⇅</el-button>
             </div>
             <el-form-item label="目标进制">
               <el-input-number v-model="customRadix.to" :min="2" :max="36"></el-input-number>
             </el-form-item>
             <el-form-item label="结果">
               <el-input :value="customRadixResult" readonly placeholder="转换结果">
-                <template v-slot:append>
-                  <el-button icon="el-icon-document-copy" @click="copyValue(customRadixResult)"
-                             title="复制"></el-button>
+                <template #append>
+                  <el-button @click="copyValue(customRadixResult)" title="复制">复制</el-button>
                 </template>
               </el-input>
             </el-form-item>
             <div class="button-group">
-              <el-button type="primary" @click="saveCustomToHistory" icon="el-icon-plus">保存到历史记录</el-button>
+              <el-button type="primary" @click="saveCustomToHistory">保存到历史记录</el-button>
             </div>
           </el-form>
-        </el-card>
-      </el-col>
+        </div>
 
-      <!-- 进制计算 -->
-      <el-col :xs="24" :sm="12" :md="8">
-        <el-card class="box-card">
-          <template v-slot:header>
-            <div class="clearfix">
-              <span>进制计算</span>
-            </div>
-          </template>
+        <!-- 进制计算 -->
+        <div class="section-box">
+          <div class="section-title">进制计算</div>
           <el-form label-width="100px">
             <el-form-item label="数值1">
               <el-input v-model="calc.number1" placeholder="第一个数值"></el-input>
@@ -102,50 +88,39 @@
             </el-form-item>
             <el-form-item label="结果">
               <el-input :value="calcResult" readonly placeholder="计算结果">
-                <template v-slot:append>
-                  <el-button icon="el-icon-document-copy" @click="copyValue(calcResult)"
-                             title="复制"></el-button>
+                <template #append>
+                  <el-button @click="copyValue(calcResult)" title="复制">复制</el-button>
                 </template>
               </el-input>
             </el-form-item>
             <div class="button-group">
-              <el-button type="primary" @click="saveCalcToHistory" icon="el-icon-plus">保存到历史记录</el-button>
+              <el-button type="primary" @click="saveCalcToHistory">保存到历史记录</el-button>
             </div>
           </el-form>
-        </el-card>
-      </el-col>
-    </el-row>
+        </div>
+      </div>
 
-    <!-- 历史记录 -->
-    <el-row :gutter="20">
-      <el-col :span="24">
-        <el-card class="box-card">
-          <template v-slot:header>
-            <div class="clearfix">
-              <span>历史记录</span>
-              <el-button style="float: right; padding: 3px 0" type="text" @click="clearHistory" icon="el-icon-delete">
-                清空历史
-              </el-button>
-            </div>
-          </template>
-          <div class="history-list">
-            <div v-if="historyList.length === 0" class="empty-history">
-              暂无历史记录
-            </div>
-            <div v-for="(item, index) in historyList" :key="'history-'+index" class="history-item">
-              <div class="history-content">{{ item.content }}</div>
-              <div class="history-time">{{ item.time }}</div>
-              <div class="history-actions">
-                <el-button type="text" size="small" @click="copyValue(item.content)" icon="el-icon-document-copy">复制
-                </el-button>
-                <el-button type="text" size="small" @click="deleteHistoryItem(index)" icon="el-icon-delete">删除
-                </el-button>
-              </div>
+      <!-- 历史记录 -->
+      <div class="history-section">
+        <div class="history-header">
+          <span class="section-title">历史记录</span>
+          <el-button type="primary" link @click="clearHistory">清空历史</el-button>
+        </div>
+        <div class="history-list">
+          <div v-if="historyList.length === 0" class="empty-history">
+            暂无历史记录
+          </div>
+          <div v-for="(item, index) in historyList" :key="'history-'+index" class="history-item">
+            <div class="history-content">{{ item.content }}</div>
+            <div class="history-time">{{ item.time }}</div>
+            <div class="history-actions">
+              <el-button type="primary" link size="small" @click="copyValue(item.content)">复制</el-button>
+              <el-button type="danger" link size="small" @click="deleteHistoryItem(index)">删除</el-button>
             </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -336,98 +311,140 @@ export default {
 
 <style scoped lang="scss">
 .radix-converter-container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-}
+  box-sizing: border-box;
 
-.function-card {
-  margin-bottom: 20px;
-}
+  .card-header {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
 
-.box-card {
-  border-radius: 10px;
-  transition: all 0.3s;
-  height: 100%;
+  .info-section {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: var(--el-fill-color-light);
+    border-radius: 8px;
 
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--el-text-color-regular);
+    }
+  }
+
+  .radix-sections {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .section-box {
+    padding: 14px;
+    background: var(--el-fill-color-lighter);
+    border-radius: 8px;
+    border: 1px solid var(--el-border-color-lighter);
+    min-width: 0;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+    margin-bottom: 12px;
+  }
+
+  .swap-button-container {
+    display: flex;
+    justify-content: center;
+    margin: -6px 0 10px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .history-section {
+    padding-top: 4px;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .section-title {
+      margin-bottom: 0;
+    }
+  }
+
+  .history-list {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .empty-history {
+    text-align: center;
+    color: var(--el-text-color-placeholder);
+    padding: 28px 0;
+    font-size: 14px;
+  }
+
+  .history-item {
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  .history-content {
+    font-size: 14px;
+    margin-bottom: 6px;
+    word-break: break-all;
+    color: var(--el-text-color-primary);
+  }
+
+  .history-time {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    margin-bottom: 6px;
+  }
+
+  .history-actions {
+    display: flex;
+    gap: 8px;
   }
 }
 
-.info-card {
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #abecd6 0%, #fbed96 100%);
-  color: #333;
-}
-
-.clearfix:before,
-.clearfix:after {
-  display: table;
-  content: "";
-}
-
-.clearfix:after {
-  clear: both
-}
-
-.swap-button-container {
-  display: flex;
-  justify-content: center;
-  margin: -10px 0 10px;
-}
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.history-header {
-  margin-bottom: 15px;
-}
-
-.history-list {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.empty-history {
-  text-align: center;
-  color: #999;
-  padding: 40px 0;
-}
-
-.history-item {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 10px;
-  transition: all 0.3s;
-
-  &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+@include tablet {
+  .radix-converter-container {
+    .radix-sections {
+      grid-template-columns: 1fr;
+    }
   }
-}
-
-.history-content {
-  font-size: 14px;
-  margin-bottom: 8px;
-  word-break: break-all;
-}
-
-.history-time {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-
-.history-actions {
-  display: flex;
-  gap: 10px;
 }
 
 @include mobile {
-  .card-col {
-    margin-bottom: 20px;
+  .radix-converter-container {
+    .radix-sections {
+      grid-template-columns: 1fr;
+    }
+
+    :deep(.el-form-item__label) {
+      width: 90px !important;
+    }
   }
 }
 </style>

@@ -244,12 +244,12 @@ export default {
           href: '/tools/timestamp',
           image: 'https://images.leorain.cn/icons/tools/tool_timestamp.png'
         },
-        {
-          text: '进制转换',
-          description: '十进制 二进制 八进制 十六进制等自动转换',
-          href: '/tools/radix',
-          image: 'https://images.leorain.cn/icons/tools/tool_radix.png'
-        },
+        // {
+        //   text: '进制转换',
+        //   description: '十进制 二进制 八进制 十六进制等自动转换',
+        //   href: '/tools/radix',
+        //   image: 'https://images.leorain.cn/icons/tools/tool_radix.png'
+        // },
         {
           text: 'json格式化',
           description: 'json字符串格式化与压缩',
@@ -292,15 +292,15 @@ export default {
           href: '/tools/lottery',
           image: 'https://images.leorain.cn/icons/tools/tool_lucky.png'
         },
-        {
-          text: '媒体处理',
-          description: '在线处理图片视频，格式转换，压缩等',
-          href: '/tools/media',
-          image: 'https://images.leorain.cn/icons/tools/tool_picture.png'
-        },
+        // {
+        //   text: '媒体处理',
+        //   description: '在线处理图片视频，格式转换，压缩等',
+        //   href: '/tools/media',
+        //   image: 'https://images.leorain.cn/icons/tools/tool_picture.png'
+        // },
         {
           text: '开发工具箱',
-          description: 'URL, Base64, MD5, Unicode, 大小写转换',
+          description: '字符串处理、在线 linux 终端、媒体处理',
           href: '/tools/coder',
           image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
         },
@@ -310,12 +310,12 @@ export default {
           href: '/tools/fish',
           image: 'https://images.leorain.cn/icons/tools/tool_fish.png'
         },
-        {
-          text: 'Linux 在线终端',
-          description: '在浏览器中运行真实的 Linux 容器，支持完整终端交互',
-          href: '/tools/linux',
-          image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
-        },
+        // {
+        //   text: 'Linux 在线终端',
+        //   description: '在浏览器中运行真实的 Linux 容器，支持完整终端交互',
+        //   href: '/tools/linux',
+        //   image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
+        // },
         {
           text: 'SBTI 人格测试',
           description: '娱乐向 SBTI 人格测试与维度分析',

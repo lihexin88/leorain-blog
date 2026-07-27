@@ -3,7 +3,7 @@
     <el-card shadow="hover">
       <template #header>
         <div class="card-header">
-          <span>开发工具箱 (ToolCoder)</span>
+          <span>字符串处理 (StringTool)</span>
         </div>
       </template>
 
@@ -307,13 +307,14 @@ const copyToClipboard = () => {
 
 <style scoped lang="scss">
 .tool-coder {
-  max-width: 1000px;
-  margin: 10px auto 0 auto;
-  padding: 0 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
 
   .card-header {
-    font-weight: bold;
-    font-size: 1.2rem;
+    font-weight: 600;
+    font-size: 1.05rem;
   }
 
   .input-section, .output-section {

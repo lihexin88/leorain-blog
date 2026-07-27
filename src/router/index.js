@@ -57,7 +57,7 @@ const routes = [
         path: 'tools',
         name: 'Tools',
         redirect: 'tools/timestamp',
-        component: () => import('../views/tools/ToolsBox.vue'),
+        component: () => import('../views/tools/ToolsContainer.vue'),
         children: [
           {
             path: 'timestamp',
@@ -117,7 +117,7 @@ const routes = [
           {
             path: 'coder',
             name: 'ToolCoder',
-            component: () => import('../views/tools/ToolCoder.vue')
+            component: () => import('../views/tools/ToolsBox.vue')
           },
           {
             path: 'linux',

@@ -695,12 +695,19 @@ export default {
 
 <style scoped lang="scss">
 .tool-media-container {
-  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+
+  :deep(.el-card__header) {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
 
   :deep(.el-card__body) {
-    padding: 5px 20px
+    padding: 16px;
   }
 }
 
