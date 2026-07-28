@@ -1,11 +1,20 @@
 <template>
   <div>
-    <div class="settings-bar">
+    <div
+      ref="settingsBar"
+      class="settings-bar"
+      :class="{ 'is-dragging': isDragging, 'is-custom-pos': !!barPosition }"
+      :style="barStyle"
+      @pointerdown="onBarPointerDown"
+    >
       <div
         class="site-info-lines"
-        @click="handleSettingsClick"
-        @touchend.prevent="handleSettingsTouch"
         :class="{ 'stats-flash': isStatsFlashing }"
+        role="button"
+        tabindex="0"
+        :title="barTooltip"
+        @keydown.enter.prevent="switch_show_settings"
+        @keydown.space.prevent="switch_show_settings"
       >
         <img
           v-if="currentTheme === 'genshin'"
@@ -14,24 +23,21 @@
           alt=""
           aria-hidden="true"
         />
-        <div class="mini-progress">online: {{ formatNumber(stats.online) }}</div>
-        <div class="mini-progress">
-          <span>cpu:</span>
-          <el-progress
-            :percentage="parseFloat(formatNumber(stats.cpu_num ? (stats.load_average / stats.cpu_num) * 100 : 0), 2)"
-            :stroke-width="3"
-            :text-inside="false"
-            :show-text="false"
-          ></el-progress>
+        <div class="mini-stat" :title="`在线 ${formatNumber(stats.online)}`">
+          <i class="mini-stat__icon fas fa-user" aria-hidden="true"></i>
+          <span class="mini-stat__value">{{ formatNumber(stats.online) }}</span>
         </div>
-        <div class="mini-progress">
-          <span>mem:</span>
-          <el-progress
-            :percentage="parseFloat(formatNumber(stats.memory_usage))"
-            :stroke-width="3"
-            :text-inside="false"
-            :show-text="false"
-          ></el-progress>
+        <div class="mini-stat mini-stat--meter" :title="`CPU ${cpuUsage}%`">
+          <i class="mini-stat__icon fas fa-microchip" aria-hidden="true"></i>
+          <span class="mini-meter">
+            <i class="mini-meter__fill" :style="{ width: cpuUsage + '%' }"></i>
+          </span>
+        </div>
+        <div class="mini-stat mini-stat--meter" :title="`内存 ${memUsage}%`">
+          <i class="mini-stat__icon fas fa-memory" aria-hidden="true"></i>
+          <span class="mini-meter">
+            <i class="mini-meter__fill" :style="{ width: memUsage + '%' }"></i>
+          </span>
         </div>
       </div>
     </div>
@@ -131,6 +137,10 @@ import RequestLogs from '@/components/RequestLogs.vue'
 import { useConfigStore } from '@/store/config'
 import { useUserStore } from '@/store/user'
 
+const BAR_POS_KEY = 'site_info_bar_pos'
+const DRAG_THRESHOLD = 5
+const CLICK_DELAY = 220
+
 export default {
   props: {
     duration: {
@@ -148,8 +158,12 @@ export default {
       button_type: 'info',
       isStatsFlashing: false,
       statsFlashTimer: null,
-      lastSettingsTouchAt: 0,
+      barClickTimer: null,
       connection_retried: 0,
+      barPosition: null,
+      isDragging: false,
+      dragMoved: false,
+      dragState: null,
       stats: {
         load_average: 0,
         disk_usage: 0,
@@ -184,6 +198,32 @@ export default {
       systemThemeChangeHandler: null
     }
   },
+  computed: {
+    cpuUsage () {
+      const cpuNum = Number(this.stats.cpu_num) || 1
+      const load = Number(this.stats.load_average) || 0
+      const pct = (load / cpuNum) * 100
+      if (!Number.isFinite(pct)) return 0
+      return Math.max(0, Math.min(100, Number(pct.toFixed(2))))
+    },
+    memUsage () {
+      const pct = Number(this.stats.memory_usage) || 0
+      if (!Number.isFinite(pct)) return 0
+      return Math.max(0, Math.min(100, Number(pct.toFixed(2))))
+    },
+    barStyle () {
+      if (!this.barPosition) return {}
+      return {
+        left: `${this.barPosition.x}px`,
+        top: `${this.barPosition.y}px`,
+        right: 'auto',
+        bottom: 'auto'
+      }
+    },
+    barTooltip () {
+      return `在线 ${this.formatNumber(this.stats.online)} · CPU ${this.cpuUsage}% · 内存 ${this.memUsage}%\n拖动可移动，双击复位`
+    }
+  },
   methods: {
     getHumanReadableDate,
     formatNumber (value) {
@@ -200,16 +240,126 @@ export default {
       if (Number.isInteger(n)) return String(n) + '%'
       return n.toFixed(2) + '%'
     },
-    handleSettingsTouch () {
-      this.lastSettingsTouchAt = Date.now()
-      this.switch_show_settings()
-    },
-    handleSettingsClick () {
-      if (Date.now() - this.lastSettingsTouchAt < 700) return
-      this.switch_show_settings()
-    },
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
+    },
+    loadBarPosition () {
+      try {
+        const raw = localStorage.getItem(BAR_POS_KEY)
+        if (!raw) return
+        const pos = JSON.parse(raw)
+        if (typeof pos?.x === 'number' && typeof pos?.y === 'number') {
+          this.barPosition = this.clampBarPosition(pos.x, pos.y)
+        }
+      } catch (e) {
+        this.barPosition = null
+      }
+    },
+    saveBarPosition () {
+      try {
+        if (!this.barPosition) {
+          localStorage.removeItem(BAR_POS_KEY)
+          return
+        }
+        localStorage.setItem(BAR_POS_KEY, JSON.stringify(this.barPosition))
+      } catch (e) {
+        // ignore
+      }
+    },
+    resetBarPosition () {
+      this.barPosition = null
+      this.saveBarPosition()
+    },
+    clampBarPosition (x, y) {
+      const el = this.$refs.settingsBar
+      const w = el?.offsetWidth || 120
+      const h = el?.offsetHeight || 28
+      const maxX = Math.max(0, window.innerWidth - w)
+      const maxY = Math.max(0, window.innerHeight - h)
+      return {
+        x: Math.min(Math.max(0, x), maxX),
+        y: Math.min(Math.max(0, y), maxY)
+      }
+    },
+    onBarPointerDown (e) {
+      if (e.button != null && e.button !== 0) return
+      if (e.target?.closest?.('a, button, input, .el-switch')) return
+
+      const el = this.$refs.settingsBar
+      if (!el) return
+
+      const rect = el.getBoundingClientRect()
+      this.dragMoved = false
+      this.dragState = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: rect.left,
+        originY: rect.top
+      }
+
+      window.addEventListener('pointermove', this.onBarPointerMove)
+      window.addEventListener('pointerup', this.onBarPointerUp)
+      window.addEventListener('pointercancel', this.onBarPointerUp)
+    },
+    onBarPointerMove (e) {
+      if (!this.dragState || e.pointerId !== this.dragState.pointerId) return
+
+      const dx = e.clientX - this.dragState.startX
+      const dy = e.clientY - this.dragState.startY
+      if (!this.dragMoved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
+
+      if (!this.dragMoved) {
+        this.dragMoved = true
+        this.isDragging = true
+        this.barPosition = {
+          x: this.dragState.originX,
+          y: this.dragState.originY
+        }
+        try {
+          e.target?.setPointerCapture?.(e.pointerId)
+        } catch (_) {
+          // ignore
+        }
+      }
+
+      e.preventDefault()
+      this.barPosition = this.clampBarPosition(
+        this.dragState.originX + dx,
+        this.dragState.originY + dy
+      )
+    },
+    onBarPointerUp (e) {
+      if (!this.dragState || (e && e.pointerId !== this.dragState.pointerId)) return
+
+      const moved = this.dragMoved
+      this.isDragging = false
+      this.dragState = null
+      window.removeEventListener('pointermove', this.onBarPointerMove)
+      window.removeEventListener('pointerup', this.onBarPointerUp)
+      window.removeEventListener('pointercancel', this.onBarPointerUp)
+
+      if (moved) {
+        this.saveBarPosition()
+        return
+      }
+
+      // 单击打开抽屉，短时间内第二次点击视为双击复位
+      if (this.barClickTimer) {
+        clearTimeout(this.barClickTimer)
+        this.barClickTimer = null
+        this.resetBarPosition()
+        return
+      }
+      this.barClickTimer = setTimeout(() => {
+        this.barClickTimer = null
+        this.switch_show_settings()
+      }, CLICK_DELAY)
+    },
+    onWindowResize () {
+      if (!this.barPosition) return
+      this.barPosition = this.clampBarPosition(this.barPosition.x, this.barPosition.y)
+      this.saveBarPosition()
     },
     flashStatsButton () {
       this.isStatsFlashing = false
@@ -507,6 +657,7 @@ export default {
     try {
       this.setupSystemThemeListener()
       this.applyTheme(localStorage.getItem('site_theme') || 'white')
+      this.loadBarPosition()
     } catch (e) {
       this.applyTheme('white')
     }
@@ -515,11 +666,27 @@ export default {
       this.connectWebSocket()
     }
   },
+  mounted () {
+    window.addEventListener('resize', this.onWindowResize)
+    if (this.barPosition) {
+      this.$nextTick(() => {
+        this.barPosition = this.clampBarPosition(this.barPosition.x, this.barPosition.y)
+      })
+    }
+  },
   beforeUnmount () {
     if (this.statsFlashTimer) {
       clearTimeout(this.statsFlashTimer)
     }
+    if (this.barClickTimer) {
+      clearTimeout(this.barClickTimer)
+      this.barClickTimer = null
+    }
     this.removeSystemThemeListener()
+    window.removeEventListener('resize', this.onWindowResize)
+    window.removeEventListener('pointermove', this.onBarPointerMove)
+    window.removeEventListener('pointerup', this.onBarPointerUp)
+    window.removeEventListener('pointercancel', this.onBarPointerUp)
   },
   watch: {
     show_visitor (newValue) {
@@ -547,41 +714,120 @@ export default {
 }
 
 .settings-bar {
-  display: flex;
-  justify-content: space-between;
-  bottom: 50px;
-  right: 20px;
   position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(40px, calc(env(safe-area-inset-bottom) + 32px));
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &.is-custom-pos {
+    right: auto;
+    bottom: auto;
+  }
+
+  &.is-dragging {
+    cursor: grabbing;
+
+    .site-info-lines {
+      cursor: grabbing;
+      transform: scale(1.03);
+      box-shadow:
+        0 10px 22px rgba(15, 23, 42, 0.18),
+        0 1px 0 rgba(255, 255, 255, 0.35) inset;
+      transition: none;
+    }
+  }
+
   .genshin-paimon {
-    width: 22px;
-    height: 22px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
     object-fit: contain;
     pointer-events: none;
     animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
   }
+
   .site-info-lines {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 1);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--article-border, rgba(0, 0, 0, 0.08)) 85%, transparent);
+    background: color-mix(in srgb, var(--header-bg, rgba(255, 255, 255, 0.9)) 90%, transparent);
+    color: var(--text-color, #111827);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    cursor: grab;
     -webkit-tap-highlight-color: transparent;
-    .mini-progress {
-      font-size: 10px;
-      :deep(.el-progress__text) {
-        span {
-          font-size: 10px;
-        }
-      }
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
+
+    &:hover {
+      box-shadow:
+        0 6px 16px rgba(15, 23, 42, 0.14),
+        0 1px 0 rgba(255, 255, 255, 0.35) inset;
     }
+
+    &:focus-visible {
+      outline: 2px solid var(--el-color-primary, #409eff);
+      outline-offset: 2px;
+    }
+  }
+
+  .mini-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    line-height: 1;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-stat__icon {
+    font-size: 10px;
+    width: 11px;
+    color: var(--muted-text-color, #6b7280);
+    flex-shrink: 0;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .mini-stat__value {
+    color: var(--text-color, #111827);
+    font-weight: 600;
+    min-width: 0.9em;
+  }
+
+  .mini-meter {
+    position: relative;
+    display: block;
+    width: 28px;
+    height: 3px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--muted-text-color, #6b7280) 22%, transparent);
+  }
+
+  .mini-meter__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--el-color-primary, #409eff);
+    transition: width 0.3s ease;
   }
 }
 
@@ -591,13 +837,20 @@ export default {
 
 @keyframes stats-flash {
   0% {
-    box-shadow: 0 0 0 rgba(64, 158, 255, 0);
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.1),
+      0 0 0 0 color-mix(in srgb, var(--el-color-primary, #409eff) 0%, transparent);
   }
-  50% {
-    box-shadow: 0 0 12px rgba(64, 158, 255, 0.65);
+  45% {
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.12),
+      0 0 0 2px color-mix(in srgb, var(--el-color-primary, #409eff) 40%, transparent),
+      0 0 12px color-mix(in srgb, var(--el-color-primary, #409eff) 50%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 rgba(64, 158, 255, 0);
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.1),
+      0 0 0 0 color-mix(in srgb, var(--el-color-primary, #409eff) 0%, transparent);
   }
 }
 

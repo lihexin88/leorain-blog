@@ -15,8 +15,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       CodeInspectorPlugin({
-        bundler: 'vite', // 默认 vite
-        editor: 'webstorm' // 使用 VS Code 作为编辑器
+        bundler: 'vite' // 默认 vite
       })
     ],
     define: {

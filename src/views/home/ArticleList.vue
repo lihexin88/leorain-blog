@@ -118,9 +118,6 @@
                 </div>
 
                 <div class="info">
-                  <i class="fas fa-user info-clickable" @click="go_user(article.user.uid)">
-                    {{ article.user.name ?? 'null' }}
-                  </i>
                   <i :title="moment(article.published_at).format('Y-M-D H:m:s')" :id="index" class="fas fa-clock">
                     {{ getFriendlyDate(moment(article.published_at).format('Y-M-D H:m:s')) }}
                   </i>
