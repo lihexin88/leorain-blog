@@ -167,10 +167,10 @@ export default {
     return {
       page: 1,
       activeIndex: -1,
-      total: null,
+      total: 0,
       per_page: 30,
       smallWindowSize: false,
-      layout: null,
+      layout: 'prev, pager, next',
       articles: [],
       loading: true,
       currentRotations: [],

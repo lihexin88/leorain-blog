@@ -321,11 +321,16 @@ export default {
           description: '娱乐向 SBTI 人格测试与维度分析',
           href: '/tools/sbti',
           image: '/images/logo.png'
+        },
+        {
+          text: '能力测试',
+          description: '娱乐向个人能力测试',
+          href: '/topics',
+          image: '/images/logo.png'
         }
       ],
       desktopNavItems: [
         { index: '/assets', text: '智能媒体', icon: 'Search' },
-        { index: '/topics', text: '测验', icon: 'EditPen' },
         { index: '/guestbook', text: '留言板', icon: 'ChatLineRound' },
         { index: '/games', text: '童年游戏', icon: 'Trophy' },
         { index: '/links', text: '友情链接', icon: 'LinkIcon' }
