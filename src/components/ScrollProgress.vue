@@ -41,12 +41,17 @@ export default {
   },
   mounted () {
     window.addEventListener('scroll', this.handleScroll)
+    this.handleScroll()
+  },
+  beforeUnmount () {
+    window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
     handleScroll () {
-      let scrollTop = window.scrollY || document.documentElement.scrollTop
-      let scrollHeight = document.documentElement.scrollHeight - window.innerHeight
-      this.percentage = (scrollTop / scrollHeight) * 100
+      const scrollTop = window.scrollY || document.documentElement.scrollTop
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
+      const percentage = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0
+      this.percentage = Math.min(100, Math.max(0, percentage))
     }
   }
 }

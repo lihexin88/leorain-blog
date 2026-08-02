@@ -127,12 +127,16 @@ export default {
       unauthorized: false,
       questionId: null,
       userScores: [],
-      chart: null,
-      showUnauthorized: false
+      showUnauthorized: false,
+      resetting: false,
+      eliminateEnabled: false
     }
   },
   computed: {
-    ...mapState(useUserStore, ['isLoggedIn'])
+    ...mapState(useUserStore, ['isLoggedIn']),
+    hasEnoughScores () {
+      return this.userScores.length >= 2
+    }
   },
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
@@ -174,9 +178,9 @@ export default {
     },
     getSchultAnswers () {
       schulteApi.getAnswers().then((data) => {
-        this.userScores = data.map((item) => {
-          return parseInt(item.answer)
-        })
+        this.userScores = data
+          .map(item => Number(item.answer))
+          .filter(Number.isFinite)
         this.generateRanking()
       })
     },
@@ -225,12 +229,21 @@ export default {
         easing: 'easeInOutQuad',
         duration: 600
       })
+      return animeTimeline.finished
     },
-    reset () {
-      this.clearCostTimeInterval()
-      this.getRandomArr()
-      this.succeed = false
-      this.playNext = 1
+    async reset () {
+      if (this.resetting) {
+        return false
+      }
+      this.resetting = true
+      try {
+        this.clearCostTimeInterval()
+        await this.getRandomArr()
+        this.succeed = false
+        this.playNext = 1
+      } finally {
+        this.resetting = false
+      }
     },
     gotoLogin () {
       this.showUnauthorized = false
@@ -252,87 +265,135 @@ export default {
       }
     },
     generateRanking () {
-      if (this.userScores.length < 2) {
-        this.$refs.rankingListEcharts.innerText = '数据不足，测试后显示'
+      const chartElement = this.$refs.rankingListEcharts
+      if (!chartElement) {
         return
       }
-      this.chart = echarts.init(this.$refs.rankingListEcharts)
 
-      const mean = this.mean(this.userScores)
-      const std = this.std(this.userScores, mean)
-
-      // 正态分布曲线数据
-      const minX = Math.min(...this.userScores)
-      const maxX = Math.max(...this.userScores)
-      const normalData = []
-      for (let x = minX * 0.8; x <= maxX * 1.2; x += (maxX - minX) / 100) {
-        const y = this.normalDistribution(x, mean, std)
-        normalData.push([x, y])
+      if (!this.hasEnoughScores) {
+        const chart = echarts.getInstanceByDom(chartElement)
+        if (chart) {
+          chart.dispose()
+        }
+        return
       }
 
-      // 散点数据
-      const scatterData = this.userScores.map(score => [score, this.normalDistribution(score, mean, std)])
+      const mean = this.mean(this.userScores)
+      const std = this.standardDeviation(this.userScores, mean)
+      const effectiveStd = std || Math.max(mean * 0.05, 1)
+      const minAnswer = Math.min(...this.userScores)
+      const maxAnswer = Math.max(...this.userScores)
+      const minX = Math.max(0, Math.min(minAnswer, mean - effectiveStd * 3))
+      const maxX = Math.max(maxAnswer, mean + effectiveStd * 3)
+      const step = (maxX - minX) / 120
+      const distributionData = Array.from({ length: 121 }, (item, index) => {
+        const x = minX + step * index
+        return [x, this.normalDensity(x, mean, effectiveStd)]
+      })
+      const sampleData = this.userScores.map(answer => [
+        answer,
+        this.normalDensity(answer, mean, effectiveStd)
+      ])
 
       const option = {
         title: {
-          text: '总统计',
+          text: '训练耗时正态分布拟合',
+          subtext: `统计数量 ${this.userScores.length} · 均值 ${(mean / 1000).toFixed(3)} 秒`,
           left: 'center'
         },
+        legend: {
+          top: 55,
+          data: ['拟合曲线', '答题样本']
+        },
+        grid: {
+          top: 92,
+          right: 28,
+          bottom: 54,
+          left: 72
+        },
         tooltip: {
-          trigger: 'axis'
+          trigger: 'item',
+          formatter: (params) => {
+            const [answer, density] = params.value
+            return `${params.seriesName}<br/>耗时：${(answer / 1000).toFixed(3)} 秒<br/>概率密度：${density.toExponential(3)}`
+          }
         },
         xAxis: {
           type: 'value',
-          name: '耗时(毫秒)'
+          name: '完成耗时（秒）',
+          nameLocation: 'middle',
+          nameGap: 34,
+          min: minX,
+          max: maxX,
+          axisLabel: {
+            formatter: value => (value / 1000).toFixed(1)
+          },
+          splitLine: {
+            show: false
+          }
         },
         yAxis: {
           type: 'value',
-          name: ''
+          name: '概率密度',
+          min: 0,
+          axisLabel: {
+            formatter: value => value.toExponential(1)
+          },
+          splitLine: {
+            lineStyle: {
+              color: '#e5e7eb'
+            }
+          }
         },
         series: [
           {
-            name: '完成耗时',
+            name: '拟合曲线',
             type: 'line',
-            data: normalData,
-            smooth: false,
+            data: distributionData,
+            smooth: true,
+            showSymbol: false,
             lineStyle: {
-              color: '#3b82f6',
+              color: '#2563eb',
               width: 2
-            },
-            showSymbol: false
+            }
           },
           {
-            name: '样本散点',
+            name: '答题样本',
             type: 'scatter',
-            data: scatterData,
-            symbolSize: 8,
+            data: sampleData,
+            symbolSize: 9,
             itemStyle: {
-              color: '#ef4444'
+              color: '#dc2626',
+              borderColor: '#ffffff',
+              borderWidth: 2
+            },
+            emphasis: {
+              focus: 'series',
+              scale: 1.5
             }
           }
         ]
       }
 
-      this.chart.setOption(option)
+      this.$nextTick(() => {
+        let chart = echarts.getInstanceByDom(chartElement)
+        if (!chart || chart.isDisposed()) {
+          chart = echarts.init(chartElement)
+        }
+        chart.setOption(option, true)
+        chart.resize()
+      })
     },
-
-    // 均值
-    mean (arr) {
-      return arr.reduce((a, b) => a + b, 0) / arr.length
+    mean (values) {
+      return values.reduce((sum, value) => sum + value, 0) / values.length
     },
-
-    // 标准差
-    std (arr, mean) {
-      const squareDiffs = arr.map(x => Math.pow(x - mean, 2))
-      const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / arr.length
-      return Math.sqrt(avgSquareDiff)
+    standardDeviation (values, mean) {
+      const variance = values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length
+      return Math.sqrt(variance)
     },
-
-    // 正态分布函数
-    normalDistribution (x, mean, std) {
-      const coeff = 1 / (std * Math.sqrt(2 * Math.PI))
-      const exponent = -Math.pow(x - mean, 2) / (2 * Math.pow(std, 2))
-      return coeff * Math.exp(exponent) * 10000
+    normalDensity (value, mean, std) {
+      const exponent = -Math.pow(value - mean, 2) / (2 * Math.pow(std, 2))
+      return Math.exp(exponent) / (std * Math.sqrt(2 * Math.PI))
     }
 
   },
@@ -357,39 +418,46 @@ export default {
           </div>
           <div class="play-area">
             <div ref="animatedElement" class="play-item-container">
-              <div :class="['play-item',]" @click="clickBox(cur.val,cur.next)" v-for="(cur,index) in shuffledArray"
+              <div :class="['play-item',]" @click="clickBox(cur.val,cur.next)" v-for="cur in shuffledArray"
                    :key="cur.val">
                 <el-button :class="['item-button', wrongIndex === cur.val && 'wrong-item-button']"
-                           :style="{ color:  getRandomColor(cur.val)}">
-                  {{ cur.val }}
+                           :style="{ color: getRandomColor(cur.val) }">
+                  <span :class="['item-value', eliminateEnabled && cur.val < playNext && 'eliminated-item-value']">
+                    {{ cur.val }}
+                  </span>
                 </el-button>
               </div>
             </div>
           </div>
           <div class="opt-area">
-            <el-button v-if="timer" @click="stop">
+            <el-button :disabled="timer === null" @click="stop">
               停止
             </el-button>
-            <el-button v-else disabled>
-              -
-            </el-button>
             <el-button>{{ playNext }}</el-button>
-            <el-button @click="reset"> 重新开始</el-button>
+            <el-button :disabled="resetting" @click="reset"> 重新开始</el-button>
+            <el-button
+              :type="eliminateEnabled ? 'primary' : 'default'"
+              :aria-pressed="eliminateEnabled"
+              @click="eliminateEnabled = !eliminateEnabled"
+            >
+              消除
+            </el-button>
           </div>
         </el-card>
       </div>
       <div class="ranking-list draggable-test">
         <el-card class="ranking-list-echarts-card">
-          <div ref="rankingListEcharts" id="ranking-list-echarts" class="ranking-list-echarts">
+          <div v-show="hasEnoughScores" ref="rankingListEcharts" id="ranking-list-echarts" class="ranking-list-echarts">
+          </div>
+          <div v-if="!hasEnoughScores" class="ranking-list-echarts ranking-list-echarts-empty">
+            数据不足，测试后显示
           </div>
         </el-card>
       </div>
     </div>
-    <transition>
-      <el-dialog v-model="succeed" >
-        恭喜完成！耗时：{{ costTime / 1000 }} 秒
-      </el-dialog>
-    </transition>
+    <el-dialog v-model="succeed">
+      恭喜完成！耗时：{{ costTime / 1000 }} 秒
+    </el-dialog>
     <el-dialog
       v-model="showUnauthorized"
       title="确认登录？"
@@ -463,6 +531,14 @@ export default {
               }
               font-weight: bold;
               font-family: 'Font Awesome 5 Free';
+
+              .item-value {
+                transition: opacity 0.35s ease;
+              }
+
+              .eliminated-item-value {
+                opacity: 0;
+              }
             }
 
             .wrong-item-button {
@@ -517,11 +593,14 @@ export default {
           width: 100%;
           height: 400px;
           aspect-ratio: 16/9;
-          display: flex;
-          justify-content: center;
           @media screen and (max-aspect-ratio: 1/1) {
             width: 100vw;
           }
+        }
+        .ranking-list-echarts-empty {
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
       }
     }
