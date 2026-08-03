@@ -112,7 +112,7 @@ const routes = [
           {
             path: 'media',
             name: 'ToolMedia',
-            component: () => import('../views/tools/particals/ToolMedia.vue')
+            component: () => import('../views/tools/particals/CoderMedia.vue')
           },
           {
             path: 'coder',
@@ -122,7 +122,7 @@ const routes = [
           {
             path: 'linux',
             name: 'ToolLinux',
-            component: () => import('../views/tools/particals/ToolLinux.vue')
+            component: () => import('../views/tools/particals/CoderLinux.vue')
           },
           {
             path: 'sbti',
