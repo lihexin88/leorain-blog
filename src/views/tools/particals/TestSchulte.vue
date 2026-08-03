@@ -547,6 +547,9 @@ export default {
   display: flex;
   justify-content: center;
   padding-top: 50px;
+  @include mobile {
+    padding-top: 10px;
+  }
 
   .schulte-container {
     width: 80%;
@@ -555,7 +558,7 @@ export default {
       width: 98%;
     }
 
-    .title{
+    .title {
       display: flex;
       align-items: center;
       gap: 5px;

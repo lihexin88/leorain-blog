@@ -355,7 +355,7 @@ export default {
   <div class="main-box">
     <div class="reaction-container">
       <div class="play-box">
-        <el-card>
+        <el-card class="play-card">
           <template v-slot:header>
             <div class="display-area">
               <span class="title">
@@ -450,6 +450,9 @@ export default {
   display: flex;
   justify-content: center;
   padding-top: 50px;
+  @include mobile{
+    padding-top: 10px;
+  }
 
   .reaction-container {
     width: 80%;
@@ -469,6 +472,9 @@ export default {
       @include mobile {
         width: 100%;
       }
+      .play-card {
+        width: 100%;
+      }
 
       .display-area {
         font-size: 18px;
@@ -482,6 +488,10 @@ export default {
         justify-content: center;
         padding: 20px 0;
         min-width: 768px;
+        @include mobile{
+          width: 100%;
+          min-width: 100%;
+        }
 
         .reaction-box {
           width: 100%;
