@@ -4,8 +4,12 @@ import { mapState, mapActions } from 'pinia'
 import { useUserStore } from '@/store/user'
 import moment from 'moment'
 import topic from '@/apis/topic'
+import { InfoFilled } from '@element-plus/icons-vue'
 
 export default {
+  components: {
+    InfoFilled
+  },
   tdk: {
     title: '反应速度测试 - 在线训练',
     description: '在线反应速度测试工具，测试你的反应时间',
@@ -27,7 +31,8 @@ export default {
       showUnauthorized: false,
       dialogWidth: '30%',
       isPortrait: false,
-      showStatsDialog: false
+      showStatsDialog: false,
+      topicDescription: ''
     }
   },
   computed: {
@@ -54,7 +59,7 @@ export default {
      * 当 state='ready' 时，在事件处理的第一行就捕获 performance.now()，
      * 确保 Vue 响应式系统、DOM 更新等不影响计时精度。
      */
-    onBoxMouseDown (e) {
+    onBoxMouseDown () {
       // 第一时间捕获时间戳，不做任何其他操作
       const now = performance.now()
 
@@ -169,6 +174,7 @@ export default {
     getTopic () {
       topic.getTopicDetail('reaction').then(data => {
         this.questionId = data.questions[0].id
+        this.topicDescription = data.description
       })
     },
     getUserInfo () {
@@ -352,7 +358,12 @@ export default {
         <el-card>
           <template v-slot:header>
             <div class="display-area">
-              <span> 反应时间测试 </span>
+              <span class="title">
+                反应时间测试
+                <el-tooltip :content="topicDescription">
+                  <el-icon><InfoFilled /></el-icon>
+                </el-tooltip>
+              </span>
               <span>
                 <span>反应时间：</span><span style="min-width: 70px">{{ reactionTime }}</span
                 ><span>毫秒</span>
@@ -447,6 +458,11 @@ export default {
       width: 98%;
     }
 
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
     .play-box {
       display: flex;
       justify-content: center;

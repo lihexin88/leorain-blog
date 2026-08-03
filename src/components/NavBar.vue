@@ -275,8 +275,8 @@ export default {
           image: 'https://images.leorain.cn/icons/tools/tool_clipboard.png'
         },
         {
-          text: '预防老年痴呆',
-          description: '快来试试吧',
+          text: '老年痴呆测试',
+          description: '痴没痴一试便知',
           href: '/tools/test',
           image: 'https://images.leorain.cn/icons/tools/tool_table_number.png'
         },

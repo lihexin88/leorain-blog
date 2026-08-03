@@ -5,8 +5,11 @@ import { mapState, mapActions } from 'pinia'
 import { useUserStore } from '@/store/user'
 import moment from 'moment'
 import topic from '@/apis/topic'
-
+import { InfoFilled } from '@element-plus/icons-vue'
 export default {
+  components: {
+    InfoFilled
+  },
   tdk: {
     title: '舒尔特方格 - 在线训练',
     description: '在线舒尔特方格训练工具，提升专注力和视觉广度',
@@ -133,7 +136,8 @@ export default {
       resetting: false,
       eliminateEnabled: false,
       isPortrait: false,
-      showStatsDialog: false
+      showStatsDialog: false,
+      topicDescription: ''
     }
   },
   computed: {
@@ -260,6 +264,7 @@ export default {
     getTopic () {
       topic.getTopicDetail('schulte').then(data => {
         this.questionId = data.questions[0].id
+        this.topicDescription = data.description
       })
     },
     getUserInfo () {
@@ -426,7 +431,12 @@ export default {
         <el-card>
           <template v-slot:header>
             <div class="display-area">
-              <span> 舒尔特表格测试 </span>
+              <span class="title">
+                舒尔特表格测试
+                <el-tooltip :content="topicDescription">
+                  <el-icon><InfoFilled /></el-icon>
+                </el-tooltip>
+              </span>
               <span>
                 <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span
                 ><span>秒</span>
@@ -545,6 +555,11 @@ export default {
       width: 98%;
     }
 
+    .title{
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
     .play-box {
       display: flex;
       justify-content: center;
@@ -666,7 +681,7 @@ export default {
         }
         .history-list {
           width: 100%;
-          max-height: 400px;
+          max-height: 500px;
           overflow-y: auto;
           .history-list-empty {
             display: flex;
