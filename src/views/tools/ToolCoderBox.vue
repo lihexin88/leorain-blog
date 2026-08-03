@@ -1,11 +1,10 @@
 <script>
-import ToolString from '@/views/tools/ToolString.vue'
-import ToolMedia from '@/views/tools/ToolMedia.vue'
-import ToolLinux from '@/views/tools/ToolLinux.vue'
-import ToolRadix from '@/views/tools/ToolRadix.vue'
+import ToolString from '@/views/tools/particals/CoderString.vue'
+import ToolMedia from '@/views/tools/particals/CoderMedia.vue'
+import ToolLinux from '@/views/tools/particals/CoderLinux.vue'
 
 export default {
-  components: { ToolRadix, ToolLinux, ToolMedia, ToolString }
+  components: { ToolLinux, ToolMedia, ToolString }
 }
 </script>
 

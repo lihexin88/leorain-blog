@@ -1,10 +1,10 @@
 <script>
-
 import anime from 'animejs'
 import * as echarts from 'echarts'
 import { mapState, mapActions } from 'pinia'
 import { useUserStore } from '@/store/user'
-import schulteApi from '@/apis/schulte'
+import moment from 'moment'
+import topic from '@/apis/topic'
 
 export default {
   tdk: {
@@ -127,9 +127,13 @@ export default {
       unauthorized: false,
       questionId: null,
       userScores: [],
+      userScoreRecords: [],
       showUnauthorized: false,
+      dialogWidth: '30%',
       resetting: false,
-      eliminateEnabled: false
+      eliminateEnabled: false,
+      isPortrait: false,
+      showStatsDialog: false
     }
   },
   computed: {
@@ -139,6 +143,7 @@ export default {
     }
   },
   methods: {
+    moment,
     ...mapActions(useUserStore, ['setShowLoginDialog']),
     stop () {
       this.clearCostTimeInterval()
@@ -166,21 +171,24 @@ export default {
         this.stop()
         this.succeed = true
         // 上报
-        schulteApi.submitAnswer({
-          question_id: this.questionId,
-          answer: this.costTime
-        }).then(() => {
-          this.getSchultAnswers()
-        })
+        topic
+          .submitTopicAnswers('schulte', [
+            {
+              question_id: this.questionId,
+              answer: this.costTime
+            }
+          ])
+          .then(() => {
+            this.getAnswers()
+          })
         return true
       }
       this.playNext = next
     },
-    getSchultAnswers () {
-      schulteApi.getAnswers().then((data) => {
-        this.userScores = data
-          .map(item => Number(item.answer))
-          .filter(Number.isFinite)
+    getAnswers () {
+      topic.getAnswers('schulte').then(data => {
+        this.userScoreRecords = data
+        this.userScores = data.map(item => Number(item.answer)).filter(Number.isFinite)
         this.generateRanking()
       })
     },
@@ -206,8 +214,8 @@ export default {
       }
       this.lastIndex = shuffled[shuffled.length - 1].val
       for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] // 交换元素
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]] // 交换元素
       }
       const animeTimeline = anime.timeline({
         duration: 800,
@@ -250,12 +258,12 @@ export default {
       this.setShowLoginDialog(true)
     },
     getTopic () {
-      schulteApi.getTopic().then((data) => {
+      topic.getTopicDetail('schulte').then(data => {
         this.questionId = data.questions[0].id
       })
     },
     getUserInfo () {
-      this.getSchultAnswers()
+      this.getAnswers()
       if (this.isLoggedIn) {
         this.unauthorized = false
         this.showUnauthorized = false
@@ -265,7 +273,7 @@ export default {
       }
     },
     generateRanking () {
-      const chartElement = this.$refs.rankingListEcharts
+      const chartElement = this.$refs.rankingListEcharts || this.$refs.rankingListEchartsMobile
       if (!chartElement) {
         return
       }
@@ -290,10 +298,7 @@ export default {
         const x = minX + step * index
         return [x, this.normalDensity(x, mean, effectiveStd)]
       })
-      const sampleData = this.userScores.map(answer => [
-        answer,
-        this.normalDensity(answer, mean, effectiveStd)
-      ])
+      const sampleData = this.userScores.map(answer => [answer, this.normalDensity(answer, mean, effectiveStd)])
 
       const option = {
         title: {
@@ -313,7 +318,7 @@ export default {
         },
         tooltip: {
           trigger: 'item',
-          formatter: (params) => {
+          formatter: params => {
             const [answer, density] = params.value
             return `${params.seriesName}<br/>耗时：${(answer / 1000).toFixed(3)} 秒<br/>概率密度：${density.toExponential(3)}`
           }
@@ -384,6 +389,12 @@ export default {
         chart.resize()
       })
     },
+    openStatsDialog () {
+      this.showStatsDialog = true
+      this.$nextTick(() => {
+        this.generateRanking()
+      })
+    },
     mean (values) {
       return values.reduce((sum, value) => sum + value, 0) / values.length
     },
@@ -395,14 +406,14 @@ export default {
       const exponent = -Math.pow(value - mean, 2) / (2 * Math.pow(std, 2))
       return Math.exp(exponent) / (std * Math.sqrt(2 * Math.PI))
     }
-
   },
   mounted () {
     this.getRandomArr()
     this.getUserInfo()
     this.getTopic()
-    if (window.matchMedia('(orientation: portrait)').matches) {
-      this.$refs.unauthorizedDialog.style.width = '100%'
+    this.isPortrait = window.matchMedia('(orientation: portrait)').matches
+    if (this.isPortrait) {
+      this.dialogWidth = '100%'
     }
   }
 }
@@ -413,15 +424,27 @@ export default {
     <div class="schulte-container">
       <div class="play-box">
         <el-card>
-          <div class="display-area">
-            <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span><span>秒</span>
-          </div>
+          <template v-slot:header>
+            <div class="display-area">
+              <span> 舒尔特表格测试 </span>
+              <span>
+                <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span
+                ><span>秒</span>
+              </span>
+            </div>
+          </template>
           <div class="play-area">
             <div ref="animatedElement" class="play-item-container">
-              <div :class="['play-item',]" @click="clickBox(cur.val,cur.next)" v-for="cur in shuffledArray"
-                   :key="cur.val">
-                <el-button :class="['item-button', wrongIndex === cur.val && 'wrong-item-button']"
-                           :style="{ color: getRandomColor(cur.val) }">
+              <div
+                :class="['play-item']"
+                @click="clickBox(cur.val, cur.next)"
+                v-for="cur in shuffledArray"
+                :key="cur.val"
+              >
+                <el-button
+                  :class="['item-button', wrongIndex === cur.val && 'wrong-item-button']"
+                  :style="{ color: getRandomColor(cur.val) }"
+                >
                   <span :class="['item-value', eliminateEnabled && cur.val < playNext && 'eliminated-item-value']">
                     {{ cur.val }}
                   </span>
@@ -430,9 +453,7 @@ export default {
             </div>
           </div>
           <div class="opt-area">
-            <el-button :disabled="timer === null" @click="stop">
-              停止
-            </el-button>
+            <el-button :disabled="timer === null" @click="stop"> 停止 </el-button>
             <el-button>{{ playNext }}</el-button>
             <el-button :disabled="resetting" @click="reset"> 重新开始</el-button>
             <el-button
@@ -442,36 +463,71 @@ export default {
             >
               消除
             </el-button>
+            <el-button v-if="isPortrait" type="primary" @click="openStatsDialog"> 统计 </el-button>
           </div>
         </el-card>
       </div>
-      <div class="ranking-list draggable-test">
+      <div v-if="!isPortrait" class="ranking-list draggable-test">
         <el-card class="ranking-list-echarts-card">
-          <div v-show="hasEnoughScores" ref="rankingListEcharts" id="ranking-list-echarts" class="ranking-list-echarts">
-          </div>
-          <div v-if="!hasEnoughScores" class="ranking-list-echarts ranking-list-echarts-empty">
-            数据不足，测试后显示
-          </div>
+          <el-tabs class="ranking-tabs">
+            <el-tab-pane label="结果统计">
+              <div
+                v-show="hasEnoughScores"
+                ref="rankingListEcharts"
+                id="ranking-list-echarts"
+                class="ranking-list-echarts"
+              ></div>
+              <div v-if="!hasEnoughScores" class="ranking-list-echarts ranking-list-echarts-empty">
+                数据不足，测试后显示
+              </div>
+            </el-tab-pane>
+            <el-tab-pane label="历史记录">
+              <div class="history-list">
+                <div v-if="!userScoreRecords.length" class="history-list-empty">暂无记录</div>
+                <div v-for="record in userScoreRecords" :key="record.id" class="history-item">
+                  <span class="history-item-user">{{ record.user?.name || '匿名' }}</span>
+                  <span class="history-item-score">{{ (Number(record.answer) / 1000).toFixed(3) }} 秒</span>
+                  <span class="history-item-time">{{ moment(record.created_at).format('YYYY-MM-DD HH:mm') }}</span>
+                </div>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
         </el-card>
       </div>
     </div>
-    <el-dialog v-model="succeed">
-      恭喜完成！耗时：{{ costTime / 1000 }} 秒
-    </el-dialog>
+    <el-dialog v-model="succeed"> 恭喜完成！耗时：{{ costTime / 1000 }} 秒 </el-dialog>
     <el-dialog
       v-model="showUnauthorized"
       title="确认登录？"
       ref="unauthorizedDialog"
-      width="30%"
+      :width="dialogWidth"
       class="unauthorized-dialog"
     >
       <span>登录后可以参与排名，确认登录吗？</span>
       <template v-slot:footer>
-<span  class="dialog-footer">
-        <el-button @click="showUnauthorized = false">取 消</el-button>
-        <el-button type="primary" @click="gotoLogin">确 定</el-button>
-      </span>
-</template>
+        <span class="dialog-footer">
+          <el-button @click="showUnauthorized = false">取 消</el-button>
+          <el-button type="primary" @click="gotoLogin">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="showStatsDialog" title="训练统计" :width="dialogWidth" class="stats-dialog">
+      <el-tabs class="ranking-tabs">
+        <el-tab-pane label="结果统计">
+          <div v-show="hasEnoughScores" ref="rankingListEchartsMobile" class="ranking-list-echarts"></div>
+          <div v-if="!hasEnoughScores" class="ranking-list-echarts-empty">数据不足，测试后显示</div>
+        </el-tab-pane>
+        <el-tab-pane label="历史记录">
+          <div class="history-list">
+            <div v-if="!userScoreRecords.length" class="history-list-empty">暂无记录</div>
+            <div v-for="record in userScoreRecords" :key="record.id" class="history-item">
+              <span class="history-item-user">{{ record.user?.name || '匿名' }}</span>
+              <span class="history-item-score">{{ (Number(record.answer) / 1000).toFixed(3) }} 秒</span>
+              <span class="history-item-time">{{ moment(record.created_at).format('YYYY-MM-DD HH:mm') }}</span>
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-dialog>
   </div>
 </template>
@@ -484,6 +540,7 @@ export default {
 
   .schulte-container {
     width: 80%;
+    display: flex;
     @media screen and (max-aspect-ratio: 1/1) {
       width: 98%;
     }
@@ -491,6 +548,9 @@ export default {
     .play-box {
       display: flex;
       justify-content: center;
+      @include mobile {
+        width: 100%;
+      }
 
       .play-area {
         min-width: 768px;
@@ -542,7 +602,7 @@ export default {
             }
 
             .wrong-item-button {
-              animation: showWrongBackground .3s;
+              animation: showWrongBackground 0.3s;
             }
 
             @keyframes showWrongBackground {
@@ -567,7 +627,7 @@ export default {
       .display-area {
         font-size: 18px;
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
       }
 
@@ -579,9 +639,9 @@ export default {
     }
 
     .ranking-list {
+      width: 80%;
       display: flex;
       justify-content: center;
-      padding-top: 20px;
       .ranking-list-echarts-card {
         width: 80%;
         @media screen and (max-aspect-ratio: 1/1) {
@@ -589,10 +649,12 @@ export default {
         }
         display: flex;
         justify-content: center;
+        .ranking-tabs {
+          width: 100%;
+        }
         .ranking-list-echarts {
           width: 100%;
           height: 400px;
-          aspect-ratio: 16/9;
           @media screen and (max-aspect-ratio: 1/1) {
             width: 100vw;
           }
@@ -602,6 +664,93 @@ export default {
           justify-content: center;
           align-items: center;
         }
+        .history-list {
+          width: 100%;
+          max-height: 400px;
+          overflow-y: auto;
+          .history-list-empty {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 0;
+            color: #909399;
+          }
+          .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #ebeef5;
+            &:last-child {
+              border-bottom: none;
+            }
+            .history-item-user {
+              font-weight: 500;
+              min-width: 80px;
+            }
+            .history-item-score {
+              color: #409eff;
+              font-weight: bold;
+            }
+            .history-item-time {
+              color: #909399;
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+.stats-dialog {
+  .ranking-tabs {
+    width: 100%;
+  }
+  .ranking-list-echarts {
+    width: 100%;
+    height: 400px;
+  }
+  .ranking-list-echarts-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #909399;
+  }
+  .history-list {
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    .history-list-empty {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+      color: #909399;
+    }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #ebeef5;
+      &:last-child {
+        border-bottom: none;
+      }
+      .history-item-user {
+        font-weight: 500;
+        min-width: 80px;
+      }
+      .history-item-score {
+        color: #409eff;
+        font-weight: bold;
+      }
+      .history-item-time {
+        color: #909399;
+        font-size: 13px;
       }
     }
   }

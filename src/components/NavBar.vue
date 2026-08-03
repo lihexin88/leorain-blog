@@ -275,9 +275,9 @@ export default {
           image: 'https://images.leorain.cn/icons/tools/tool_clipboard.png'
         },
         {
-          text: '舒尔特表格测试',
-          description: '舒尔特表格测试',
-          href: '/tools/schulte',
+          text: '预防老年痴呆',
+          description: '快来试试吧',
+          href: '/tools/test',
           image: 'https://images.leorain.cn/icons/tools/tool_table_number.png'
         },
         {

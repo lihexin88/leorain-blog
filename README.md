@@ -50,7 +50,7 @@ Provides flexible page metadata management for Title, Description, and Keywords:
 src/
 ├── apis/                  # API request wrappers based on axios
 │   ├── article.js         # Article-related APIs
-│   ├── schulte.js         # Schulte Grid APIs
+│   ├── topicQuestion.js         # Schulte Grid APIs
 │   └── ...
 ├── assets/                # Static assets
 │   ├── images/            # Images and logos

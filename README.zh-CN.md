@@ -50,7 +50,7 @@
 src/
 ├── apis/                  # API 请求封装层（基于 axios）
 │   ├── article.js         # 文章相关接口
-│   ├── schulte.js         # 舒尔特方格接口
+│   ├── topicQuestion.js         # 舒尔特方格接口
 │   └── ...
 ├── assets/                # 静态资源
 │   ├── images/            # 图片、Logo

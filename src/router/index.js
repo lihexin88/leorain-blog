@@ -67,7 +67,7 @@ const routes = [
           {
             path: 'code',
             name: 'CodeExecutor',
-            component: () => import('../views/tools/UniversalExecutor.vue')
+            component: () => import('../views/tools/ToolUniversalExecutor.vue')
           },
           {
             path: 'radix',
@@ -82,17 +82,17 @@ const routes = [
           {
             path: 'draw',
             name: 'Draw',
-            component: () => import('../views/tools/Draw.vue')
+            component: () => import('../views/tools/ToolDraw.vue')
           },
           {
             path: 'clipboard',
             name: 'Clipboard',
-            component: () => import('../views/tools/Clipboard.vue')
+            component: () => import('../views/tools/ToolClipboard.vue')
           },
           {
-            path: 'schulte',
-            name: 'Schulte',
-            component: () => import('../views/tools/ToolSchulte.vue')
+            path: 'test',
+            name: 'Test',
+            component: () => import('../views/tools/ToolTest.vue')
           },
           {
             path: 'cpu',
@@ -112,17 +112,17 @@ const routes = [
           {
             path: 'media',
             name: 'ToolMedia',
-            component: () => import('../views/tools/ToolMedia.vue')
+            component: () => import('../views/tools/particals/ToolMedia.vue')
           },
           {
             path: 'coder',
             name: 'ToolCoder',
-            component: () => import('../views/tools/ToolsBox.vue')
+            component: () => import('../views/tools/ToolCoderBox.vue')
           },
           {
             path: 'linux',
             name: 'ToolLinux',
-            component: () => import('../views/tools/ToolLinux.vue')
+            component: () => import('../views/tools/particals/ToolLinux.vue')
           },
           {
             path: 'sbti',

@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import CodeExecutor from './CodeExecutor.vue'
+import CodeExecutor from './particals/ToolCodeExecutor.vue'
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import Swal from 'sweetalert2'
