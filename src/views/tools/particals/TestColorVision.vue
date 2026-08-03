@@ -19,7 +19,7 @@ export default {
   },
   data () {
     return {
-      state: 'playing',
+      state: 'ready',
       gridSize: 2,
       correctCount: 0,
       targetIndex: 0,
@@ -55,6 +55,9 @@ export default {
       return this.userScores.length > 0
     },
     statusText () {
+      if (this.state === 'ready') {
+        return '点击开始后，找出颜色不同的方块'
+      }
       if (this.state === 'result') {
         return `测试结束，本次成绩：${this.finalScore} × ${this.finalScore}`
       }
@@ -140,6 +143,10 @@ export default {
       } finally {
         this.submitting = false
       }
+    },
+    start () {
+      this.state = 'playing'
+      this.generateMatrix()
     },
     restart () {
       this.clearQuestionTimer()
@@ -274,7 +281,6 @@ export default {
     }
   },
   mounted () {
-    this.generateMatrix()
     this.isPortrait = window.matchMedia('(orientation: portrait)').matches
     if (this.isPortrait) {
       this.dialogWidth = '100%'
@@ -309,7 +315,14 @@ export default {
           </template>
           <div class="status-text">{{ statusText }}</div>
           <div class="matrix-wrap">
-            <div :class="['color-matrix', state === 'result' && 'color-matrix--finished']" :style="matrixStyle">
+            <el-button v-if="state === 'ready'" class="start-button" type="primary" size="large" @click="start">
+              开始
+            </el-button>
+            <div
+              v-else
+              :class="['color-matrix', state === 'result' && 'color-matrix--finished']"
+              :style="matrixStyle"
+            >
               <button
                 v-for="index in cellCount"
                 :key="index"
@@ -444,9 +457,15 @@ export default {
 
       .matrix-wrap {
         display: flex;
+        align-items: center;
         justify-content: center;
         min-width: 620px;
+        min-height: min(500px, 65vh);
         padding: 20px;
+
+        .start-button {
+          min-width: 120px;
+        }
 
         @media screen and (max-aspect-ratio: 1/1) {
           min-width: 0;
