@@ -3,6 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import TestSchulte from '@/views/tools/particals/TestSchulte.vue'
 import TestReaction from '@/views/tools/particals/TestReaction.vue'
 import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
+import TestNumberMemory from '@/views/tools/particals/TestNumberMemory.vue'
 
 const HEADER_OFFSET = 76
 const activeStep = ref(0)
@@ -21,6 +22,11 @@ const testSteps = [
     id: 'test-color-vision-section',
     title: '色觉测试',
     description: '测试颜色辨识能力'
+  },
+  {
+    id: 'test-number-memory-section',
+    title: '数字记忆',
+    description: '测试瞬时数字记忆'
   }
 ]
 
@@ -95,6 +101,9 @@ onBeforeUnmount(() => {
       </section>
       <section id="test-color-vision-section" class="test-section">
         <test-color-vision />
+      </section>
+      <section id="test-number-memory-section" class="test-section">
+        <test-number-memory />
       </section>
     </main>
   </div>
@@ -175,7 +184,7 @@ onBeforeUnmount(() => {
   }
 
   .test-steps {
-    min-width: 500px;
+    min-width: 640px;
     height: auto;
   }
 
@@ -184,7 +193,7 @@ onBeforeUnmount(() => {
   }
 
   .test-navigation :deep(.el-step) {
-    flex-basis: 33.333% !important;
+    flex-basis: 25% !important;
   }
 
   .test-navigation :deep(.el-step__head) {
