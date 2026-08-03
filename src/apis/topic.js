@@ -12,7 +12,7 @@ export default {
   },
   // 提交话题答案
   submitTopicAnswers (slug, answers) {
-    return api.patch(`topic/${slug}/submit`, { answers })
+    return api.post(`topic/${slug}/submit`, { answers })
   },
   getAnswers (slug) {
     return api.get(`topic/${slug}/answers`)
