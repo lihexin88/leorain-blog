@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TestSchulte from '@/views/tools/particals/TestSchulte.vue'
 import TestReaction from '@/views/tools/particals/TestReaction.vue'
 import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
@@ -8,35 +8,63 @@ import TestSart from '@/views/tools/particals/TestSart.vue'
 
 const HEADER_OFFSET = 76
 const activeStep = ref(0)
+const navEl = ref<HTMLElement | null>(null)
+const navButtonEls = ref<(HTMLButtonElement | null)[]>([])
 const testSteps = [
   {
     id: 'test-schulte-section',
-    title: '舒尔特方格',
-    description: '专注力与视觉广度'
+    title: '舒尔特',
+    description: '专注力'
   },
   {
     id: 'test-reaction-section',
-    title: '反应速度',
-    description: '测试点击反应时间'
+    title: '反应',
+    description: '反应时'
   },
   {
     id: 'test-color-vision-section',
-    title: '色觉测试',
-    description: '测试颜色辨识能力'
+    title: '色觉',
+    description: '辨色'
   },
   {
     id: 'test-number-memory-section',
     title: '数字记忆',
-    description: '测试瞬时数字记忆'
+    description: '瞬时记忆'
   },
   {
     id: 'test-sart-section',
-    title: '持续注意力',
-    description: 'SART 专注力测试'
+    title: '注意力',
+    description: 'SART'
   }
 ]
 
 let scrollFrame: number | null = null
+
+function setNavButtonRef (el: Element | null, index: number) {
+  navButtonEls.value[index] = el instanceof HTMLButtonElement ? el : null
+}
+
+function isMobileNav () {
+  return window.matchMedia('(max-aspect-ratio: 1/1)').matches
+}
+
+function scrollActiveNavIntoView () {
+  if (!isMobileNav()) return
+
+  const container = navEl.value
+  const button = navButtonEls.value[activeStep.value]
+  if (!container || !button) return
+
+  const containerRect = container.getBoundingClientRect()
+  const buttonRect = button.getBoundingClientRect()
+  const delta =
+    buttonRect.left - containerRect.left - (container.clientWidth - buttonRect.width) / 2
+
+  container.scrollBy({
+    left: delta,
+    behavior: 'smooth'
+  })
+}
 
 function scrollToTest (index: number) {
   const target = document.getElementById(testSteps[index].id)
@@ -49,7 +77,7 @@ function scrollToTest (index: number) {
 
 function updateActiveStep () {
   scrollFrame = null
-  const activationLine = HEADER_OFFSET + Math.min(window.innerHeight * 0.28, 220)
+  const activationLine = HEADER_OFFSET + Math.min(window.innerHeight * 0.22, 160)
   let currentIndex = 0
 
   testSteps.forEach((step, index) => {
@@ -67,8 +95,15 @@ function onScroll () {
   scrollFrame = window.requestAnimationFrame(updateActiveStep)
 }
 
+watch(activeStep, () => {
+  nextTick(scrollActiveNavIntoView)
+})
+
 onMounted(() => {
-  nextTick(updateActiveStep)
+  nextTick(() => {
+    updateActiveStep()
+    scrollActiveNavIntoView()
+  })
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
 })
@@ -84,18 +119,24 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="test-page">
-    <aside class="test-navigation" aria-label="测试导航">
-      <el-steps :active="activeStep" direction="vertical" class="test-steps">
-        <el-step
+    <aside ref="navEl" class="test-navigation" aria-label="测试导航">
+      <div class="nav-label">测试</div>
+      <nav class="test-nav-list">
+        <button
           v-for="(step, index) in testSteps"
           :key="step.id"
-          :title="step.title"
-          :description="step.description"
-          :status="index === activeStep ? 'process' : 'wait'"
-          class="test-step"
+          :ref="el => setNavButtonRef(el as Element | null, index)"
+          type="button"
+          :class="['test-nav-item', { 'is-active': index === activeStep }]"
           @click="scrollToTest(index)"
-        />
-      </el-steps>
+        >
+          <span class="nav-index">{{ String(index + 1).padStart(2, '0') }}</span>
+          <span class="nav-text">
+            <span class="nav-title">{{ step.title }}</span>
+            <span class="nav-desc">{{ step.description }}</span>
+          </span>
+        </button>
+      </nav>
     </aside>
 
     <main class="test-content">
@@ -122,107 +163,285 @@ onBeforeUnmount(() => {
 .test-page {
   display: flex;
   align-items: flex-start;
+  gap: 12px;
   width: 100%;
+  padding: 8px 12px 28px 0;
+  box-sizing: border-box;
 }
 
 .test-navigation {
   position: sticky;
   top: 76px;
   z-index: 10;
-  flex: 0 0 210px;
+  flex: 0 0 128px;
   height: fit-content;
-  max-height: calc(100vh - 96px);
-  padding: 28px 16px 28px 24px;
+  max-height: calc(100vh - 92px);
+  padding: 10px 8px;
   overflow-y: auto;
-  background-color: var(--body-bg);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--el-fill-color-blank) 88%, transparent);
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
 }
 
-.test-steps {
-  height: 320px;
+.nav-label {
+  padding: 2px 8px 10px;
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.test-step {
+.test-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.test-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--el-text-color-regular);
+  text-align: left;
   cursor: pointer;
-
-  :deep(.el-step__title),
-  :deep(.el-step__description),
-  :deep(.el-step__icon) {
-    transition:
-      color 0.2s ease,
-      border-color 0.2s ease,
-      transform 0.2s ease;
-  }
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 
   &:hover {
-    :deep(.el-step__title),
-    :deep(.el-step__description) {
-      color: var(--el-color-primary);
-    }
+    background: var(--el-fill-color-light);
+    color: var(--el-color-primary);
+  }
 
-    :deep(.el-step__icon) {
-      transform: scale(1.08);
+  &.is-active {
+    background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
+    color: var(--el-color-primary);
+    box-shadow: inset 3px 0 0 var(--el-color-primary);
+
+    .nav-index {
+      background: var(--el-color-primary);
+      color: #fff;
     }
   }
+}
+
+.nav-index {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.nav-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.nav-desc {
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.test-nav-item.is-active .nav-desc {
+  color: color-mix(in srgb, var(--el-color-primary) 72%, var(--el-text-color-secondary));
 }
 
 .test-content {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 12px;
   min-width: 0;
 }
 
 .test-section {
   scroll-margin-top: 76px;
+  border-radius: 12px;
+  overflow: clip;
+
+  :deep(.main-box) {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  :deep(.el-card) {
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  }
+
+  :deep(.el-card__header) {
+    padding: 12px 16px;
+  }
+
+  :deep(.el-card__body) {
+    padding: 12px 16px 14px;
+  }
 }
 
 @media screen and (max-aspect-ratio: 1/1) {
   .test-page {
     display: block;
+    padding: 0 0 24px;
   }
 
   .test-navigation {
     position: sticky;
     top: 60px;
     z-index: 20;
-    width: 100%;
+    display: block;
+    width: auto;
     max-height: none;
-    padding: 10px 12px;
+    margin: 0;
+    padding: 10px 0 10px;
     overflow-x: auto;
     overflow-y: hidden;
-    background: var(--body-bg);
-    border-bottom: 1px solid var(--el-border-color-light);
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--el-border-color-lighter) 80%, transparent);
+    background: color-mix(in srgb, var(--body-bg, #fff) 82%, transparent);
+    box-shadow: 0 8px 20px rgb(15 23 42 / 4%);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent 100%
+    );
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
-  .test-steps {
-    min-width: 800px;
-    height: auto;
+  .nav-label {
+    display: none;
   }
 
-  .test-navigation :deep(.el-steps) {
+  .test-nav-list {
+    display: flex;
     flex-direction: row;
+    gap: 8px;
+    width: max-content;
+    min-width: 100%;
+    padding: 0 14px;
+    box-sizing: border-box;
   }
 
-  .test-navigation :deep(.el-step) {
-    flex-basis: 20% !important;
+  .test-nav-item {
+    position: relative;
+    flex: 0 0 auto;
+    gap: 6px;
+    min-width: 0;
+    padding: 8px 12px 8px 8px;
+    border-radius: 999px;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-regular);
+    box-shadow: inset 0 0 0 1px var(--el-border-color-extra-light);
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      background: var(--el-fill-color);
+      color: var(--el-color-primary);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &.is-active {
+      background: var(--el-color-primary);
+      display: flex;
+      justify-content: center;
+      color: #fff;
+      box-shadow:
+        0 6px 14px color-mix(in srgb, var(--el-color-primary) 28%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 40%, transparent);
+
+      .nav-index {
+        background: rgb(255 255 255 / 22%);
+        color: #fff;
+      }
+
+      .nav-desc {
+        color: rgb(255 255 255 / 78%);
+      }
+    }
   }
 
-  .test-navigation :deep(.el-step__head) {
-    width: auto;
+  .nav-index {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    font-size: 10px;
   }
 
-  .test-navigation :deep(.el-step__main) {
-    padding-left: 8px;
+  .nav-text {
+    gap: 0;
   }
 
-  .test-navigation :deep(.el-step__line) {
+  .nav-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .nav-desc {
     display: none;
   }
 
-  .test-navigation :deep(.el-step__description) {
-    display: none;
+  .test-content {
+    gap: 10px;
+    padding: 10px 10px 0;
   }
 
   .test-section {
-    scroll-margin-top: 120px;
+    scroll-margin-top: 128px;
+
+    :deep(.el-card) {
+      border-radius: 14px;
+    }
+
+    :deep(.el-card__header) {
+      padding: 12px 14px;
+    }
+
+    :deep(.el-card__body) {
+      padding: 10px 12px 12px;
+    }
   }
 }
 </style>

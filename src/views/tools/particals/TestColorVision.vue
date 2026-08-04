@@ -405,25 +405,29 @@ export default {
 .main-box {
   display: flex;
   justify-content: center;
-  padding-top: 50px;
+  padding-top: 12px;
   @include mobile{
-    padding-top: 10px;
+    padding-top: 4px;
   }
 
   .color-vision-container {
     display: flex;
-    width: 80%;
+    gap: 12px;
+    width: 100%;
 
     @media screen and (max-aspect-ratio: 1/1) {
-      width: 98%;
+      width: 100%;
     }
 
     .play-box {
       display: flex;
+      flex: 0 1 52%;
       justify-content: center;
+      min-width: 0;
 
       @include mobile {
         width: 100%;
+        flex: 1 1 auto;
       }
 
       .play-card {
@@ -434,8 +438,8 @@ export default {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 24px;
-        font-size: 18px;
+        gap: 16px;
+        font-size: 16px;
 
         .title {
           display: flex;
@@ -450,7 +454,8 @@ export default {
       }
 
       .status-text {
-        min-height: 24px;
+        min-height: 22px;
+        margin-bottom: 4px;
         color: #606266;
         text-align: center;
       }
@@ -459,33 +464,33 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 620px;
-        min-height: min(500px, 65vh);
-        padding: 20px;
+        min-width: 0;
+        min-height: 280px;
+        padding: 8px 0 12px;
 
         .start-button {
           min-width: 120px;
         }
 
         @media screen and (max-aspect-ratio: 1/1) {
-          min-width: 0;
-          padding: 16px 0;
+          min-height: 220px;
+          padding: 8px 0;
         }
       }
 
       .color-matrix {
         display: grid;
-        gap: clamp(2px, 0.7vw, 8px);
-        width: min(500px, 65vh);
+        gap: clamp(2px, 0.7vw, 6px);
+        width: min(360px, 100%);
         max-width: 100%;
         aspect-ratio: 1 / 1;
-        padding: 8px;
+        padding: 6px;
         border-radius: 12px;
         background-color: #f2f3f5;
         transition: opacity 0.2s ease;
 
         @media screen and (max-aspect-ratio: 1/1) {
-          width: min(88vw, 500px);
+          width: min(78vw, 360px);
         }
 
         &--finished {
@@ -521,21 +526,23 @@ export default {
       .opt-area {
         display: flex;
         justify-content: center;
-        gap: 12px;
+        gap: 8px;
         min-height: 32px;
-        padding-top: 12px;
+        padding-top: 8px;
       }
     }
 
     .ranking-list {
       display: flex;
-      justify-content: center;
-      width: 80%;
+      flex: 1;
+      justify-content: stretch;
+      min-width: 260px;
+      width: auto;
 
       .ranking-list-echarts-card {
         display: flex;
         justify-content: center;
-        width: 80%;
+        width: 100%;
 
         .ranking-tabs {
           width: 100%;
@@ -543,18 +550,19 @@ export default {
 
         .ranking-list-echarts {
           width: 100%;
-          height: 400px;
+          height: 320px;
         }
 
         .ranking-list-echarts-empty {
           display: flex;
           align-items: center;
           justify-content: center;
+          min-height: 180px;
         }
 
         .history-list {
           width: 100%;
-          max-height: 400px;
+          max-height: 320px;
           overflow-y: auto;
         }
       }
@@ -563,7 +571,7 @@ export default {
 }
 
 .history-list-empty {
-  padding: 40px 0;
+  padding: 24px 0;
   color: #909399;
   text-align: center;
 }
@@ -573,7 +581,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid #ebeef5;
 
   &:last-child {
@@ -607,20 +615,20 @@ export default {
 
   .ranking-list-echarts {
     width: 100%;
-    height: 400px;
+    height: 320px;
   }
 
   .ranking-list-echarts-empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 160px;
     color: #909399;
   }
 
   .history-list {
     width: 100%;
-    max-height: 400px;
+    max-height: 320px;
     overflow-y: auto;
   }
 }

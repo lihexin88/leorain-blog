@@ -560,18 +560,19 @@ export default {
 .main-box {
   display: flex;
   justify-content: center;
-  padding-top: 50px;
+  padding-top: 12px;
 
   @include mobile {
-    padding-top: 10px;
+    padding-top: 4px;
   }
 
   .sart-container {
     display: flex;
-    width: 80%;
+    gap: 12px;
+    width: 100%;
 
     @media screen and (max-aspect-ratio: 1/1) {
-      width: 98%;
+      width: 100%;
     }
 
     .title {
@@ -582,10 +583,13 @@ export default {
 
     .play-box {
       display: flex;
+      flex: 0 1 52%;
       justify-content: center;
+      min-width: 0;
 
       @include mobile {
         width: 100%;
+        flex: 1 1 auto;
       }
 
       .play-card {
@@ -596,11 +600,11 @@ export default {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 18px;
+        font-size: 16px;
 
         .score-value {
           display: inline-block;
-          min-width: 40px;
+          min-width: 48px;
           color: #409eff;
           font-weight: bold;
           text-align: center;
@@ -608,25 +612,22 @@ export default {
       }
 
       .status-area {
-        min-height: 40px;
-        padding: 0 8px 8px;
+        min-height: 32px;
+        padding: 0 4px 4px;
         text-align: center;
       }
 
       .status-text {
         color: #606266;
-        line-height: 1.5;
+        font-size: 13px;
+        line-height: 1.4;
       }
 
       .sart-area {
         display: flex;
         justify-content: center;
-        min-width: 620px;
-        padding: 12px 0 20px;
-
-        @media screen and (max-aspect-ratio: 1/1) {
-          min-width: 0;
-        }
+        min-width: 0;
+        padding: 8px 0 12px;
       }
 
       .sart-box {
@@ -634,7 +635,7 @@ export default {
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 400px;
+        height: 280px;
         border-radius: 12px;
         cursor: pointer;
         user-select: none;
@@ -644,7 +645,7 @@ export default {
           transform 0.1s ease;
 
         @media screen and (max-aspect-ratio: 1/1) {
-          height: 240px;
+          height: 200px;
         }
 
         &:active {
@@ -652,7 +653,7 @@ export default {
         }
 
         .sart-box-text {
-          font-size: clamp(48px, 9vw, 96px);
+          font-size: clamp(40px, 8vw, 80px);
           font-weight: bold;
           letter-spacing: 0.06em;
           text-align: center;
@@ -674,28 +675,28 @@ export default {
 
         &--idle {
           background-color: #ffffff;
-          border: 3px solid #dcdfe6;
+          border: 2px solid #dcdfe6;
 
           .sart-box-text {
             color: #606266;
-            font-size: 28px;
+            font-size: 24px;
             letter-spacing: 0;
           }
         }
 
         &--countdown {
           background-color: #ecf5ff;
-          border: 3px solid #409eff;
+          border: 2px solid #409eff;
 
           .sart-box-text {
             color: #409eff;
-            font-size: clamp(64px, 12vw, 120px);
+            font-size: clamp(56px, 10vw, 96px);
           }
         }
 
         &--playing {
           background-color: #f5f7fa;
-          border: 3px solid #dcdfe6;
+          border: 2px solid #dcdfe6;
 
           .sart-box-text {
             color: #303133;
@@ -704,11 +705,11 @@ export default {
 
         &--result {
           background-color: #409eff;
-          border: 3px solid #409eff;
+          border: 2px solid #409eff;
 
           .sart-box-text {
             color: #ffffff;
-            font-size: 42px;
+            font-size: 36px;
             letter-spacing: 0;
           }
         }
@@ -717,24 +718,22 @@ export default {
       .opt-area {
         display: flex;
         justify-content: center;
-        gap: 12px;
-        padding-top: 12px;
+        gap: 8px;
+        padding-top: 8px;
       }
     }
 
     .ranking-list {
       display: flex;
-      justify-content: center;
-      width: 80%;
+      flex: 1;
+      justify-content: stretch;
+      min-width: 260px;
+      width: auto;
 
       .ranking-list-echarts-card {
         display: flex;
         justify-content: center;
-        width: 80%;
-
-        @media screen and (max-aspect-ratio: 1/1) {
-          width: 100%;
-        }
+        width: 100%;
 
         .ranking-tabs {
           width: 100%;
@@ -742,18 +741,19 @@ export default {
 
         .ranking-list-echarts {
           width: 100%;
-          height: 400px;
+          height: 320px;
         }
 
         .ranking-list-echarts-empty {
           display: flex;
           align-items: center;
           justify-content: center;
+          min-height: 180px;
         }
 
         .history-list {
           width: 100%;
-          max-height: 400px;
+          max-height: 320px;
           overflow-y: auto;
         }
       }
@@ -762,7 +762,7 @@ export default {
 }
 
 .history-list-empty {
-  padding: 40px 0;
+  padding: 24px 0;
   color: #909399;
   text-align: center;
 }
@@ -772,7 +772,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid #ebeef5;
 
   &:last-child {
@@ -806,20 +806,20 @@ export default {
 
   .ranking-list-echarts {
     width: 100%;
-    height: 400px;
+    height: 320px;
   }
 
   .ranking-list-echarts-empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px;
+    height: 160px;
     color: #909399;
   }
 
   .history-list {
     width: 100%;
-    max-height: 400px;
+    max-height: 320px;
     overflow-y: auto;
   }
 }

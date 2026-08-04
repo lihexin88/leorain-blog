@@ -428,7 +428,7 @@ export default {
   <div class="main-box">
     <div class="schulte-container">
       <div class="play-box">
-        <el-card>
+        <el-card class="play-card">
           <template v-slot:header>
             <div class="display-area">
               <span class="title">
@@ -546,16 +546,17 @@ export default {
 .main-box {
   display: flex;
   justify-content: center;
-  padding-top: 50px;
+  padding-top: 12px;
   @include mobile {
-    padding-top: 10px;
+    padding-top: 4px;
   }
 
   .schulte-container {
-    width: 80%;
     display: flex;
+    gap: 12px;
+    width: 100%;
     @media screen and (max-aspect-ratio: 1/1) {
-      width: 98%;
+      width: 100%;
     }
 
     .title {
@@ -565,24 +566,31 @@ export default {
     }
     .play-box {
       display: flex;
+      flex: 0 1 52%;
       justify-content: center;
+      min-width: 0;
       @include mobile {
+        width: 100%;
+        flex: 1 1 auto;
+      }
+
+      .play-card {
         width: 100%;
       }
 
       .play-area {
-        min-width: 768px;
-        @media screen and (max-aspect-ratio: 1/1) {
-          min-width: 100%;
-        }
-        width: 50%;
         display: flex;
         justify-content: center;
+        width: 100%;
+        min-width: 0;
+        @media screen and (max-aspect-ratio: 1/1) {
+          width: 100%;
+        }
 
         .play-item-container {
           display: flex;
           flex-wrap: wrap;
-          width: 505px;
+          width: min(420px, 100%);
 
           .play-item {
             cursor: pointer;
@@ -599,13 +607,13 @@ export default {
               margin: 0;
               width: 100%;
               height: 100%;
-              font-size: 36px;
+              font-size: 30px;
               display: flex;
               justify-content: center;
               align-items: center;
               @media screen and (max-aspect-ratio: 1/1) {
                 transition: font-size ease-in-out 1s;
-                font-size: 2.85em;
+                font-size: 2.4em;
               }
               font-weight: bold;
               font-family: 'Font Awesome 5 Free';
@@ -643,7 +651,7 @@ export default {
       }
 
       .display-area {
-        font-size: 18px;
+        font-size: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -652,16 +660,20 @@ export default {
       .opt-area {
         display: flex;
         justify-content: center;
-        padding-top: 20px;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 12px;
       }
     }
 
     .ranking-list {
-      width: 80%;
       display: flex;
-      justify-content: center;
+      flex: 1;
+      justify-content: stretch;
+      min-width: 260px;
+      width: auto;
       .ranking-list-echarts-card {
-        width: 80%;
+        width: 100%;
         @media screen and (max-aspect-ratio: 1/1) {
           width: 100%;
         }
@@ -672,32 +684,33 @@ export default {
         }
         .ranking-list-echarts {
           width: 100%;
-          height: 400px;
+          height: 320px;
           @media screen and (max-aspect-ratio: 1/1) {
-            width: 100vw;
+            width: 100%;
           }
         }
         .ranking-list-echarts-empty {
           display: flex;
           justify-content: center;
           align-items: center;
+          min-height: 180px;
         }
         .history-list {
           width: 100%;
-          max-height: 500px;
+          max-height: 320px;
           overflow-y: auto;
           .history-list-empty {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 0;
+            padding: 24px 0;
             color: #909399;
           }
           .history-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 12px;
             border-bottom: 1px solid #ebeef5;
             &:last-child {
               border-bottom: none;
@@ -729,31 +742,31 @@ export default {
   }
   .ranking-list-echarts {
     width: 100%;
-    height: 400px;
+    height: 320px;
   }
   .ranking-list-echarts-empty {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
+    height: 160px;
     color: #909399;
   }
   .history-list {
     width: 100%;
-    max-height: 400px;
+    max-height: 320px;
     overflow-y: auto;
     .history-list-empty {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 40px 0;
+      padding: 24px 0;
       color: #909399;
     }
     .history-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-bottom: 1px solid #ebeef5;
       &:last-child {
         border-bottom: none;

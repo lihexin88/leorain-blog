@@ -449,16 +449,17 @@ export default {
 .main-box {
   display: flex;
   justify-content: center;
-  padding-top: 50px;
+  padding-top: 12px;
   @include mobile{
-    padding-top: 10px;
+    padding-top: 4px;
   }
 
   .reaction-container {
-    width: 80%;
     display: flex;
+    gap: 12px;
+    width: 100%;
     @media screen and (max-aspect-ratio: 1/1) {
-      width: 98%;
+      width: 100%;
     }
 
     .title {
@@ -468,16 +469,19 @@ export default {
     }
     .play-box {
       display: flex;
+      flex: 0 1 52%;
       justify-content: center;
+      min-width: 0;
       @include mobile {
         width: 100%;
+        flex: 1 1 auto;
       }
       .play-card {
         width: 100%;
       }
 
       .display-area {
-        font-size: 18px;
+        font-size: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -486,16 +490,15 @@ export default {
       .reaction-area {
         display: flex;
         justify-content: center;
-        padding: 20px 0;
-        min-width: 768px;
+        padding: 8px 0;
+        min-width: 0;
         @include mobile{
           width: 100%;
-          min-width: 100%;
         }
 
         .reaction-box {
           width: 100%;
-          height: 400px;
+          height: 280px;
           border-radius: 12px;
           display: flex;
           justify-content: center;
@@ -508,7 +511,7 @@ export default {
 
           @media screen and (max-aspect-ratio: 1/1) {
             width: 100%;
-            height: 240px;
+            height: 200px;
           }
 
           &:active {
@@ -516,19 +519,19 @@ export default {
           }
 
           .reaction-box-text {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             text-align: center;
-            padding: 0 20px;
+            padding: 0 16px;
             @media screen and (max-aspect-ratio: 1/1) {
-              font-size: 20px;
+              font-size: 18px;
             }
           }
 
           // idle: 白色背景
           &--idle {
             background-color: #ffffff;
-            border: 3px solid #dcdfe6;
+            border: 2px solid #dcdfe6;
             .reaction-box-text {
               color: #606266;
             }
@@ -537,7 +540,7 @@ export default {
           // waiting: 红色背景
           &--waiting {
             background-color: #f56c6c;
-            border: 3px solid #f56c6c;
+            border: 2px solid #f56c6c;
             .reaction-box-text {
               color: #ffffff;
             }
@@ -546,12 +549,12 @@ export default {
           // ready: 绿色背景
           &--ready {
             background-color: #67c23a;
-            border: 3px solid #67c23a;
+            border: 2px solid #67c23a;
             .reaction-box-text {
               color: #ffffff;
-              font-size: 32px;
+              font-size: 28px;
               @media screen and (max-aspect-ratio: 1/1) {
-                font-size: 26px;
+                font-size: 24px;
               }
             }
           }
@@ -559,7 +562,7 @@ export default {
           // tooEarly: 橙色背景
           &--tooEarly {
             background-color: #e6a23c;
-            border: 3px solid #e6a23c;
+            border: 2px solid #e6a23c;
             .reaction-box-text {
               color: #ffffff;
             }
@@ -568,7 +571,7 @@ export default {
           // result: 蓝色背景
           &--result {
             background-color: #409eff;
-            border: 3px solid #409eff;
+            border: 2px solid #409eff;
             .reaction-box-text {
               color: #ffffff;
             }
@@ -579,16 +582,19 @@ export default {
       .opt-area {
         display: flex;
         justify-content: center;
-        padding-top: 20px;
+        gap: 8px;
+        padding-top: 10px;
       }
     }
 
     .ranking-list {
-      width: 80%;
       display: flex;
-      justify-content: center;
+      flex: 1;
+      justify-content: stretch;
+      min-width: 260px;
+      width: auto;
       .ranking-list-echarts-card {
-        width: 80%;
+        width: 100%;
         @media screen and (max-aspect-ratio: 1/1) {
           width: 100%;
         }
@@ -599,32 +605,30 @@ export default {
         }
         .ranking-list-echarts {
           width: 100%;
-          height: 400px;
-          @media screen and (max-aspect-ratio: 1/1) {
-            width: 100vw;
-          }
+          height: 320px;
         }
         .ranking-list-echarts-empty {
           display: flex;
           justify-content: center;
           align-items: center;
+          min-height: 180px;
         }
         .history-list {
           width: 100%;
-          max-height: 400px;
+          max-height: 320px;
           overflow-y: auto;
           .history-list-empty {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 0;
+            padding: 24px 0;
             color: #909399;
           }
           .history-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 12px;
             border-bottom: 1px solid #ebeef5;
             &:last-child {
               border-bottom: none;
@@ -656,31 +660,31 @@ export default {
   }
   .ranking-list-echarts {
     width: 100%;
-    height: 400px;
+    height: 320px;
   }
   .ranking-list-echarts-empty {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 200px;
+    height: 160px;
     color: #909399;
   }
   .history-list {
     width: 100%;
-    max-height: 400px;
+    max-height: 320px;
     overflow-y: auto;
     .history-list-empty {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 40px 0;
+      padding: 24px 0;
       color: #909399;
     }
     .history-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-bottom: 1px solid #ebeef5;
       &:last-child {
         border-bottom: none;
