@@ -23,7 +23,7 @@ export default {
   data () {
     return {
       state: 'idle',
-      numberLength: 4,
+      numberLength: 5,
       correctCount: 0,
       roundSlots: MAX_ROUND_ATTEMPTS,
       roundResults: [],
@@ -163,7 +163,7 @@ export default {
     restart () {
       this.clearDisplayTimeout()
       this.state = 'idle'
-      this.numberLength = 4
+      this.numberLength = 5
       this.correctCount = 0
       this.roundResults = []
       this.currentNumber = ''

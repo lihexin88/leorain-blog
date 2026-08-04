@@ -23,6 +23,7 @@ export default {
       gridSize: 2,
       correctCount: 0,
       targetIndex: 0,
+      wrongIndex: null,
       baseColor: '',
       differentColor: '',
       finalScore: null,
@@ -105,12 +106,25 @@ export default {
     getCellColor (index) {
       return index === this.targetIndex ? this.differentColor : this.baseColor
     },
+    getCellClass (index) {
+      if (this.state !== 'result') {
+        return null
+      }
+      if (index === this.targetIndex) {
+        return 'color-cell--correct'
+      }
+      if (this.wrongIndex !== null && index === this.wrongIndex) {
+        return 'color-cell--wrong'
+      }
+      return null
+    },
     clickCell (index) {
       if (this.state !== 'playing' || this.submitting) {
         return
       }
 
       if (index !== this.targetIndex) {
+        this.wrongIndex = index
         this.finishTest()
         return
       }
@@ -146,6 +160,7 @@ export default {
     },
     start () {
       this.state = 'playing'
+      this.wrongIndex = null
       this.generateMatrix()
     },
     restart () {
@@ -153,6 +168,7 @@ export default {
       this.state = 'playing'
       this.gridSize = 2
       this.correctCount = 0
+      this.wrongIndex = null
       this.finalScore = null
       this.submitting = false
       this.generateMatrix()
@@ -327,7 +343,7 @@ export default {
                 v-for="index in cellCount"
                 :key="index"
                 type="button"
-                class="color-cell"
+                :class="['color-cell', getCellClass(index - 1)]"
                 :aria-label="`颜色方块 ${index}`"
                 :style="{ backgroundColor: getCellColor(index - 1) }"
                 @click="clickCell(index - 1)"
@@ -487,19 +503,18 @@ export default {
         padding: 6px;
         border-radius: 12px;
         background-color: #f2f3f5;
-        transition: opacity 0.2s ease;
 
         @media screen and (max-aspect-ratio: 1/1) {
           width: min(78vw, 360px);
         }
 
         &--finished {
-          opacity: 0.55;
           pointer-events: none;
         }
       }
 
       .color-cell {
+        position: relative;
         min-width: 0;
         padding: 0;
         border: 0;
@@ -507,7 +522,8 @@ export default {
         cursor: pointer;
         transition:
           transform 0.08s ease,
-          filter 0.12s ease;
+          filter 0.12s ease,
+          box-shadow 0.15s ease;
 
         &:hover {
           filter: brightness(1.04);
@@ -520,6 +536,20 @@ export default {
         &:focus-visible {
           outline: 3px solid #409eff;
           outline-offset: 2px;
+        }
+
+        &--correct {
+          box-shadow:
+            0 0 0 3px #67c23a,
+            0 0 0 5px rgba(103, 194, 58, 0.28);
+          z-index: 1;
+        }
+
+        &--wrong {
+          box-shadow:
+            0 0 0 3px #f56c6c,
+            0 0 0 5px rgba(245, 108, 108, 0.28);
+          z-index: 1;
         }
       }
 

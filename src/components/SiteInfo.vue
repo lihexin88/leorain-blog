@@ -1,11 +1,10 @@
 <template>
   <div>
-    <div
-      ref="settingsBar"
-      class="settings-bar"
-      :class="{ 'is-dragging': isDragging, 'is-custom-pos': !!barPosition }"
-      :style="barStyle"
-      @pointerdown="onBarPointerDown"
+    <el-backtop
+      class="site-info-backtop"
+      :right="40"
+      :bottom="48"
+      :visibility-height="0"
     >
       <div
         class="site-info-lines"
@@ -13,6 +12,7 @@
         role="button"
         tabindex="0"
         :title="barTooltip"
+        @dblclick.stop.prevent="switch_show_settings"
         @keydown.enter.prevent="switch_show_settings"
         @keydown.space.prevent="switch_show_settings"
       >
@@ -40,7 +40,7 @@
           </span>
         </div>
       </div>
-    </div>
+    </el-backtop>
     <el-drawer
       v-model="show_settings_draw"
       class="site-info-drawer"
@@ -137,10 +137,6 @@ import RequestLogs from '@/components/RequestLogs.vue'
 import { useConfigStore } from '@/store/config'
 import { useUserStore } from '@/store/user'
 
-const BAR_POS_KEY = 'site_info_bar_pos'
-const DRAG_THRESHOLD = 5
-const CLICK_DELAY = 220
-
 export default {
   props: {
     duration: {
@@ -158,12 +154,7 @@ export default {
       button_type: 'info',
       isStatsFlashing: false,
       statsFlashTimer: null,
-      barClickTimer: null,
       connection_retried: 0,
-      barPosition: null,
-      isDragging: false,
-      dragMoved: false,
-      dragState: null,
       stats: {
         load_average: 0,
         disk_usage: 0,
@@ -177,7 +168,6 @@ export default {
         today_count: 0,
         online: 0
       },
-      // theme state
       currentTheme: 'white',
       themes: [
         { id: 'system', label: '系统' },
@@ -211,17 +201,8 @@ export default {
       if (!Number.isFinite(pct)) return 0
       return Math.max(0, Math.min(100, Number(pct.toFixed(2))))
     },
-    barStyle () {
-      if (!this.barPosition) return {}
-      return {
-        left: `${this.barPosition.x}px`,
-        top: `${this.barPosition.y}px`,
-        right: 'auto',
-        bottom: 'auto'
-      }
-    },
     barTooltip () {
-      return `在线 ${this.formatNumber(this.stats.online)} · CPU ${this.cpuUsage}% · 内存 ${this.memUsage}%\n拖动可移动，双击复位`
+      return `在线 ${this.formatNumber(this.stats.online)} · CPU ${this.cpuUsage}% · 内存 ${this.memUsage}%\n单击返回顶部，双击打开设置`
     }
   },
   methods: {
@@ -243,124 +224,6 @@ export default {
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
     },
-    loadBarPosition () {
-      try {
-        const raw = localStorage.getItem(BAR_POS_KEY)
-        if (!raw) return
-        const pos = JSON.parse(raw)
-        if (typeof pos?.x === 'number' && typeof pos?.y === 'number') {
-          this.barPosition = this.clampBarPosition(pos.x, pos.y)
-        }
-      } catch (e) {
-        this.barPosition = null
-      }
-    },
-    saveBarPosition () {
-      try {
-        if (!this.barPosition) {
-          localStorage.removeItem(BAR_POS_KEY)
-          return
-        }
-        localStorage.setItem(BAR_POS_KEY, JSON.stringify(this.barPosition))
-      } catch (e) {
-        // ignore
-      }
-    },
-    resetBarPosition () {
-      this.barPosition = null
-      this.saveBarPosition()
-    },
-    clampBarPosition (x, y) {
-      const el = this.$refs.settingsBar
-      const w = el?.offsetWidth || 120
-      const h = el?.offsetHeight || 28
-      const maxX = Math.max(0, window.innerWidth - w)
-      const maxY = Math.max(0, window.innerHeight - h)
-      return {
-        x: Math.min(Math.max(0, x), maxX),
-        y: Math.min(Math.max(0, y), maxY)
-      }
-    },
-    onBarPointerDown (e) {
-      if (e.button != null && e.button !== 0) return
-      if (e.target?.closest?.('a, button, input, .el-switch')) return
-
-      const el = this.$refs.settingsBar
-      if (!el) return
-
-      const rect = el.getBoundingClientRect()
-      this.dragMoved = false
-      this.dragState = {
-        pointerId: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        originX: rect.left,
-        originY: rect.top
-      }
-
-      window.addEventListener('pointermove', this.onBarPointerMove)
-      window.addEventListener('pointerup', this.onBarPointerUp)
-      window.addEventListener('pointercancel', this.onBarPointerUp)
-    },
-    onBarPointerMove (e) {
-      if (!this.dragState || e.pointerId !== this.dragState.pointerId) return
-
-      const dx = e.clientX - this.dragState.startX
-      const dy = e.clientY - this.dragState.startY
-      if (!this.dragMoved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
-
-      if (!this.dragMoved) {
-        this.dragMoved = true
-        this.isDragging = true
-        this.barPosition = {
-          x: this.dragState.originX,
-          y: this.dragState.originY
-        }
-        try {
-          e.target?.setPointerCapture?.(e.pointerId)
-        } catch (_) {
-          // ignore
-        }
-      }
-
-      e.preventDefault()
-      this.barPosition = this.clampBarPosition(
-        this.dragState.originX + dx,
-        this.dragState.originY + dy
-      )
-    },
-    onBarPointerUp (e) {
-      if (!this.dragState || (e && e.pointerId !== this.dragState.pointerId)) return
-
-      const moved = this.dragMoved
-      this.isDragging = false
-      this.dragState = null
-      window.removeEventListener('pointermove', this.onBarPointerMove)
-      window.removeEventListener('pointerup', this.onBarPointerUp)
-      window.removeEventListener('pointercancel', this.onBarPointerUp)
-
-      if (moved) {
-        this.saveBarPosition()
-        return
-      }
-
-      // 单击打开抽屉，短时间内第二次点击视为双击复位
-      if (this.barClickTimer) {
-        clearTimeout(this.barClickTimer)
-        this.barClickTimer = null
-        this.resetBarPosition()
-        return
-      }
-      this.barClickTimer = setTimeout(() => {
-        this.barClickTimer = null
-        this.switch_show_settings()
-      }, CLICK_DELAY)
-    },
-    onWindowResize () {
-      if (!this.barPosition) return
-      this.barPosition = this.clampBarPosition(this.barPosition.x, this.barPosition.y)
-      this.saveBarPosition()
-    },
     flashStatsButton () {
       this.isStatsFlashing = false
       if (this.statsFlashTimer) {
@@ -379,18 +242,15 @@ export default {
       const userStore = useUserStore()
       const accessToken = userStore.token
       const configStore = useConfigStore()
-      // 1. 创建 SockJS 连接
-      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/info?access_token=' + accessToken) // WebSocket 端点
+      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/info?access_token=' + accessToken)
 
-      // 2. 创建 STOMP 客户端
       this.stompClient = new Client({
-        webSocketFactory: () => socket, // 连接 SockJS
-        reconnectDelay: 1000, // 断线重连间隔时间
+        webSocketFactory: () => socket,
+        reconnectDelay: 1000,
         heartbeatIncoming: 1000,
         heartbeatOutgoing: 1000
       })
 
-      // 3. 连接 WebSocket
       this.stompClient.onConnect = () => {
         configStore.showSiteInfo = true
         this.connection_retried = 0
@@ -407,7 +267,6 @@ export default {
             this.messages.pop()
           }
         })
-        // 模拟用户访问
         this.stompClient.subscribe('/info/visitors/location', message => {
           this.flashStatsButton()
           const visitor = message.body.split('-')
@@ -420,7 +279,6 @@ export default {
             this.messages.pop()
           }
         })
-        // 订阅服务端的频道 "/topic/timestamp"
         this.stompClient.subscribe('/info/stats', message => {
           this.flashStatsButton()
           const stats = message.body.split('-')
@@ -438,7 +296,6 @@ export default {
         })
       }
 
-      // 4. 错误处理
       this.stompClient.onStompError = () => {
         console.log('错误')
       }
@@ -468,7 +325,7 @@ export default {
         console.error('链接已断开')
       }
 
-      this.stompClient.activate() // 激活连接
+      this.stompClient.activate()
     },
     setTheme (theme) {
       this.applyTheme(theme)
@@ -657,7 +514,6 @@ export default {
     try {
       this.setupSystemThemeListener()
       this.applyTheme(localStorage.getItem('site_theme') || 'white')
-      this.loadBarPosition()
     } catch (e) {
       this.applyTheme('white')
     }
@@ -666,27 +522,11 @@ export default {
       this.connectWebSocket()
     }
   },
-  mounted () {
-    window.addEventListener('resize', this.onWindowResize)
-    if (this.barPosition) {
-      this.$nextTick(() => {
-        this.barPosition = this.clampBarPosition(this.barPosition.x, this.barPosition.y)
-      })
-    }
-  },
   beforeUnmount () {
     if (this.statsFlashTimer) {
       clearTimeout(this.statsFlashTimer)
     }
-    if (this.barClickTimer) {
-      clearTimeout(this.barClickTimer)
-      this.barClickTimer = null
-    }
     this.removeSystemThemeListener()
-    window.removeEventListener('resize', this.onWindowResize)
-    window.removeEventListener('pointermove', this.onBarPointerMove)
-    window.removeEventListener('pointerup', this.onBarPointerUp)
-    window.removeEventListener('pointercancel', this.onBarPointerUp)
   },
   watch: {
     show_visitor (newValue) {
@@ -713,122 +553,118 @@ export default {
   width: 320px;
 }
 
-.settings-bar {
-  position: fixed;
-  right: max(12px, env(safe-area-inset-right));
-  bottom: max(40px, calc(env(safe-area-inset-bottom) + 32px));
+:deep(.el-backtop.site-info-backtop) {
   z-index: 1000;
-  display: flex;
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  animation: none !important;
+
+  &::before,
+  &::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  i,
+  .el-icon,
+  .el-backtop__icon {
+    display: none !important;
+  }
+}
+
+.genshin-paimon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+  pointer-events: none;
+  animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
+}
+
+.site-info-lines {
+  display: inline-flex;
   align-items: center;
-  touch-action: none;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--article-border, rgba(0, 0, 0, 0.08)) 85%, transparent);
+  background: color-mix(in srgb, var(--header-bg, rgba(255, 255, 255, 0.9)) 90%, transparent);
+  color: var(--text-color, #111827);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.3) inset;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   user-select: none;
-  -webkit-user-select: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 
-  &.is-custom-pos {
-    right: auto;
-    bottom: auto;
-  }
-
-  &.is-dragging {
-    cursor: grabbing;
-
-    .site-info-lines {
-      cursor: grabbing;
-      transform: scale(1.03);
-      box-shadow:
-        0 10px 22px rgba(15, 23, 42, 0.18),
-        0 1px 0 rgba(255, 255, 255, 0.35) inset;
-      transition: none;
-    }
-  }
-
-  .genshin-paimon {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    object-fit: contain;
-    pointer-events: none;
-    animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
-  }
-
-  .site-info-lines {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 26px;
-    padding: 0 8px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--article-border, rgba(0, 0, 0, 0.08)) 85%, transparent);
-    background: color-mix(in srgb, var(--header-bg, rgba(255, 255, 255, 0.9)) 90%, transparent);
-    color: var(--text-color, #111827);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
+  &:hover {
+    transform: translateY(-1px);
     box-shadow:
-      0 4px 14px rgba(15, 23, 42, 0.1),
-      0 1px 0 rgba(255, 255, 255, 0.3) inset;
-    cursor: grab;
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      transform 0.15s ease,
-      box-shadow 0.15s ease,
-      background-color 0.25s ease,
-      border-color 0.25s ease,
-      color 0.25s ease;
-
-    &:hover {
-      box-shadow:
-        0 6px 16px rgba(15, 23, 42, 0.14),
-        0 1px 0 rgba(255, 255, 255, 0.35) inset;
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--el-color-primary, #409eff);
-      outline-offset: 2px;
-    }
+      0 6px 16px rgba(15, 23, 42, 0.14),
+      0 1px 0 rgba(255, 255, 255, 0.35) inset;
   }
 
-  .mini-stat {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
-    line-height: 1;
-    font-size: 10px;
-    font-variant-numeric: tabular-nums;
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary, #409eff);
+    outline-offset: 2px;
   }
+}
 
-  .mini-stat__icon {
-    font-size: 10px;
-    width: 11px;
-    color: var(--muted-text-color, #6b7280);
-    flex-shrink: 0;
-    line-height: 1;
-    text-align: center;
-  }
+.mini-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  line-height: 1;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
 
-  .mini-stat__value {
-    color: var(--text-color, #111827);
-    font-weight: 600;
-    min-width: 0.9em;
-  }
+.mini-stat__icon {
+  font-size: 10px;
+  width: 11px;
+  color: var(--muted-text-color, #6b7280);
+  flex-shrink: 0;
+  line-height: 1;
+  text-align: center;
+}
 
-  .mini-meter {
-    position: relative;
-    display: block;
-    width: 28px;
-    height: 3px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--muted-text-color, #6b7280) 22%, transparent);
-  }
+.mini-stat__value {
+  color: var(--text-color, #111827);
+  font-weight: 600;
+  min-width: 0.9em;
+}
 
-  .mini-meter__fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--el-color-primary, #409eff);
-    transition: width 0.3s ease;
-  }
+.mini-meter {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--muted-text-color, #6b7280) 22%, transparent);
+}
+
+.mini-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--el-color-primary, #409eff);
+  transition: width 0.3s ease;
 }
 
 .stats-flash {
@@ -926,5 +762,20 @@ export default {
   pointer-events: none;
   will-change: transform, opacity;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme='genshin'] .el-backtop.site-info-backtop,
+html[data-theme='colorful'] .el-backtop.site-info-backtop {
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+
+  &::after {
+    display: none !important;
+  }
 }
 </style>
