@@ -5,6 +5,7 @@ import TestReaction from '@/views/tools/particals/TestReaction.vue'
 import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
 import TestNumberMemory from '@/views/tools/particals/TestNumberMemory.vue'
 import TestSart from '@/views/tools/particals/TestSart.vue'
+import TestColorRight from '@/views/tools/particals/TestColorRight.vue'
 
 const HEADER_OFFSET = 76
 const activeStep = ref(0)
@@ -35,6 +36,11 @@ const testSteps = [
     id: 'test-sart-section',
     title: '注意力',
     description: 'SART'
+  },
+  {
+    id: 'test-color-right-section',
+    title: '颜色匹配',
+    description: '名色一致'
   }
 ]
 
@@ -154,6 +160,9 @@ onBeforeUnmount(() => {
       </section>
       <section id="test-sart-section" class="test-section">
         <test-sart />
+      </section>
+      <section id="test-color-right-section" class="test-section">
+        <test-color-right />
       </section>
     </main>
   </div>
