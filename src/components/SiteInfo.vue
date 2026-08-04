@@ -1,46 +1,59 @@
 <template>
   <div>
-    <el-backtop
-      class="site-info-backtop"
-      :right="40"
-      :bottom="48"
-      :visibility-height="0"
+    <div
+      class="site-info-lines site-info-bar"
+      :class="{ 'stats-flash': isStatsFlashing }"
+      role="button"
+      tabindex="0"
+      :title="barTooltip"
+      @dblclick.stop.prevent="switch_show_settings"
+      @keydown.enter.prevent="switch_show_settings"
+      @keydown.space.prevent="switch_show_settings"
     >
+      <img
+        v-if="currentTheme === 'genshin'"
+        class="genshin-paimon"
+        src="/images/genshin/paimon-sprite.webp"
+        alt=""
+        aria-hidden="true"
+      />
       <div
-        class="site-info-lines"
-        :class="{ 'stats-flash': isStatsFlashing }"
+        class="mini-stat mini-stat--action"
         role="button"
         tabindex="0"
-        :title="barTooltip"
-        @dblclick.stop.prevent="switch_show_settings"
-        @keydown.enter.prevent="switch_show_settings"
-        @keydown.space.prevent="switch_show_settings"
+        title="回到顶部"
+        @click.stop="scrollToTop"
+        @keydown.enter.stop.prevent="scrollToTop"
+        @keydown.space.stop.prevent="scrollToTop"
       >
-        <img
-          v-if="currentTheme === 'genshin'"
-          class="genshin-paimon"
-          src="/images/genshin/paimon-sprite.webp"
-          alt=""
-          aria-hidden="true"
-        />
-        <div class="mini-stat" :title="`在线 ${formatNumber(stats.online)}`">
-          <i class="mini-stat__icon fas fa-user" aria-hidden="true"></i>
-          <span class="mini-stat__value">{{ formatNumber(stats.online) }}</span>
-        </div>
-        <div class="mini-stat mini-stat--meter" :title="`CPU ${cpuUsage}%`">
-          <i class="mini-stat__icon fas fa-microchip" aria-hidden="true"></i>
-          <span class="mini-meter">
-            <i class="mini-meter__fill" :style="{ width: cpuUsage + '%' }"></i>
-          </span>
-        </div>
-        <div class="mini-stat mini-stat--meter" :title="`内存 ${memUsage}%`">
-          <i class="mini-stat__icon fas fa-memory" aria-hidden="true"></i>
-          <span class="mini-meter">
-            <i class="mini-meter__fill" :style="{ width: memUsage + '%' }"></i>
-          </span>
-        </div>
+        <i class="mini-stat__icon fas fa-arrow-up" aria-hidden="true"></i>
+        <span class="mini-stat__value">顶部</span>
       </div>
-    </el-backtop>
+      <div class="mini-stat mini-stat--stat" :title="`在线 ${formatNumber(stats.online)}`">
+        <i class="mini-stat__icon fas fa-user" aria-hidden="true"></i>
+        <span class="mini-stat__value">{{ formatNumber(stats.online) }}</span>
+      </div>
+      <div class="mini-stat mini-stat--stat" :title="`CPU ${cpuUsage}%`">
+        <i class="mini-stat__icon fas fa-microchip" aria-hidden="true"></i>
+        <span class="mini-stat__value">{{ formatMiniProgress(cpuUsage) }}</span>
+      </div>
+      <div class="mini-stat mini-stat--stat" :title="`内存 ${memUsage}%`">
+        <i class="mini-stat__icon fas fa-memory" aria-hidden="true"></i>
+        <span class="mini-stat__value">{{ formatMiniProgress(memUsage) }}</span>
+      </div>
+      <div
+        class="mini-stat mini-stat--action mini-stat--expand"
+        role="button"
+        tabindex="0"
+        title="展开"
+        @click.stop="switch_show_settings"
+        @keydown.enter.stop.prevent="switch_show_settings"
+        @keydown.space.stop.prevent="switch_show_settings"
+      >
+        <i class="mini-stat__icon fas fa-bars" aria-hidden="true"></i>
+        <span class="mini-stat__value">展开</span>
+      </div>
+    </div>
     <el-drawer
       v-model="show_settings_draw"
       class="site-info-drawer"
@@ -221,8 +234,16 @@ export default {
       if (Number.isInteger(n)) return String(n) + '%'
       return n.toFixed(2) + '%'
     },
+    formatMiniProgress (percent) {
+      const n = Number(percent)
+      if (!Number.isFinite(n)) return '0%'
+      return `${Math.round(n)}%`
+    },
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
+    },
+    scrollToTop () {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     flashStatsButton () {
       this.isStatsFlashing = false
@@ -586,11 +607,18 @@ export default {
   animation: genshin-paimon-bob 3.5s ease-in-out infinite alternate;
 }
 
+.site-info-bar {
+  position: fixed;
+  right: 40px;
+  bottom: 48px;
+  z-index: 1000;
+}
+
 .site-info-lines {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
+  height: 28px;
   padding: 0 8px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--article-border, rgba(0, 0, 0, 0.08)) 85%, transparent);
@@ -634,6 +662,31 @@ export default {
   font-variant-numeric: tabular-nums;
 }
 
+.mini-stat--action {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary, #409eff);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+.mini-stat--expand {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mini-stat--stat {
+    display: none;
+  }
+
+  .mini-stat--expand {
+    display: inline-flex;
+  }
+}
+
 .mini-stat__icon {
   font-size: 10px;
   width: 11px;
@@ -647,24 +700,6 @@ export default {
   color: var(--text-color, #111827);
   font-weight: 600;
   min-width: 0.9em;
-}
-
-.mini-meter {
-  position: relative;
-  display: block;
-  width: 28px;
-  height: 3px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--muted-text-color, #6b7280) 22%, transparent);
-}
-
-.mini-meter__fill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--el-color-primary, #409eff);
-  transition: width 0.3s ease;
 }
 
 .stats-flash {
