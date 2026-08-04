@@ -41,6 +41,8 @@ export default {
       dialogWidth: '30%',
       isPortrait: false,
       showStatsDialog: false,
+      showAttemptHistoryDialog: false,
+      attemptHistory: [],
       topicDescription: ''
     }
   },
@@ -95,7 +97,15 @@ export default {
         return
       }
 
-      if (this.userAnswer !== this.currentNumber) {
+      const isCorrect = this.userAnswer === this.currentNumber
+      this.attemptHistory.push({
+        number: this.currentNumber,
+        answer: this.userAnswer,
+        correct: isCorrect,
+        length: this.numberLength
+      })
+
+      if (!isCorrect) {
         this.wrongAnswer = this.userAnswer
         this.failedNumber = this.currentNumber
         this.roundResults.push('failed')
@@ -162,6 +172,8 @@ export default {
       this.failedNumber = ''
       this.finalScore = null
       this.submitting = false
+      this.attemptHistory = []
+      this.showAttemptHistoryDialog = false
     },
     async getAnswers () {
       const data = await topic.getAnswers(TOPIC_SLUG)
@@ -363,6 +375,7 @@ export default {
 
           <div class="opt-area">
             <el-button type="primary" :loading="submitting" @click="restart">重新开始</el-button>
+            <el-button @click="showAttemptHistoryDialog = true">历史记录</el-button>
             <el-button v-if="isPortrait" @click="openStatsDialog">统计</el-button>
           </div>
         </el-card>
@@ -425,6 +438,27 @@ export default {
           </div>
         </el-tab-pane>
       </el-tabs>
+    </el-dialog>
+
+    <el-dialog
+      v-model="showAttemptHistoryDialog"
+      title="本次答题记录"
+      :width="dialogWidth"
+      class="attempt-history-dialog"
+    >
+      <div class="attempt-history-list">
+        <div v-if="!attemptHistory.length" class="history-list-empty">暂无记录</div>
+        <div
+          v-for="(item, index) in attemptHistory"
+          :key="index"
+          :class="['attempt-history-item', item.correct ? 'is-correct' : 'is-wrong']"
+        >
+          <span class="attempt-history-index">第 {{ index + 1 }} 题 · {{ item.length }} 位</span>
+          <span class="attempt-history-number">出现：{{ item.number }}</span>
+          <span class="attempt-history-answer">输入：{{ item.answer }}</span>
+          <span class="attempt-history-result">{{ item.correct ? '正确' : '错误' }}</span>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -698,6 +732,57 @@ export default {
     width: 100%;
     max-height: 400px;
     overflow-y: auto;
+  }
+}
+
+.attempt-history-dialog {
+  .attempt-history-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .attempt-history-item {
+    display: grid;
+    grid-template-columns: 110px 1fr 1fr 48px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #ebeef5;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.is-correct .attempt-history-result {
+      color: #67c23a;
+    }
+
+    &.is-wrong .attempt-history-result {
+      color: #f56c6c;
+    }
+
+    .attempt-history-index {
+      color: #909399;
+      white-space: nowrap;
+    }
+
+    .attempt-history-number,
+    .attempt-history-answer {
+      letter-spacing: 0.04em;
+    }
+
+    .attempt-history-result {
+      font-weight: bold;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    @media screen and (max-aspect-ratio: 1/1) {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
   }
 }
 </style>

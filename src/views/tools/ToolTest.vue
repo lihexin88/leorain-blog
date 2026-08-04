@@ -4,6 +4,7 @@ import TestSchulte from '@/views/tools/particals/TestSchulte.vue'
 import TestReaction from '@/views/tools/particals/TestReaction.vue'
 import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
 import TestNumberMemory from '@/views/tools/particals/TestNumberMemory.vue'
+import TestSart from '@/views/tools/particals/TestSart.vue'
 
 const HEADER_OFFSET = 76
 const activeStep = ref(0)
@@ -27,6 +28,11 @@ const testSteps = [
     id: 'test-number-memory-section',
     title: '数字记忆',
     description: '测试瞬时数字记忆'
+  },
+  {
+    id: 'test-sart-section',
+    title: '持续注意力',
+    description: 'SART 专注力测试'
   }
 ]
 
@@ -105,6 +111,9 @@ onBeforeUnmount(() => {
       <section id="test-number-memory-section" class="test-section">
         <test-number-memory />
       </section>
+      <section id="test-sart-section" class="test-section">
+        <test-sart />
+      </section>
     </main>
   </div>
 </template>
@@ -129,7 +138,7 @@ onBeforeUnmount(() => {
 }
 
 .test-steps {
-  height: 260px;
+  height: 320px;
 }
 
 .test-step {
@@ -184,7 +193,7 @@ onBeforeUnmount(() => {
   }
 
   .test-steps {
-    min-width: 640px;
+    min-width: 800px;
     height: auto;
   }
 
@@ -193,7 +202,7 @@ onBeforeUnmount(() => {
   }
 
   .test-navigation :deep(.el-step) {
-    flex-basis: 25% !important;
+    flex-basis: 20% !important;
   }
 
   .test-navigation :deep(.el-step__head) {
