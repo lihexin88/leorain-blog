@@ -16,5 +16,19 @@ export default {
   },
   getAnswers (slug) {
     return api.get(`topic/${slug}/answers`)
+  },
+  getSimilarQuestion () {
+    return api.get('topic/similar/question')
+  },
+  guessWord (index, word) {
+    return api.post('/topic/similar/guess', {
+      index,
+      guess_word: word
+    })
+  },
+  guessGetAnswers (index) {
+    return api.post('/topic/similar/get-answer', {
+      index
+    })
   }
 }

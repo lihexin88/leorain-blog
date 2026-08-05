@@ -6,6 +6,7 @@ import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
 import TestNumberMemory from '@/views/tools/particals/TestNumberMemory.vue'
 import TestSart from '@/views/tools/particals/TestSart.vue'
 import TestColorRight from '@/views/tools/particals/TestColorRight.vue'
+import TestGuessWord from '@/views/tools/particals/TestGuessWord.vue'
 
 const HEADER_OFFSET = 76
 const activeStep = ref(0)
@@ -41,6 +42,11 @@ const testSteps = [
     id: 'test-color-right-section',
     title: '颜色匹配',
     description: '名色一致'
+  },
+  {
+    id: 'test-guess-word-section',
+    title: '猜词语',
+    description: '语义相似'
   }
 ]
 
@@ -163,6 +169,9 @@ onBeforeUnmount(() => {
       </section>
       <section id="test-color-right-section" class="test-section">
         <test-color-right />
+      </section>
+      <section id="test-guess-word-section" class="test-section">
+        <test-guess-word />
       </section>
     </main>
   </div>
