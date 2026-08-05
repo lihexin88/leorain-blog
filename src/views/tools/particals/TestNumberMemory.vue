@@ -1,10 +1,8 @@
 <script>
 import * as echarts from 'echarts'
-import { mapActions, mapState } from 'pinia'
 import moment from 'moment'
 import { InfoFilled } from '@element-plus/icons-vue'
 import topic from '@/apis/topic'
-import { useUserStore } from '@/store/user'
 
 const TOPIC_SLUG = 'number-memory'
 const DISPLAY_DURATION = 300
@@ -37,7 +35,6 @@ export default {
       questionId: null,
       userScores: [],
       userScoreRecords: [],
-      showUnauthorized: false,
       dialogWidth: '30%',
       isPortrait: false,
       showStatsDialog: false,
@@ -47,7 +44,6 @@ export default {
     }
   },
   computed: {
-    ...mapState(useUserStore, ['isLoggedIn']),
     hasScores () {
       return this.userScores.length > 0
     },
@@ -66,7 +62,6 @@ export default {
   },
   methods: {
     moment,
-    ...mapActions(useUserStore, ['setShowLoginDialog']),
     generateNumber () {
       return Array.from({ length: this.numberLength }, () => Math.floor(Math.random() * 10)).join('')
     },
@@ -190,13 +185,6 @@ export default {
     },
     getUserInfo () {
       this.getAnswers()
-      if (!this.isLoggedIn) {
-        this.showUnauthorized = true
-      }
-    },
-    gotoLogin () {
-      this.showUnauthorized = false
-      this.setShowLoginDialog(true)
     },
     generateRanking () {
       const chartElement = this.$refs.rankingListEcharts || this.$refs.rankingListEchartsMobile
@@ -404,22 +392,6 @@ export default {
         </el-card>
       </div>
     </div>
-
-    <el-dialog
-      v-model="showUnauthorized"
-      title="确认登录？"
-      ref="unauthorizedDialog"
-      :width="dialogWidth"
-      class="unauthorized-dialog"
-    >
-      <span>登录后可以参与排名，确认登录吗？</span>
-      <template v-slot:footer>
-        <span class="dialog-footer">
-          <el-button @click="showUnauthorized = false">取 消</el-button>
-          <el-button type="primary" @click="gotoLogin">确 定</el-button>
-        </span>
-      </template>
-    </el-dialog>
 
     <el-dialog v-model="showStatsDialog" title="测试统计" :width="dialogWidth" class="stats-dialog">
       <el-tabs class="ranking-tabs">

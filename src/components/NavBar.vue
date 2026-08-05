@@ -166,7 +166,7 @@
                 <el-icon><User /></el-icon>
                 <span>个人中心</span>
               </el-dropdown-item>
-              <el-dropdown-item command="https://api.leorain.cn/dashboard">
+              <el-dropdown-item command="dashboard">
                 <el-icon><Operation /></el-icon>
                 <span>面板</span>
               </el-dropdown-item>
@@ -204,6 +204,7 @@ import {
   Delete,
   SwitchButton
 } from '@element-plus/icons-vue'
+import { openBackendUrl } from '@/utils/backend-session'
 
 const COLORFUL_PALETTE = [
   '#ff6b9d',
@@ -309,25 +310,25 @@ export default {
           description: '钓鱼小游戏',
           href: '/tools/fish',
           image: 'https://images.leorain.cn/icons/tools/tool_fish.png'
-        },
+        }
         // {
         //   text: 'Linux 在线终端',
         //   description: '在浏览器中运行真实的 Linux 容器，支持完整终端交互',
         //   href: '/tools/linux',
         //   image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
         // },
-        {
-          text: 'SBTI 人格测试',
-          description: '娱乐向 SBTI 人格测试与维度分析',
-          href: '/tools/sbti',
-          image: '/images/logo.png'
-        },
-        {
-          text: '能力测试',
-          description: '娱乐向个人能力测试',
-          href: '/topics',
-          image: '/images/logo.png'
-        }
+        // {
+        //  text: 'SBTI 人格测试',
+        //  description: '娱乐向 SBTI 人格测试与维度分析',
+        //  href: '/tools/sbti',
+        //  image: '/images/logo.png'
+        // },
+        // {
+        //  text: '能力测试',
+        //  description: '娱乐向个人能力测试',
+        //  href: '/topics',
+        //  image: '/images/logo.png'
+        // }
       ],
       desktopNavItems: [
         { index: '/assets', text: '智能媒体', icon: 'Search' },
@@ -492,6 +493,8 @@ export default {
             const msg = err?.message || err?.response?.data?.message || '未知错误'
             this.$message.error('清除失败：' + msg)
           })
+      } else if (command === 'dashboard') {
+        openBackendUrl('/dashboard')
       } else if (command === '/login') {
         this.setShowLoginDialog(true)
       } else if (command.startsWith('http://') || command.startsWith('https://')) {

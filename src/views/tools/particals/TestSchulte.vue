@@ -1,8 +1,6 @@
 <script>
 import anime from 'animejs'
 import * as echarts from 'echarts'
-import { mapState, mapActions } from 'pinia'
-import { useUserStore } from '@/store/user'
 import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
@@ -127,11 +125,9 @@ export default {
       succeed: false,
       lastIndex: null,
       startTime: null,
-      unauthorized: false,
       questionId: null,
       userScores: [],
       userScoreRecords: [],
-      showUnauthorized: false,
       dialogWidth: '30%',
       resetting: false,
       eliminateEnabled: false,
@@ -141,14 +137,12 @@ export default {
     }
   },
   computed: {
-    ...mapState(useUserStore, ['isLoggedIn']),
     hasEnoughScores () {
       return this.userScores.length >= 2
     }
   },
   methods: {
     moment,
-    ...mapActions(useUserStore, ['setShowLoginDialog']),
     stop () {
       this.clearCostTimeInterval()
       this.playNext = 1
@@ -257,10 +251,6 @@ export default {
         this.resetting = false
       }
     },
-    gotoLogin () {
-      this.showUnauthorized = false
-      this.setShowLoginDialog(true)
-    },
     getTopic () {
       topic.getTopicDetail('schulte').then(data => {
         this.questionId = data.questions[0].id
@@ -269,13 +259,6 @@ export default {
     },
     getUserInfo () {
       this.getAnswers()
-      if (this.isLoggedIn) {
-        this.unauthorized = false
-        this.showUnauthorized = false
-      } else {
-        this.unauthorized = true
-        this.showUnauthorized = true
-      }
     },
     generateRanking () {
       const chartElement = this.$refs.rankingListEcharts || this.$refs.rankingListEchartsMobile
@@ -506,21 +489,6 @@ export default {
       </div>
     </div>
     <el-dialog v-model="succeed"> 恭喜完成！耗时：{{ costTime / 1000 }} 秒 </el-dialog>
-    <el-dialog
-      v-model="showUnauthorized"
-      title="确认登录？"
-      ref="unauthorizedDialog"
-      :width="dialogWidth"
-      class="unauthorized-dialog"
-    >
-      <span>登录后可以参与排名，确认登录吗？</span>
-      <template v-slot:footer>
-        <span class="dialog-footer">
-          <el-button @click="showUnauthorized = false">取 消</el-button>
-          <el-button type="primary" @click="gotoLogin">确 定</el-button>
-        </span>
-      </template>
-    </el-dialog>
     <el-dialog v-model="showStatsDialog" title="训练统计" :width="dialogWidth" class="stats-dialog">
       <el-tabs class="ranking-tabs">
         <el-tab-pane label="结果统计">

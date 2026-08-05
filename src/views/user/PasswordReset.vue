@@ -118,6 +118,7 @@ import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { Lock, View as ViewIcon, Hide as HideIcon } from '@element-plus/icons-vue'
 import { triggerConfetti } from '@/utils/helpers'
+import { syncBackendSession } from '@/utils/backend-session'
 
 export default {
   name: 'PasswordReset',
@@ -206,6 +207,7 @@ export default {
             userStore.token = accessToken
             try {
               await this.fetchUserInfo()
+              syncBackendSession()
             } catch (e) {
               console.error('fetchUserInfo after reset failed:', e)
             }

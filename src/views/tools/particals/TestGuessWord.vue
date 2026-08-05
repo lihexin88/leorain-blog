@@ -1,7 +1,5 @@
 <script>
 import * as echarts from 'echarts'
-import { mapState, mapActions } from 'pinia'
-import { useUserStore } from '@/store/user'
 import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
@@ -47,14 +45,12 @@ export default {
       giveUpCount: 0,
       userScores: [],
       userScoreRecords: [],
-      showUnauthorized: false,
       dialogWidth: '30%',
       isPortrait: false,
       showStatsDialog: false
     }
   },
   computed: {
-    ...mapState(useUserStore, ['isLoggedIn']),
     hasEnoughScores () {
       return this.userScores.length >= 2
     },
@@ -91,7 +87,6 @@ export default {
   },
   methods: {
     moment,
-    ...mapActions(useUserStore, ['setShowLoginDialog']),
     formatSimilarity (similarity) {
       return `${(Number(similarity) * 100).toFixed(2)}%`
     },
@@ -219,13 +214,6 @@ export default {
     },
     getUserInfo () {
       this.getAnswers()
-      if (!this.isLoggedIn) {
-        this.showUnauthorized = true
-      }
-    },
-    gotoLogin () {
-      this.showUnauthorized = false
-      this.setShowLoginDialog(true)
     },
     generateRanking () {
       const chartElement = this.$refs.rankingListEcharts || this.$refs.rankingListEchartsMobile
@@ -460,22 +448,6 @@ export default {
         </el-card>
       </div>
     </div>
-
-    <el-dialog
-      v-model="showUnauthorized"
-      title="确认登录？"
-      ref="unauthorizedDialog"
-      :width="dialogWidth"
-      class="unauthorized-dialog"
-    >
-      <span>登录后可以参与排名，确认登录吗？</span>
-      <template v-slot:footer>
-        <span class="dialog-footer">
-          <el-button @click="showUnauthorized = false">取 消</el-button>
-          <el-button type="primary" @click="gotoLogin">确 定</el-button>
-        </span>
-      </template>
-    </el-dialog>
 
     <el-dialog v-model="showWordsDialog" title="参考词语" :width="wordsDialogWidth" class="words-dialog">
       <div class="words-list">

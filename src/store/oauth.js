@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import api from '@/apis/base'
 import { useUserStore } from '@/store/user'
 import { dispatchUserLoginSuccess } from '@/utils/auth-events'
+import { syncBackendSession } from '@/utils/backend-session'
 
 export const useOauthStore = defineStore('oauth', {
   state: () => ({
@@ -24,6 +25,7 @@ export const useOauthStore = defineStore('oauth', {
         }
 
         await userStore.fetchUserInfo()
+        syncBackendSession()
         dispatchUserLoginSuccess({
           user: userStore.user,
           token: userStore.token
@@ -52,6 +54,7 @@ export const useOauthStore = defineStore('oauth', {
         }
 
         await userStore.fetchUserInfo()
+        syncBackendSession()
         dispatchUserLoginSuccess({
           user: userStore.user,
           token: userStore.token
@@ -80,6 +83,7 @@ export const useOauthStore = defineStore('oauth', {
         }
 
         await userStore.fetchUserInfo()
+        syncBackendSession()
         dispatchUserLoginSuccess({
           user: userStore.user,
           token: userStore.token

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/store/user'
 import TestSchulte from '@/views/tools/particals/TestSchulte.vue'
 import TestReaction from '@/views/tools/particals/TestReaction.vue'
 import TestColorVision from '@/views/tools/particals/TestColorVision.vue'
@@ -12,6 +14,10 @@ const HEADER_OFFSET = 76
 const activeStep = ref(0)
 const navEl = ref<HTMLElement | null>(null)
 const navButtonEls = ref<(HTMLButtonElement | null)[]>([])
+const showUnauthorized = ref(false)
+const dialogWidth = ref('30%')
+const userStore = useUserStore()
+const { isLoggedIn } = storeToRefs(userStore)
 const testSteps = [
   {
     id: 'test-schulte-section',
@@ -107,6 +113,17 @@ function onScroll () {
   scrollFrame = window.requestAnimationFrame(updateActiveStep)
 }
 
+function checkLogin () {
+  if (!isLoggedIn.value) {
+    showUnauthorized.value = true
+  }
+}
+
+function gotoLogin () {
+  showUnauthorized.value = false
+  userStore.setShowLoginDialog(true)
+}
+
 watch(activeStep, () => {
   nextTick(scrollActiveNavIntoView)
 })
@@ -118,6 +135,10 @@ onMounted(() => {
   })
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
+  if (window.matchMedia('(max-aspect-ratio: 1/1)').matches) {
+    dialogWidth.value = '100%'
+  }
+  checkLogin()
 })
 
 onBeforeUnmount(() => {
@@ -174,6 +195,21 @@ onBeforeUnmount(() => {
         <test-guess-word />
       </section>
     </main>
+
+    <el-dialog
+      v-model="showUnauthorized"
+      title="确认登录？"
+      :width="dialogWidth"
+      class="unauthorized-dialog"
+    >
+      <span>登录后可以参与排名，确认登录吗？</span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showUnauthorized = false">取 消</el-button>
+          <el-button type="primary" @click="gotoLogin">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

@@ -10,6 +10,9 @@ const authApi = {
   getConfig () {
     return api.get('/auth/config')
   },
+  createSessionCode () {
+    return api.post('/auth/session-code')
+  },
   sendResetPasswordEmail (params) {
     return api.post('/auth/send_reset_password_email', params)
   },

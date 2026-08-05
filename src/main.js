@@ -9,6 +9,8 @@ import './assets/styles/main.scss'
 import 'particles.js'
 import VueParticles from 'vue-particles'
 import { tdkMixin } from '@/utils/tdk'
+import { useUserStore } from '@/store/user'
+import { syncBackendSession } from '@/utils/backend-session'
 
 // Fix particles.js strict mode issue
 Object.deepExtend = function (destination, source) {
@@ -37,3 +39,9 @@ app.use(VueParticles)
 app.mixin(tdkMixin)
 
 app.mount('#app')
+
+// 已登录时同步 api 域名 session，便于直接打开 /dashboard
+const userStore = useUserStore()
+if (userStore.isLoggedIn) {
+  syncBackendSession()
+}

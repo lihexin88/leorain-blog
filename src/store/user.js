@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import authApi from '@/apis/auth'
 import userApi from '@/apis/user'
 import { dispatchUserLoginSuccess, dispatchUserLogoutSuccess } from '@/utils/auth-events'
+import { syncBackendSession } from '@/utils/backend-session'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -56,6 +57,8 @@ export const useUserStore = defineStore('user', {
 
         // 登录成功后获取用户信息
         await this.fetchUserInfo()
+        // 同步 api 域名 web session，便于直接访问 /dashboard
+        syncBackendSession()
         dispatchUserLoginSuccess({
           user: this.user,
           token: this.token

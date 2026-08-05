@@ -74,8 +74,8 @@
         <a
             v-if="article.id && userInfo?.is_admin === 1"
             class="article-edit-link"
-            :href="`${apiHost}/dashboard/articles/${article.id}/edit`"
-            target="_blank"
+            href="#"
+            @click.prevent="openArticleEdit"
             rel="noopener noreferrer"
         >
           [编辑]
@@ -128,6 +128,7 @@ import { articleApi } from '@/apis'
 import { Clock, Comment } from '@element-plus/icons-vue'
 import { mapState } from 'pinia'
 import { useUserStore } from '@/store/user'
+import { openBackendUrl } from '@/utils/backend-session'
 
 export default {
   name: 'ArticleDetail',
@@ -139,10 +140,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(useUserStore, { userInfo: 'user' }),
-    apiHost () {
-      return import.meta.env.VITE_API_HOST || ''
-    }
+    ...mapState(useUserStore, { userInfo: 'user' })
   },
   components: {
     Comment,
@@ -195,6 +193,10 @@ export default {
     }
   },
   methods: {
+    openArticleEdit () {
+      if (!this.article?.id) return
+      openBackendUrl(`/dashboard/articles/${this.article.id}/edit`)
+    },
     async fetchArticle () {
       // 这里应该调用API获取文章详情
       try {
