@@ -3,6 +3,7 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import { InfoFilled } from '@element-plus/icons-vue'
 import topic from '@/apis/topic'
+import testFullscreen from './mixins/testFullscreen'
 
 const TOPIC_SLUG = 'number-memory'
 const DISPLAY_DURATION = 300
@@ -13,6 +14,7 @@ export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '数字记忆测试 - 在线训练',
     description: '在线数字瞬时记忆测试，通过逐级增长的数字串测试记忆能力',
@@ -304,7 +306,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="number-memory-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -316,7 +318,10 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span class="level">{{ numberLength }} 位</span>
+              <div class="display-meta">
+                <span class="level">{{ numberLength }} 位</span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
 
@@ -436,6 +441,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;

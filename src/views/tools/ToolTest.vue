@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/store/user'
 import TestSchulte from '@/views/tools/particals/TestSchulte.vue'
@@ -58,6 +58,35 @@ const testSteps = [
 
 let scrollFrame: number | null = null
 
+type FullscreenController = {
+  enter: () => void
+  exit: () => void
+  isActive: () => boolean
+}
+
+const fullscreenControllers = new Map<string, FullscreenController>()
+
+provide('testPageFullscreen', {
+  register (sectionId: string, controller: FullscreenController) {
+    fullscreenControllers.set(sectionId, controller)
+    return () => {
+      if (fullscreenControllers.get(sectionId) === controller) {
+        fullscreenControllers.delete(sectionId)
+      }
+    }
+  },
+  exitAll () {
+    fullscreenControllers.forEach(controller => controller.exit())
+  }
+})
+
+function isAnyFullscreen () {
+  for (const controller of fullscreenControllers.values()) {
+    if (controller.isActive()) return true
+  }
+  return false
+}
+
 function setNavButtonRef (el: Element | null, index: number) {
   navButtonEls.value[index] = el instanceof HTMLButtonElement ? el : null
 }
@@ -85,12 +114,28 @@ function scrollActiveNavIntoView () {
 }
 
 function scrollToTest (index: number) {
-  const target = document.getElementById(testSteps[index].id)
+  const keepFullscreen = isAnyFullscreen()
+  if (index === activeStep.value && keepFullscreen) return
+
+  const step = testSteps[index]
+  const target = document.getElementById(step.id)
   if (!target) return
+
+  // 先退出当前全屏，再切到目标；若原本全屏则目标继续全屏
+  fullscreenControllers.forEach(controller => controller.exit())
 
   activeStep.value = index
   const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
-  window.scrollTo({ top, behavior: 'smooth' })
+  window.scrollTo({
+    top,
+    behavior: keepFullscreen ? 'auto' : 'smooth'
+  })
+
+  if (keepFullscreen) {
+    nextTick(() => {
+      fullscreenControllers.get(step.id)?.enter()
+    })
+  }
 }
 
 function updateActiveStep () {
@@ -215,6 +260,10 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .test-page {
+  --test-fs-top: 64px;
+  --test-fs-left: calc(128px + 12px);
+  --test-fs-right: 12px;
+  --test-fs-bottom: 12px;
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -226,7 +275,7 @@ onBeforeUnmount(() => {
 .test-navigation {
   position: sticky;
   top: 76px;
-  z-index: 10;
+  z-index: 50;
   flex: 0 0 128px;
   height: fit-content;
   max-height: calc(100vh - 92px);
@@ -363,6 +412,10 @@ onBeforeUnmount(() => {
 
 @media screen and (max-aspect-ratio: 1/1) {
   .test-page {
+    --test-fs-top: 118px;
+    --test-fs-left: 8px;
+    --test-fs-right: 8px;
+    --test-fs-bottom: 8px;
     display: block;
     padding: 0 0 24px;
   }
@@ -370,7 +423,7 @@ onBeforeUnmount(() => {
   .test-navigation {
     position: sticky;
     top: 60px;
-    z-index: 20;
+    z-index: 50;
     display: block;
     width: auto;
     max-height: none;

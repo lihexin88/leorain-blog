@@ -4,6 +4,7 @@ import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import testFullscreen from './mixins/testFullscreen'
 
 const TOPIC_SLUG = 'guess-word'
 
@@ -17,6 +18,7 @@ export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '猜词语游戏 - 在线训练',
     description: '猜词语游戏，根据词语长度与相似度提示，逐步猜出目标词语',
@@ -332,7 +334,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="guess-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -344,10 +346,13 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span v-if="state === 'playing' || state === 'expired'">
-                <span>剩余：</span>
-                <span class="score-value">{{ remainingText }}</span>
-              </span>
+              <div class="display-meta">
+                <span v-if="state === 'playing' || state === 'expired'">
+                  <span>剩余：</span>
+                  <span class="score-value">{{ remainingText }}</span>
+                </span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
 
@@ -477,6 +482,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;

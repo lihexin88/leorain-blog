@@ -1,0 +1,120 @@
+// 测试工具「内容区全屏」：保留顶部 NavBar 与左侧测试导航
+// 偏移量由 ToolTest.vue 的 --test-fs-* 变量提供
+.main-box.is-fullscreen {
+  position: fixed;
+  top: var(--test-fs-top, 64px);
+  left: var(--test-fs-left, calc(128px + 12px));
+  right: var(--test-fs-right, 12px);
+  bottom: var(--test-fs-bottom, 12px);
+  z-index: 40;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 8px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  background: var(--el-bg-color-page, #f5f7fa);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgb(15 23 42 / 12%);
+
+  > * {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    gap: 0;
+  }
+
+  .ranking-list {
+    display: none !important;
+  }
+
+  .play-box {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: 960px;
+    margin: 0 auto;
+    min-width: 0;
+  }
+
+  .play-card {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :deep(.el-card__header) {
+    flex-shrink: 0;
+  }
+
+  :deep(.el-card__body) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .display-area {
+    gap: 12px;
+  }
+
+  .display-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  // 各测试主区域在内容区全屏下放大（相对可用高度）
+  .play-item-container {
+    width: min(640px, min(72vw, calc(100vh - var(--test-fs-top, 64px) - 200px))) !important;
+  }
+
+  .reaction-box,
+  .sart-box {
+    height: min(480px, calc(100vh - var(--test-fs-top, 64px) - 180px)) !important;
+  }
+
+  .matrix-wrap {
+    flex: 1;
+    min-height: min(480px, calc(100vh - var(--test-fs-top, 64px) - 180px)) !important;
+  }
+
+  .color-matrix {
+    width: min(560px, min(72vw, calc(100vh - var(--test-fs-top, 64px) - 200px))) !important;
+  }
+
+  .memory-area {
+    flex: 1;
+    height: auto !important;
+    min-height: min(360px, calc(100vh - var(--test-fs-top, 64px) - 220px));
+  }
+
+  .play-area .play-panel,
+  .play-panel {
+    height: min(420px, calc(100vh - var(--test-fs-top, 64px) - 200px)) !important;
+  }
+
+  .guess-input-area,
+  .start-area,
+  .status-area,
+  .status-text,
+  .opt-area {
+    flex-shrink: 0;
+  }
+}
+
+.display-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.test-fullscreen-btn {
+  flex-shrink: 0;
+}

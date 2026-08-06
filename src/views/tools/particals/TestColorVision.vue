@@ -3,6 +3,7 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import { InfoFilled } from '@element-plus/icons-vue'
 import topic from '@/apis/topic'
+import testFullscreen from './mixins/testFullscreen'
 
 const TOPIC_SLUG = 'color-vision'
 
@@ -10,6 +11,7 @@ export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '色觉测试 - 在线训练',
     description: '在线色觉辨识测试，通过渐进颜色矩阵测试颜色分辨能力',
@@ -302,7 +304,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="color-vision-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -314,7 +316,10 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span class="level">{{ gridSize }} × {{ gridSize }}</span>
+              <div class="display-meta">
+                <span class="level">{{ gridSize }} × {{ gridSize }}</span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
           <div class="status-text">{{ statusText }}</div>
@@ -391,6 +396,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;

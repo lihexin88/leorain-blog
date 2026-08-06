@@ -3,6 +3,7 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
+import testFullscreen from './mixins/testFullscreen'
 
 const TOPIC_SLUG = 'color-right'
 /** 单次题目反应时长 */
@@ -24,6 +25,7 @@ export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '颜色匹配测试 - 在线训练',
     description: '颜色与名称匹配反应测试，共 20 轮判断文字颜色与文字名称是否一致',
@@ -412,7 +414,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="color-right-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -424,10 +426,13 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span>
-                <span>得分：</span>
-                <span class="score-value">{{ state === 'result' ? finalScore : score }}</span>
-              </span>
+              <div class="display-meta">
+                <span>
+                  <span>得分：</span>
+                  <span class="score-value">{{ state === 'result' ? finalScore : score }}</span>
+                </span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
 
@@ -525,6 +530,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;

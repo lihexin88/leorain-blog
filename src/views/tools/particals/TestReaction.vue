@@ -3,11 +3,13 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
+import testFullscreen from './mixins/testFullscreen'
 
 export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '反应速度测试 - 在线训练',
     description: '在线反应速度测试工具，测试你的反应时间',
@@ -382,7 +384,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="reaction-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -394,10 +396,13 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span>
-                <span>反应时间：</span><span style="min-width: 70px">{{ reactionTime }}</span
-                ><span>毫秒</span>
-              </span>
+              <div class="display-meta">
+                <span>
+                  <span>反应时间：</span><span style="min-width: 70px">{{ reactionTime }}</span
+                  ><span>毫秒</span>
+                </span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
           <div class="reaction-area">
@@ -461,6 +466,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;

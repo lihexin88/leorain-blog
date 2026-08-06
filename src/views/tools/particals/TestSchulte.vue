@@ -4,10 +4,13 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import topic from '@/apis/topic'
 import { InfoFilled } from '@element-plus/icons-vue'
+import testFullscreen from './mixins/testFullscreen'
+
 export default {
   components: {
     InfoFilled
   },
+  mixins: [testFullscreen],
   tdk: {
     title: '舒尔特方格 - 在线训练',
     description: '在线舒尔特方格训练工具，提升专注力和视觉广度',
@@ -408,7 +411,7 @@ export default {
 </script>
 
 <template>
-  <div class="main-box">
+  <div class="main-box" :class="{ 'is-fullscreen': isFullscreen }">
     <div class="schulte-container">
       <div class="play-box">
         <el-card class="play-card">
@@ -420,10 +423,13 @@ export default {
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
-              <span>
-                <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span
-                ><span>秒</span>
-              </span>
+              <div class="display-meta">
+                <span>
+                  <span>用时：</span><span style="min-width: 70px">{{ costTime / 1000 }}</span
+                  ><span>秒</span>
+                </span>
+                <test-fullscreen-button :is-fullscreen="isFullscreen" @toggle="toggleFullscreen" />
+              </div>
             </div>
           </template>
           <div class="play-area">
@@ -511,6 +517,8 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@import './test-fullscreen.scss';
+
 .main-box {
   display: flex;
   justify-content: center;
