@@ -19,6 +19,10 @@ export default {
       state: 'idle',
       reactionTime: 0,
       delayTimeout: null,
+      tooEarlyTimeout: null,
+      // turnGreen 双重 rAF 的句柄 + 代数，必须可取消，否则快速点击会读到过期 startTime
+      turnGreenRafId: null,
+      turnGreenSeq: 0,
       displayRafId: null,
       startTime: null,
       // 标记是否已完成反应（防止 ready 状态下重复触发）
@@ -66,22 +70,14 @@ export default {
           this.tooEarly()
           break
         case 'ready': {
-          if (this.reacted) return
+          if (this.reacted || this.startTime == null) return
           this.reacted = true
+          this.cancelTurnGreenRaf()
           this.stopDisplayLoop()
           // 用最早捕获的时间戳计算反应时间
-          this.reactionTime = Math.round(now - this.startTime)
+          this.reactionTime = Math.max(0, Math.round(now - this.startTime))
           this.state = 'result'
-          topic
-            .submitTopicAnswers('reaction', [
-              {
-                question_id: this.questionId,
-                answer: this.reactionTime
-              }
-            ])
-            .then(() => {
-              this.getAnswers()
-            })
+          this.submitReaction()
           break
         }
         case 'tooEarly':
@@ -94,24 +90,38 @@ export default {
       }
     },
     startWaiting () {
-      this.clearDelayTimeout()
+      this.clearAllTimers()
       this.state = 'waiting'
       this.reactionTime = 0
+      this.startTime = null
       this.reacted = false
 
       // 随机 1~3 秒延迟
       const delay = 1000 + Math.random() * 2000
       this.delayTimeout = setTimeout(() => {
+        this.delayTimeout = null
         this.turnGreen()
       }, delay)
     },
     turnGreen () {
+      this.cancelTurnGreenRaf()
+      this.stopDisplayLoop()
+      this.reacted = false
+      // 同步写入新起点，避免 state=ready 后、双重 rAF 完成前点击读到上一轮 startTime
+      this.startTime = performance.now()
       this.state = 'ready'
-      // 双重 requestAnimationFrame 确保绿色已被浏览器绘制到屏幕后才开始计时
+      // 双重 requestAnimationFrame：绿色实际绘制到屏幕后再校准计时起点
       // 第一帧：浏览器计算布局并提交渲染
       // 第二帧：确保上一帧已实际绘制完成
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      const seq = this.turnGreenSeq
+      this.turnGreenRafId = requestAnimationFrame(() => {
+        // 外层已取消时不再挂内层，避免只 cancel 了一个 id 仍漏执行
+        if (seq !== this.turnGreenSeq) return
+        this.turnGreenRafId = requestAnimationFrame(() => {
+          this.turnGreenRafId = null
+          if (seq !== this.turnGreenSeq) return
+          // 若期间已点击/重置，丢弃过期回调，防止写回错误 startTime
+          if (this.state !== 'ready' || this.reacted) return
           this.startTime = performance.now()
           this.startDisplayLoop()
         })
@@ -124,40 +134,73 @@ export default {
     startDisplayLoop () {
       this.stopDisplayLoop()
       const tick = () => {
-        if (this.state !== 'ready' || this.reacted) return
-        this.reactionTime = Math.round(performance.now() - this.startTime)
+        if (this.state !== 'ready' || this.reacted || this.startTime == null) return
+        this.reactionTime = Math.max(0, Math.round(performance.now() - this.startTime))
         this.displayRafId = requestAnimationFrame(tick)
       }
       this.displayRafId = requestAnimationFrame(tick)
     },
     stopDisplayLoop () {
-      if (this.displayRafId) {
+      if (this.displayRafId != null) {
         cancelAnimationFrame(this.displayRafId)
         this.displayRafId = null
       }
     },
-    tooEarly () {
+    cancelTurnGreenRaf () {
+      this.turnGreenSeq += 1
+      if (this.turnGreenRafId != null) {
+        cancelAnimationFrame(this.turnGreenRafId)
+        this.turnGreenRafId = null
+      }
+    },
+    clearTooEarlyTimeout () {
+      if (this.tooEarlyTimeout != null) {
+        clearTimeout(this.tooEarlyTimeout)
+        this.tooEarlyTimeout = null
+      }
+    },
+    clearAllTimers () {
       this.clearDelayTimeout()
+      this.clearTooEarlyTimeout()
+      this.cancelTurnGreenRaf()
+      this.stopDisplayLoop()
+    },
+    tooEarly () {
+      this.clearAllTimers()
+      this.startTime = null
       this.state = 'tooEarly'
       // 1.5秒后自动恢复
-      setTimeout(() => {
+      this.tooEarlyTimeout = setTimeout(() => {
+        this.tooEarlyTimeout = null
         if (this.state === 'tooEarly') {
           this.reset()
         }
       }, 1500)
     },
     reset () {
-      this.clearDelayTimeout()
-      this.stopDisplayLoop()
+      this.clearAllTimers()
       this.state = 'idle'
       this.reactionTime = 0
+      this.startTime = null
       this.reacted = false
     },
     clearDelayTimeout () {
-      if (this.delayTimeout) {
+      if (this.delayTimeout != null) {
         clearTimeout(this.delayTimeout)
         this.delayTimeout = null
       }
+    },
+    submitReaction () {
+      topic
+        .submitTopicAnswers('reaction', [
+          {
+            question_id: this.questionId,
+            answer: this.reactionTime
+          }
+        ])
+        .then(() => {
+          this.getAnswers()
+        })
     },
     getAnswers () {
       topic.getAnswers('reaction').then(data => {
@@ -329,8 +372,7 @@ export default {
   },
   beforeUnmount () {
     // 清理所有定时器和事件监听
-    this.clearDelayTimeout()
-    this.stopDisplayLoop()
+    this.clearAllTimers()
     const box = this.$refs.reactionBox
     if (box) {
       box.removeEventListener('mousedown', this.onBoxMouseDown, true)
