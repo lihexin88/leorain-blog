@@ -77,12 +77,14 @@ export default {
     }
   },
   async created () {
-    let html = await this.parse(this.content)
-    html = DOMPurify.sanitize(html)
-    this.rawHtml = html
-    this.$nextTick(() => {
-      this.addCopyButtonEvent()
-    }) // 等待 DOM 渲染完成后添加复制按钮事件
+    await this.renderContent()
+  },
+  watch: {
+    content: {
+      handler () {
+        this.renderContent()
+      }
+    }
   },
   beforeUnmount () {
     // 组件销毁时移除事件监听器
@@ -92,6 +94,14 @@ export default {
     this.unbindImagePreviewWheel()
   },
   methods: {
+    async renderContent () {
+      let html = await this.parse(this.content)
+      html = DOMPurify.sanitize(html)
+      this.rawHtml = html
+      this.$nextTick(() => {
+        this.addCopyButtonEvent()
+      })
+    },
     handleEvent (event) {
       if (event.target.tagName === 'IMG') {
         this.currentImage = event.target.src

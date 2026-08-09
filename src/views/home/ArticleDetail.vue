@@ -60,7 +60,7 @@
           </div>
           <div class="article-tags" v-if="article.tags && article.tags.length">
             <router-link
-                v-for="(tag, index) in article.tags"
+                v-for="tag in article.tags"
                 :key="tag.tag"
                 :to="`/tag/${tag.tag}`"
                 class="tag-pill"
@@ -256,10 +256,9 @@ export default {
     '$route.params.slug': {
       handler (newSlug) {
         if (newSlug) {
-          this.article.id = null
+          this.article = { ...this.article, id: null, title: '', content: '' }
           this.slug = newSlug
           this.fetchArticle()
-          this.$refs.recommendArticle.getRecommendArticles()
         }
       }
     }

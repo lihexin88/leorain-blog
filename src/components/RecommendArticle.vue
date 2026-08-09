@@ -76,7 +76,7 @@
               </div>
             </div>
 
-            <div class="article-score">
+            <div class="article-score" v-if="false">
               <el-tag
                 :type="scoreType(article.score)"
                 effect="light"
@@ -155,6 +155,14 @@ export default {
   },
   mounted () {
     this.getRecommendArticles()
+  },
+  watch: {
+    query () {
+      this.getRecommendArticles()
+    },
+    article_id () {
+      this.getRecommendArticles()
+    }
   }
 }
 </script>
