@@ -118,6 +118,12 @@ export default {
 </script>
 
 <style scoped>
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .login-dialog :deep(.el-dialog) {
   min-width: 95%;
   max-width: 920px;
@@ -194,6 +200,8 @@ export default {
 
 .body {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   min-height: calc(100vh - 150px);
   background-color: var(--body-bg);
 }

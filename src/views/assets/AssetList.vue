@@ -1375,6 +1375,9 @@ export default {
 </script>
 <style scoped lang="scss">
 .asset-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background-color: rgba(231, 239, 241, 0.38);
   padding: 20px 16px 10px;
 }
@@ -1413,6 +1416,7 @@ export default {
 }
 
 .asset-layout {
+  flex: 1;
   display: flex;
   align-items: flex-start;
   gap: 20px;
@@ -1421,6 +1425,8 @@ export default {
 
 .asset-main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -1438,6 +1444,7 @@ export default {
 }
 
 .asset-item-container {
+  flex: 1;
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, 242px);
