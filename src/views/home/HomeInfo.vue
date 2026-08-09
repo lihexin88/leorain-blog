@@ -302,7 +302,6 @@ export default {
 </script>
 <style scoped lang="scss">
 .info-container {
-  padding: 10px 15px 0 15px;
   height: 100%;
 }
 

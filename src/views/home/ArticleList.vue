@@ -369,11 +369,8 @@ export default {
 
 .article-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 5px;
-  padding-left: 8%;
-  padding-right: 2%;
-  padding-top: 20px;
 
   &:last-child {
     justify-content: start;

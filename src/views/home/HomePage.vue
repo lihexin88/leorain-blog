@@ -26,7 +26,7 @@ export default {
 
 <style scoped lang="scss">
 .home-container {
-  padding: 20px 0;
+  padding: 20px;
   position: relative;
   @include tablet {
     padding: 0;
@@ -37,6 +37,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   position: relative;
+  gap: 20px;
   z-index: 1;
 }
 
@@ -49,10 +50,7 @@ export default {
 }
 
 .sidebar {
-  width: 30%;
-  padding-left: 20px;
-  padding-right: 100px;
-
+  flex: 1;
   @include tablet {
     width: 100%;
     padding-left: 0;
