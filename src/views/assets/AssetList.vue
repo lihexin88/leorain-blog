@@ -107,7 +107,10 @@
           </div>
         </div>
 
-        <el-empty v-if="assets?.length === 0">暂无数据</el-empty>
+        <el-empty v-if="assets?.length === 0">
+          <el-button type="primary" @click="openUploadDialog">上传</el-button>
+          <el-button type="primary" @click="openDirCreateDialog">创建目录</el-button>
+        </el-empty>
         <div class="asset-pagination">
           <el-pagination
             v-model:page-size="per_page"

@@ -30,9 +30,8 @@
 1. 功能分为【公共剪切板】和【个人剪切板】两个版块
 2. 公共剪切板可以随意添加和删除
 3. 个人剪切板只能<font style='color: red'>**个人**</font>添加和删除
-4. 每个版块最多支持 50 个剪切板内容
-5. 重复新增的剪切板内容，会删除之前相同内容的条目
-6. 内容支持文字、图片
+4. 重复新增的剪切板内容，会删除之前相同内容的条目
+5. 内容支持文字、图片
 "
           ></markdown-parse>
         </div>
@@ -40,7 +39,7 @@
           <el-divider>tips</el-divider>
           <i>公共剪切板注意隐私安全</i>
         </div>
-        <div>
+        <div v-if="false">
           <el-divider>开发相关</el-divider>
           <markdown-parse
             class="clipboard-info-container"
