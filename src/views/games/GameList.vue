@@ -142,6 +142,7 @@ export default {
 .game-list-container {
   padding: 20px;
   margin: 0 auto;
+  width: 100%;
 
   .search-container {
     display: flex;

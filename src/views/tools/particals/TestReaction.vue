@@ -193,6 +193,11 @@ export default {
       }
     },
     submitReaction () {
+      if (this.reactionTime > 1000) {
+        this.$message.warning({
+          message: '误差太大，不参与排名'
+        })
+      }
       topic
         .submitTopicAnswers('reaction', [
           {

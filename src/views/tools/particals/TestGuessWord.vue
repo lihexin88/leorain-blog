@@ -49,7 +49,8 @@ export default {
       userScoreRecords: [],
       dialogWidth: '30%',
       isPortrait: false,
-      showStatsDialog: false
+      showStatsDialog: false,
+      description: ''
     }
   },
   computed: {
@@ -315,10 +316,15 @@ export default {
           chart.dispose()
         }
       })
+    },
+    async getTopicDetail () {
+      const topicDetail = await topic.getTopicDetail('guess-word')
+      this.description = topicDetail.description
     }
   },
   mounted () {
     this.getUserInfo()
+    this.getTopicDetail()
     this.isPortrait = window.matchMedia('(orientation: portrait)').matches
     if (this.isPortrait) {
       this.dialogWidth = '100%'
@@ -342,7 +348,7 @@ export default {
             <div class="display-area">
               <span class="title">
                 猜词语游戏
-                <el-tooltip content="根据相似度提示，逐步猜出目标词语，相似度越高越接近答案">
+                <el-tooltip :content="description">
                   <el-icon><InfoFilled /></el-icon>
                 </el-tooltip>
               </span>
@@ -380,18 +386,13 @@ export default {
               >
                 确定
               </el-button>
-              <el-button
-                :disabled="state !== 'playing' || solved || !words.length"
-                @click="openWordsDialog"
-              >
+              <el-button :disabled="state !== 'playing' || solved || !words.length" @click="openWordsDialog">
                 参考
               </el-button>
             </div>
 
             <div class="records-area">
-              <div v-if="!sortedRecords.length" class="records-empty">
-                还没有猜测记录，输入词语开始吧
-              </div>
+              <div v-if="!sortedRecords.length" class="records-empty">还没有猜测记录，输入词语开始吧</div>
               <div
                 v-for="(record, idx) in sortedRecords"
                 :key="idx"
@@ -400,10 +401,7 @@ export default {
               >
                 <span class="record-word">{{ record.guess_word }}</span>
                 <div class="record-bar">
-                  <div
-                    class="record-bar-inner"
-                    :style="{ width: formatSimilarity(record.similarity) }"
-                  ></div>
+                  <div class="record-bar-inner" :style="{ width: formatSimilarity(record.similarity) }"></div>
                 </div>
                 <span class="record-similarity">{{ formatSimilarity(record.similarity) }}</span>
               </div>
@@ -416,12 +414,7 @@ export default {
 
             <div class="opt-area">
               <el-button type="primary" :loading="loading" @click="restart">重新开始</el-button>
-              <el-button
-                type="warning"
-                :loading="revealing"
-                :disabled="state !== 'playing' || solved"
-                @click="giveUp"
-              >
+              <el-button type="warning" :loading="revealing" :disabled="state !== 'playing' || solved" @click="giveUp">
                 猜不出来<span v-if="giveUpCount > 0 && giveUpCount < 3">（{{ giveUpCount }}/3）</span>
               </el-button>
               <el-button v-if="isPortrait" @click="openStatsDialog">统计</el-button>
@@ -580,7 +573,6 @@ export default {
 .main-box {
   .guess-container {
     .play-box {
-
       .records-area {
         max-height: 320px;
         overflow-y: auto;
