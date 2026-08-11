@@ -18,7 +18,7 @@
         <el-tag :type="tagType(asset.type)" size="small" effect="light">{{ typeLabel(asset.type) }}</el-tag>
       </div>
 
-      <AssetCover :asset="asset" :preview="false" @preview="openPreview" />
+      <AssetCover :asset="asset" :preview="true" @preview="openPreview" />
 
       <div class="shared-asset-info">
         <el-descriptions :column="1" border size="small" class="shared-asset-descriptions">
@@ -29,7 +29,15 @@
     </div>
 
     <!-- 预览对话框 -->
-    <el-dialog v-model="previewVisible" title="预览" width="720px" class="shared-asset-dialog" destroy-on-close>
+    <el-dialog
+      v-model="previewVisible"
+      :append-to-body="true"
+      fullscreen
+      title="预览"
+      width="720px"
+      class="shared-asset-dialog"
+      destroy-on-close
+    >
       <div v-if="previewAsset" class="shared-asset-preview-body">
         <video
           v-if="previewAsset.type === 2"
@@ -46,6 +54,11 @@
           controlslist="nodownload"
           class="shared-asset-preview-audio"
         ></audio>
+        <el-image
+          v-else-if="previewAsset.type === 1"
+          :src="previewAsset.display_url"
+          class="shared-asset-preview-video"
+        ></el-image>
       </div>
     </el-dialog>
   </div>
@@ -109,7 +122,11 @@ export default {
       this.previewVisible = true
     },
     blockDevTools (e) {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'U')
+      ) {
         e.preventDefault()
         e.stopPropagation()
       }
@@ -127,7 +144,6 @@ export default {
 
 <style scoped>
 .shared-asset-container {
-  max-width: 520px;
   margin: 48px auto;
   padding: 0 16px;
   animation: shared-asset-fade-in 0.35s ease both;
@@ -140,13 +156,17 @@ export default {
   border: 1px solid var(--article-border);
   border-radius: 14px;
   box-shadow: var(--article-box-shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 @media (hover: hover) {
   .shared-asset-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      0 4px 12px rgba(0, 0, 0, 0.05);
   }
 }
 

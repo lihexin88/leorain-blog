@@ -6,7 +6,7 @@
       role="button"
       tabindex="0"
       :title="barTooltip"
-      @dblclick.stop.prevent="switch_show_settings"
+      @click.stop.prevent="switch_show_settings"
       @keydown.enter.prevent="switch_show_settings"
       @keydown.space.prevent="switch_show_settings"
     >

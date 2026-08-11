@@ -57,7 +57,6 @@ export default {
 <style scoped>
 .asset-cover-image {
   width: 100%;
-  height: 220px;
   object-fit: contain;
   border-radius: 6px;
   background: #f7f9fb;
