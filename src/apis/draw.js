@@ -66,7 +66,8 @@ export function getDrawInitData (drawId) {
   return http.get(`${import.meta.env.VITE_TOOL_HOST}/draw/paint/init`, {
     params: {
       draw_id: drawId
-    }
+    },
+    withCredentials: false
   })
 }
 
@@ -79,5 +80,7 @@ export function getDrawLock (drawId) {
   return http.post(`${import.meta.env.VITE_TOOL_HOST}/draw/lock/get`, {
     type: 0,
     draw_id: drawId
+  }, {
+    withCredentials: false
   })
 }
