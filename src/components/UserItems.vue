@@ -13,9 +13,11 @@
             {{ scope.row.origin.data.name }}
           </template>
         </el-table-column>
-        <el-table-column label="获取时间">
+        <el-table-column label="图鉴">
           <template v-slot="scope">
-            <el-image :src="scope.row.origin.data.cover_display"></el-image>
+            <el-image :src="scope.row.origin.data.cover_display">
+              <template v-slot:error>-</template>
+            </el-image>
           </template>
         </el-table-column>
         <el-table-column label="类型" width="100">
