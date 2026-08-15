@@ -465,12 +465,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 .lottery-container-light {
   position: relative;
   background-color: #f4f7f6;
-  font-family: 'Orbitron', sans-serif;
   color: #333;
   min-height: 100vh;
   padding-top: 20px;
