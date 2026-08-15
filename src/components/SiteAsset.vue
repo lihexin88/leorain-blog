@@ -54,7 +54,7 @@
             <div class="image-info__item">
               <div>
               <el-icon class="image-info__icon"><PriceTag /></el-icon>
-              <span class="image-info__label">标签</span>
+              <span class="image-info__label">向量标签</span>
               </div>
               <div class="image-info__value image-info-label">
                 <span v-for="label in imageLabels">{{ label }}</span>

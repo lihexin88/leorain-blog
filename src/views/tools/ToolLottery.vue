@@ -226,6 +226,9 @@ export default {
       this.loading = true
       try {
         this.categories = await lotteryApi.getCategories()
+        if (this.selectedCategory == null) {
+          this.selectedCategory = this.categories[0]
+        }
       } catch (error) {
         this.$message.error('获取彩票分类失败！')
       } finally {
