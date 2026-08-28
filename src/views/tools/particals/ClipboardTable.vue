@@ -3,8 +3,10 @@ import moment from 'moment'
 import { maxString, paginateLayouts } from '@/utils/helpers'
 import { clipboardApi } from '@/apis'
 import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
+import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
+  components: { MarkdownParse },
   data () {
     return {
       clipboardData: [],
@@ -65,17 +67,20 @@ export default {
       if (row.type === 2) {
         await this.copyImageToClipboard(content)
       } else {
-        navigator.clipboard.writeText(content).then(() => {
-          this.$message({
-            message: '已复制',
-            type: 'success'
+        navigator.clipboard
+          .writeText(content)
+          .then(() => {
+            this.$message({
+              message: '已复制',
+              type: 'success'
+            })
           })
-        }).catch(() => {
-          this.$message({
-            message: '复制失败',
-            type: 'error'
+          .catch(() => {
+            this.$message({
+              message: '复制失败',
+              type: 'error'
+            })
           })
-        })
       }
     },
     getList () {
@@ -86,10 +91,11 @@ export default {
         search_text: this.search_text,
         data_source_type: this.getDateSourceInfo().id
       }
-      clipboardApi.getList(this.data_source_type, params)
-        .then((res) => {
+      clipboardApi
+        .getList(this.data_source_type, params)
+        .then(res => {
           // base.js 已将 axios 的 response.data 直接返回，这里的 res 即为后端响应体
-          this.clipboardData = (res && res.data) ? res.data : []
+          this.clipboardData = res && res.data ? res.data : []
           this.clipboardData.forEach(item => {
             item.created_at = moment(item.created_at).format('MM-DD HH:mm')
           })
@@ -212,7 +218,7 @@ export default {
     // 将File对象转为Base64
     fileToBase64 (file) {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = e => {
         this.currentClipboard.content = e.target.result // 结果类似 "data:image/png;base64,iVBORw0KGgo..."
       }
       reader.readAsDataURL(file) // 关键方法
@@ -232,18 +238,21 @@ export default {
       }
     },
     deleteClipboard (row) {
-      this.$confirm('确认删除吗？').then(() => {
-        clipboardApi.remove(this.data_source_type, row.id).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功'
-          })
-        }).finally(() => {
-          this.getList()
+      this.$confirm('确认删除吗？')
+        .then(() => {
+          clipboardApi
+            .remove(this.data_source_type, row.id)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: '删除成功'
+              })
+            })
+            .finally(() => {
+              this.getList()
+            })
         })
-      }).catch(() => {
-
-      })
+        .catch(() => {})
     },
     showUpdate (row) {
       this.show_popup = true
@@ -324,29 +333,31 @@ export default {
       <el-button @click="getList">搜索</el-button>
       <el-button @click="showCreate">新增</el-button>
     </div>
-    <el-dialog v-model="show_popup"
-               show-footer
-               large
-               force
-               @confirm="submit"
-               @cancel="show_popup = false"
-               :title="'新增-'+this.getDateSourceInfo().name"
+    <el-dialog
+      v-model="show_popup"
+      show-footer
+      large
+      force
+      @confirm="submit"
+      @cancel="show_popup = false"
+      :title="'新增-' + this.getDateSourceInfo().name"
     >
       <div>
         <div v-if="currentClipboard.type === 1">
           <el-input
-              type="textarea"
-              :autosize="{ minRows: 2}"
-              placeholder="请输入内容，或者直接粘贴。支持文字图片"
-              clearable
-              @paste="handlePaste"
-              v-model="currentClipboard.content"></el-input>
+            type="textarea"
+            :autosize="{ minRows: 2 }"
+            placeholder="请输入内容，或者直接粘贴。支持文字图片"
+            clearable
+            @paste="handlePaste"
+            v-model="currentClipboard.content"
+          ></el-input>
         </div>
-        <div v-if="currentClipboard.type === 2" style="display: flex;justify-content: start;flex-wrap: nowrap">
+        <div v-if="currentClipboard.type === 2" style="display: flex; justify-content: start; flex-wrap: nowrap">
           <div style="display: flex">
             <el-image :src="currentClipboard.content" v-if="currentClipboard.content"></el-image>
           </div>
-          <div style="display: flex;align-items: start;justify-content: center;padding-left: 10px">
+          <div style="display: flex; align-items: start; justify-content: center; padding-left: 10px">
             <i @click="removeClipboard" class="el-icon-circle-close" style="cursor: pointer"></i>
           </div>
         </div>
@@ -358,13 +369,8 @@ export default {
         </div>
       </template>
     </el-dialog>
-    <el-dialog
-      v-model="showContentDialog"
-      title="内容详情"
-      width="720px"
-      :close-on-click-modal="false"
-    >
-      <pre class="clipboard-table-content-dialog">{{ currentContent }}</pre>
+    <el-dialog v-model="showContentDialog" title="内容详情" width="720px" :close-on-click-modal="false">
+      <markdown-parse :content="currentContent" class="clipboard-table-content-dialog" />
       <template v-slot:footer>
         <div>
           <el-button type="primary" @click="showContentDialog = false">关闭</el-button>
@@ -373,30 +379,23 @@ export default {
     </el-dialog>
     <!--      表格-->
     <div>
-      <el-table
-          :data="clipboardData"
-          v-loading="loading"
-          row-key="id"
-      >
-        <el-table-column
-            width="24px"
-        >
+      <el-table :data="clipboardData" v-loading="loading" row-key="id">
+        <el-table-column width="24px">
           <template v-slot="scope">
-            <div @click="star(scope.row)" @keydown.enter="star(scope.row)" role="button" tabindex="0" class="clipboard-table-column-star">
+            <div
+              @click="star(scope.row)"
+              @keydown.enter="star(scope.row)"
+              role="button"
+              tabindex="0"
+              class="clipboard-table-column-star"
+            >
               <i v-if="scope.row.star" class="el-icon-star-on"></i>
               <i v-else class="el-icon-star-off"></i>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-            prop="id"
-            label="id"
-            width="50px"
-        >
-        </el-table-column>
-        <el-table-column
-            label="内容"
-        >
+        <el-table-column prop="id" label="id" width="50px"> </el-table-column>
+        <el-table-column label="内容">
           <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
               <el-image
@@ -405,33 +404,24 @@ export default {
                 preview-teleported
                 :z-index="3000"
                 crossorigin="anonymous"
-                :src="scope.row.content+ '?x-oss-process=style/gallery_thumbnail'"
+                :src="scope.row.content + '?x-oss-process=style/gallery_thumbnail'"
               ></el-image>
             </div>
             <div v-else-if="scope.row?.type === 1">
-              <div
-                style="cursor: pointer;display: inline-block"
-                @click="showContent(scope.row?.content)"
-              >
-                <pre class="clipboard-table-column-content"
-                     v-if="countLineBreaks(scope.row?.content) > 5">{{ truncateLines(scope.row?.content, 5) }}</pre>
-                <pre class="clipboard-table-column-content"
-                     v-else-if="scope.row?.content.length > 300">{{ maxString(scope.row?.content, 300) }}</pre>
+              <div style="cursor: pointer; display: inline-block" @click="showContent(scope.row?.content)">
+                <pre class="clipboard-table-column-content" v-if="countLineBreaks(scope.row?.content) > 5">{{
+                  truncateLines(scope.row?.content, 5)
+                }}</pre>
+                <pre class="clipboard-table-column-content" v-else-if="scope.row?.content.length > 300">{{
+                  maxString(scope.row?.content, 300)
+                }}</pre>
                 <pre v-else class="clipboard-table-column-content">{{ scope.row?.content }}</pre>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column
-            prop="created_at"
-            label="时间"
-            width="95px"
-        >
-        </el-table-column>
-        <el-table-column
-            label="action"
-            width="100px"
-        >
+        <el-table-column prop="created_at" label="时间" width="95px"> </el-table-column>
+        <el-table-column label="action" width="100px">
           <template v-slot="scope">
             <div class="clipboard-table-options">
               <div class="clipboard-table-options-button">
@@ -450,16 +440,16 @@ export default {
     </div>
     <!--      分页-->
     <div>
-      <div style="display: flex;justify-content: center;padding-top: 5px">
+      <div style="display: flex; justify-content: center; padding-top: 5px">
         <el-pagination
-            v-model:page-size="page_size"
-            :page-sizes="[10, 20, 30, 40, 50]"
-            v-model:current-page="page"
-            @current-change="getList"
-            background
-            :small="smallWindowSize"
-            :layout="layout"
-            :total="total"
+          v-model:page-size="page_size"
+          :page-sizes="[10, 20, 30, 40, 50]"
+          v-model:current-page="page"
+          @current-change="getList"
+          background
+          :small="smallWindowSize"
+          :layout="layout"
+          :total="total"
         ></el-pagination>
       </div>
     </div>
