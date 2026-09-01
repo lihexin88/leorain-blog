@@ -1,4 +1,6 @@
 <script>
+import { useLayoutsStore } from '@/store/layouts'
+
 export default {
   name: 'ToolShot',
   data () {
@@ -7,7 +9,9 @@ export default {
       error: ''
     }
   },
-  mounted () {
+  async mounted () {
+    const layoutsStore = await useLayoutsStore()
+    layoutsStore.showFooter = false
     this.installAudioContextResumeShim()
     this.startGame()
   },
@@ -26,9 +30,16 @@ export default {
     installAudioContextResumeShim () {
       this._audioContextList = []
       this._userInputEventNames = [
-        'click', 'contextmenu', 'auxclick', 'dblclick',
-        'mousedown', 'mouseup', 'pointerup', 'touchend',
-        'keydown', 'keyup'
+        'click',
+        'contextmenu',
+        'auxclick',
+        'dblclick',
+        'mousedown',
+        'mouseup',
+        'pointerup',
+        'touchend',
+        'keydown',
+        'keyup'
       ]
 
       const list = this._audioContextList
@@ -43,7 +54,7 @@ export default {
 
       this._resumeAllContexts = () => {
         let count = 0
-        list.forEach((context) => {
+        list.forEach(context => {
           if (context.state !== 'running') {
             context.resume()
           } else {
@@ -56,13 +67,13 @@ export default {
         }
       }
 
-      this._userInputEventNames.forEach((eventName) => {
+      this._userInputEventNames.forEach(eventName => {
         document.addEventListener(eventName, this._resumeAllContexts)
       })
     },
     teardownAudioContextResumeShim () {
       if (this._userInputEventNames && this._resumeAllContexts) {
-        this._userInputEventNames.forEach((eventName) => {
+        this._userInputEventNames.forEach(eventName => {
           document.removeEventListener(eventName, this._resumeAllContexts)
         })
       }
@@ -85,7 +96,7 @@ export default {
       // `window.__shootingOnInit(init)` 来交还，再配一个超时兜底以防模块加载失败时卡住。
       const modUrl = '/shooting/shooting.js'
 
-      const run = (init) => {
+      const run = init => {
         if (this._loadTimer) {
           clearTimeout(this._loadTimer)
           this._loadTimer = null
@@ -94,7 +105,7 @@ export default {
           .then(() => {
             this.loading = false
           })
-          .catch((err) => {
+          .catch(err => {
             const msg = String(err && err.message ? err.message : err)
             // winit 的 Web 事件循环用异常做控制流，说明游戏其实已经成功启动。
             if (/control flow|isn't actually an error/i.test(msg)) {
@@ -112,9 +123,7 @@ export default {
 
       const script = document.createElement('script')
       script.type = 'module'
-      script.textContent =
-        'import init from ' + JSON.stringify(modUrl) + ';\n' +
-        'window.__shootingOnInit(init);\n'
+      script.textContent = 'import init from ' + JSON.stringify(modUrl) + ';\n' + 'window.__shootingOnInit(init);\n'
       document.head.appendChild(script)
 
       // 兜底：如果模块 import 失败（网络/404），上面的回调不会被调用，这里超时后报错。
@@ -144,7 +153,7 @@ export default {
   // fit_canvas_to_parent 会按父元素尺寸撑满 canvas，父元素必须给显式尺寸
   //（不能由子元素撑开，否则会形成“越拉越大”的反馈循环）。
   width: 100%;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 65px);
   position: relative;
   overflow: hidden;
   background: #0b0d12;

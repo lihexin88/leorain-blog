@@ -44,7 +44,7 @@
       </router-view>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" v-if="layoutsStore.showFooter">
       <!-- Footer内容 -->
       <footerBar />
     </footer>
@@ -202,7 +202,6 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 150px);
   background-color: var(--body-bg);
 }
 
