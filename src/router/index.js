@@ -120,6 +120,11 @@ const routes = [
             component: () => import('../views/tools/ToolCoderBox.vue')
           },
           {
+            path: 'shot',
+            name: 'ToolShot',
+            component: () => import('../views/tools/ToolShot.vue')
+          },
+          {
             path: 'linux',
             name: 'ToolLinux',
             component: () => import('../views/tools/particals/CoderLinux.vue')

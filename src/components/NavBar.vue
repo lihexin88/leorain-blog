@@ -10,11 +10,7 @@
     <canvas ref="fxCanvas" class="nav-fx-canvas" aria-hidden="true" />
 
     <!-- 跟随鼠标的彩色光斑 -->
-    <div
-      class="nav-cursor-glow"
-      :style="cursorGlowStyle"
-      aria-hidden="true"
-    />
+    <div class="nav-cursor-glow" :style="cursorGlowStyle" aria-hidden="true" />
 
     <!-- 底部彩虹流光边：仅彩色主题显示 -->
     <div v-if="isColorful" class="nav-gradient-line" aria-hidden="true" />
@@ -44,12 +40,7 @@
           />
         </span>
         <span class="nav-logo-text">
-          <span
-            v-for="(ch, i) in logoChars"
-            :key="i"
-            class="logo-char"
-            :style="{ '--i': i }"
-          >{{ ch }}</span>
+          <span v-for="(ch, i) in logoChars" :key="i" class="logo-char" :style="{ '--i': i }">{{ ch }}</span>
         </span>
       </el-menu-item>
 
@@ -68,20 +59,12 @@
             </el-icon>
             <span>工具箱</span>
           </template>
-          <el-menu-item
-            v-for="tool in tools"
-            :key="tool.href"
-            :index="tool.href"
-          >
+          <el-menu-item v-for="tool in tools" :key="tool.href" :index="tool.href">
             <img :src="tool.image" class="menu-icon" alt="" />
             <span>{{ tool.text }}</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item
-          v-for="item in desktopNavItems"
-          :key="'m-' + item.index"
-          :index="item.index"
-        >
+        <el-menu-item v-for="item in desktopNavItems" :key="'m-' + item.index" :index="item.index">
           <el-icon class="menu-icon">
             <component :is="item.icon" />
           </el-icon>
@@ -89,23 +72,14 @@
         </el-menu-item>
       </el-sub-menu>
 
-      <el-sub-menu
-        index="/tools"
-        class="desktop-menu nav-item-animated"
-        popper-class="nav-tools-popper"
-      >
+      <el-sub-menu index="/tools" class="desktop-menu nav-item-animated" popper-class="nav-tools-popper">
         <template #title>
           <el-icon class="menu-icon">
             <Operation />
           </el-icon>
           <span>工具箱</span>
         </template>
-        <el-menu-item
-          v-for="tool in tools"
-          :key="tool.href"
-          :index="tool.href"
-          class="tool-menu-item"
-        >
+        <el-menu-item v-for="tool in tools" :key="tool.href" :index="tool.href" class="tool-menu-item">
           <img :src="tool.image" class="menu-icon" alt="" />
           <div class="tool-menu-text">
             <span class="tool-title">{{ tool.text }}</span>
@@ -145,19 +119,9 @@
           <span class="login-btn-text">登录</span>
           <span class="login-btn-glow" aria-hidden="true" />
         </button>
-        <el-dropdown
-          v-else
-          trigger="click"
-          @command="handleCommand"
-          popper-class="user-dropdown-popper"
-        >
+        <el-dropdown v-else trigger="click" @command="handleCommand" popper-class="user-dropdown-popper">
           <div class="el-dropdown-link" @mouseenter="onAvatarHover">
-            <el-avatar
-              shape="circle"
-              :size="40"
-              :src="userAvatar"
-              class="user-avatar"
-            />
+            <el-avatar shape="circle" :size="40" :src="userAvatar" class="user-avatar" />
             <span class="avatar-ring" aria-hidden="true" />
           </div>
           <template #dropdown>
@@ -206,16 +170,7 @@ import {
 } from '@element-plus/icons-vue'
 import { openBackendUrl } from '@/utils/backend-session'
 
-const COLORFUL_PALETTE = [
-  '#ff6b9d',
-  '#c084fc',
-  '#60a5fa',
-  '#34d399',
-  '#fbbf24',
-  '#fb7185',
-  '#22d3ee',
-  '#a78bfa'
-]
+const COLORFUL_PALETTE = ['#ff6b9d', '#c084fc', '#60a5fa', '#34d399', '#fbbf24', '#fb7185', '#22d3ee', '#a78bfa']
 
 export default {
   name: 'NavBar',
@@ -261,6 +216,12 @@ export default {
           text: '代码在线运行',
           description: '代码在线运行工具',
           href: '/tools/code',
+          image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
+        },
+        {
+          text: '射击游戏',
+          description: '3D射击游戏',
+          href: '/tools/shot',
           image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
         },
         // {
@@ -484,12 +445,13 @@ export default {
       if (command === 'logout') {
         this.handleLogout()
       } else if (command === 'clear-cache') {
-        responseApi.clearCache()
+        responseApi
+          .clearCache()
           .then(() => {
             this.$message.success('缓存已清除')
             this.$router.go(0)
           })
-          .catch((err) => {
+          .catch(err => {
             const msg = err?.message || err?.response?.data?.message || '未知错误'
             this.$message.error('清除失败：' + msg)
           })
@@ -584,11 +546,7 @@ export default {
       const palette = this.getThemePalette()
       const logoColors = this.isColorful
         ? palette
-        : [
-            { value: palette[0] },
-            { value: palette[1] || palette[0] },
-            { value: palette[0] }
-          ]
+        : [{ value: palette[0] }, { value: palette[1] || palette[0] }, { value: palette[0] }]
       anime({
         targets: this.$el.querySelectorAll('.logo-char'),
         translateY: [
@@ -665,16 +623,8 @@ export default {
 
       const palette = this.getThemePalette()
       const entranceColors = this.isColorful
-        ? [
-            { value: palette[0] },
-            { value: palette[2] || palette[0] },
-            { value: palette[1] || palette[0] }
-          ]
-        : [
-            { value: palette[0] },
-            { value: palette[1] || palette[0] },
-            { value: palette[0] }
-          ]
+        ? [{ value: palette[0] }, { value: palette[2] || palette[0] }, { value: palette[1] || palette[0] }]
+        : [{ value: palette[0] }, { value: palette[1] || palette[0] }, { value: palette[0] }]
       anime({
         targets: this.$el.querySelectorAll('.logo-char'),
         opacity: [0, 1],
@@ -728,14 +678,7 @@ export default {
       renderer.setClearColor(0x000000, 0)
 
       const scene = new THREE.Scene()
-      const camera = new THREE.OrthographicCamera(
-        -width / 2,
-        width / 2,
-        height / 2,
-        -height / 2,
-        0.1,
-        100
-      )
+      const camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, 0.1, 100)
       camera.position.z = 10
 
       // 粒子
@@ -852,7 +795,7 @@ export default {
       this._resizeObs = new ResizeObserver(() => this.resizeThree())
       this._resizeObs.observe(banner)
 
-      const tick = (t) => {
+      const tick = t => {
         this._raf = requestAnimationFrame(tick)
         this.updateThree(t * 0.001)
       }
@@ -939,11 +882,7 @@ export default {
         // 彩色主题：HSL 彩虹循环；其它主题：围绕 accent 明暗脉动
         if (this.isColorful) {
           const hueShift = (time * 0.15 + i * 0.07) % 1
-          this._tmpColor.setHSL(
-            (0.55 + hueShift * 0.45 + (this.mouse.inside ? this.mouse.x * 0.2 : 0)) % 1,
-            0.85,
-            0.62
-          )
+          this._tmpColor.setHSL((0.55 + hueShift * 0.45 + (this.mouse.inside ? this.mouse.x * 0.2 : 0)) % 1, 0.85, 0.62)
         } else {
           const pulse = 0.78 + 0.22 * Math.sin(time * 1.4 + v.phase)
           const ar = this._accentRgb.r
@@ -1090,8 +1029,7 @@ export default {
     background:
       radial-gradient(120% 180% at 10% 0%, rgba(255, 107, 157, 0.14), transparent 45%),
       radial-gradient(100% 160% at 90% 100%, rgba(96, 165, 250, 0.14), transparent 50%),
-      radial-gradient(80% 120% at 50% 50%, rgba(192, 132, 252, 0.1), transparent 55%),
-      var(--header-bg);
+      radial-gradient(80% 120% at 50% 50%, rgba(192, 132, 252, 0.1), transparent 55%), var(--header-bg);
   }
 }
 
@@ -1157,17 +1095,7 @@ export default {
     0 0 20px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 30%, transparent);
 
   .is-colorful & {
-    background: linear-gradient(
-      90deg,
-      #ff6b9d,
-      #c084fc,
-      #60a5fa,
-      #34d399,
-      #fbbf24,
-      #fb7185,
-      #22d3ee,
-      #ff6b9d
-    );
+    background: linear-gradient(90deg, #ff6b9d, #c084fc, #60a5fa, #34d399, #fbbf24, #fb7185, #22d3ee, #ff6b9d);
     background-size: 300% 100%;
     animation: rainbow-flow 6s linear infinite;
     box-shadow:
@@ -1358,12 +1286,7 @@ export default {
 .is-colorful .nav-el-menu {
   :deep(.el-menu-item:hover:not(.is-active):not(.nav-logo-item)),
   :deep(.el-sub-menu__title:hover) {
-    background: linear-gradient(
-      135deg,
-      #ff6b9d,
-      #c084fc 45%,
-      #60a5fa
-    ) !important;
+    background: linear-gradient(135deg, #ff6b9d, #c084fc 45%, #60a5fa) !important;
     color: #fff !important;
     -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
@@ -1379,12 +1302,7 @@ export default {
   }
 
   :deep(.el-menu-item.is-active:not(.nav-logo-item)) {
-    background: linear-gradient(
-      135deg,
-      #ff6b9d,
-      #c084fc 45%,
-      #60a5fa
-    ) !important;
+    background: linear-gradient(135deg, #ff6b9d, #c084fc 45%, #60a5fa) !important;
     color: #fff !important;
     -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
@@ -1407,12 +1325,7 @@ export default {
 
   :deep(.el-sub-menu.is-active > .el-sub-menu__title),
   :deep(.el-sub-menu.is-opened > .el-sub-menu__title) {
-    background: linear-gradient(
-      135deg,
-      #ff6b9d,
-      #c084fc 45%,
-      #60a5fa
-    ) !important;
+    background: linear-gradient(135deg, #ff6b9d, #c084fc 45%, #60a5fa) !important;
     color: #fff !important;
     -webkit-text-fill-color: #fff !important;
     background-clip: border-box !important;
@@ -1436,12 +1349,7 @@ export default {
   left: 0;
   width: 40%;
   pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    transparent,
-    rgba(255, 255, 255, 0.45),
-    transparent
-  );
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
   transform: translateX(-120%);
   mix-blend-mode: soft-light;
 }
@@ -1545,11 +1453,12 @@ export default {
   background:
     linear-gradient(var(--theme-el-bg-color, #fff), var(--theme-el-bg-color, #fff)) padding-box,
     linear-gradient(
-      135deg,
-      var(--theme-primary-dark-2, #0b84ba),
-      var(--theme-accent-color, #0ea5e9),
-      var(--theme-primary-light-3, #51bef1)
-    ) border-box;
+        135deg,
+        var(--theme-primary-dark-2, #0b84ba),
+        var(--theme-accent-color, #0ea5e9),
+        var(--theme-primary-light-3, #51bef1)
+      )
+      border-box;
   transition:
     border-color 0.3s ease,
     transform 0.3s ease,
@@ -1662,20 +1571,36 @@ export default {
 }
 
 @keyframes logo-float {
-  from { transform: translateY(-2px); }
-  to { transform: translateY(3px); }
+  from {
+    transform: translateY(-2px);
+  }
+  to {
+    transform: translateY(3px);
+  }
 }
 
 @keyframes logo-wiggle {
-  0% { transform: rotate(0deg); }
-  30% { transform: rotate(-12deg); }
-  60% { transform: rotate(12deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-12deg);
+  }
+  60% {
+    transform: rotate(12deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 @keyframes logo-enter-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes logo-item-enter {
@@ -1739,7 +1664,9 @@ export default {
     0 4px 16px color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 35%, transparent),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     box-shadow:
@@ -1769,12 +1696,7 @@ export default {
 .login-btn-glow {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    110deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.35) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
   transform: translateX(-100%);
   animation: login-shine 2.8s ease-in-out infinite;
 }
@@ -1864,11 +1786,7 @@ export default {
     margin: 2px 0;
 
     &:hover {
-      background: color-mix(
-        in srgb,
-        var(--theme-accent-color, #0ea5e9) 12%,
-        transparent
-      ) !important;
+      background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 12%, transparent) !important;
     }
   }
 }
@@ -1879,11 +1797,7 @@ export default {
   }
 
   .el-menu-item:hover {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 107, 157, 0.12),
-      rgba(96, 165, 250, 0.12)
-    ) !important;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.12), rgba(96, 165, 250, 0.12)) !important;
   }
 }
 
@@ -1895,13 +1809,16 @@ export default {
     background:
       linear-gradient(var(--theme-el-bg-color-overlay, #ffffff), var(--theme-el-bg-color-overlay, #ffffff)) padding-box,
       linear-gradient(
-        135deg,
-        var(--theme-primary-dark-2, #0b84ba),
-        var(--theme-accent-color, #0ea5e9),
-        var(--theme-primary-light-3, #51bef1)
-      ) border-box;
+          135deg,
+          var(--theme-primary-dark-2, #0b84ba),
+          var(--theme-accent-color, #0ea5e9),
+          var(--theme-primary-light-3, #51bef1)
+        )
+        border-box;
     backdrop-filter: blur(12px) saturate(180%);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.04);
     min-width: 160px;
   }
 
@@ -1924,11 +1841,7 @@ export default {
 
     &:hover,
     &:focus {
-      background: color-mix(
-        in srgb,
-        var(--theme-accent-color, #0ea5e9) 12%,
-        transparent
-      );
+      background: color-mix(in srgb, var(--theme-accent-color, #0ea5e9) 12%, transparent);
       color: var(--theme-accent-color, #0ea5e9);
 
       .el-icon {
@@ -1965,11 +1878,7 @@ export default {
 
   .el-dropdown-menu__item:hover,
   .el-dropdown-menu__item:focus {
-    background: linear-gradient(
-      135deg,
-      rgba(255, 107, 157, 0.12),
-      rgba(96, 165, 250, 0.14)
-    );
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.12), rgba(96, 165, 250, 0.14));
   }
 }
 </style>
