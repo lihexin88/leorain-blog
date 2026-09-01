@@ -3,6 +3,12 @@ import { useLayoutsStore } from '@/store/layouts'
 
 export default {
   name: 'ToolShot',
+  setup () {
+    const layoutsStore = useLayoutsStore()
+    return {
+      layoutsStore
+    }
+  },
   data () {
     return {
       loading: true,
@@ -10,8 +16,10 @@ export default {
     }
   },
   async mounted () {
-    const layoutsStore = await useLayoutsStore()
-    layoutsStore.showFooter = false
+    if (this.layoutsStore.isMobile) {
+      return false
+    }
+    this.layoutsStore.showFooter = false
     this.installAudioContextResumeShim()
     this.startGame()
   },
@@ -138,13 +146,16 @@ export default {
 </script>
 
 <template>
-  <div class="shot-container">
+  <div class="shot-container" v-if="!layoutsStore.isMobile">
     <canvas id="shooting-canvas"></canvas>
     <div v-if="loading" class="shot-overlay">游戏加载中…</div>
     <div v-else-if="error" class="shot-overlay">
       <p>游戏启动失败。</p>
       <p class="shot-error">{{ error }}</p>
     </div>
+  </div>
+  <div v-else class="mobile-tip">
+    为了更好的游戏体验，请在PC端打开。
   </div>
 </template>
 
@@ -183,10 +194,24 @@ export default {
     margin: 0;
   }
 
-  .shot-error {
+    .shot-error {
     font-family: monospace;
     font-size: 0.85rem;
     color: #ff6b6b;
   }
+}
+
+.mobile-tip {
+  width: 100%;
+  height: calc(100vh - 65px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b0d12;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  padding: 2rem;
+  text-align: center;
+  box-sizing: border-box;
 }
 </style>
