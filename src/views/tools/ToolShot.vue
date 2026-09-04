@@ -1,12 +1,16 @@
 <script>
 import { useLayoutsStore } from '@/store/layouts'
+import { useUserStore } from '@/store/user'
+import { USER_LOGIN_SUCCESS_EVENT } from '@/utils/auth-events'
 
 export default {
   name: 'ToolShot',
   setup () {
     const layoutsStore = useLayoutsStore()
+    const userStore = useUserStore()
     return {
-      layoutsStore
+      layoutsStore,
+      userStore
     }
   },
   data () {
@@ -19,9 +23,29 @@ export default {
     if (this.layoutsStore.isMobile) {
       return false
     }
-    this.layoutsStore.showFooter = false
-    this.installAudioContextResumeShim()
-    this.startGame()
+
+    if (!this.userStore.isLoggedIn) {
+      this.userStore.showLoginDialog = true
+      window.addEventListener(USER_LOGIN_SUCCESS_EVENT, () => {
+        // 登录成功后加载数据
+        this.layoutsStore.showFooter = false
+        this.installAudioContextResumeShim()
+        window.SHOOTING_CONFIG = {
+          token: this.userStore.token, // 已登录用户的 token
+          api_host: window.location.origin
+        }
+        this.startGame()
+      })
+      return false
+    } else {
+      this.layoutsStore.showFooter = false
+      this.installAudioContextResumeShim()
+      window.SHOOTING_CONFIG = {
+        token: this.userStore.token, // 已登录用户的 token
+        api_host: window.location.origin
+      }
+      this.startGame()
+    }
   },
   beforeUnmount () {
     this.teardownAudioContextResumeShim()
@@ -154,9 +178,7 @@ export default {
       <p class="shot-error">{{ error }}</p>
     </div>
   </div>
-  <div v-else class="mobile-tip">
-    为了更好的游戏体验，请在PC端打开。
-  </div>
+  <div v-else class="mobile-tip">为了更好的游戏体验，请在PC端打开。</div>
 </template>
 
 <style scoped lang="scss">
@@ -194,7 +216,7 @@ export default {
     margin: 0;
   }
 
-    .shot-error {
+  .shot-error {
     font-family: monospace;
     font-size: 0.85rem;
     color: #ff6b6b;
