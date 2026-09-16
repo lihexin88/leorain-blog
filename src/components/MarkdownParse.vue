@@ -59,6 +59,10 @@ export default {
       default () {
         return null
       }
+    },
+    masonry: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -100,6 +104,9 @@ export default {
       this.rawHtml = html
       this.$nextTick(() => {
         this.addCopyButtonEvent()
+        if (this.masonry) {
+          this.applyMasonry()
+        }
       })
     },
     handleEvent (event) {
@@ -254,6 +261,80 @@ export default {
         })
       })
     },
+    // 把连续相邻的“纯媒体块”整理成瀑布流
+    applyMasonry () {
+      const root = this.$refs.markdownContent
+      if (!root) return
+      const blocks = this.findMediaBlocks(root)
+
+      // 按文档顺序，把相邻的媒体块归为一组
+      const groups = []
+      let group = []
+      blocks.forEach(block => {
+        if (group.length && this.isConsecutive(group[group.length - 1], block)) {
+          group.push(block)
+        } else {
+          if (group.length) groups.push(group)
+          group = [block]
+        }
+      })
+      if (group.length) groups.push(group)
+
+      groups.forEach(items => {
+        if (items.length < 2) return // 单张图片保持原样，不动
+        const first = items[0]
+        const parent = first.parentNode
+        const anchor = first.nextSibling // 记住插入位置
+        const masonry = document.createElement('div')
+        masonry.className = 'markdown-masonry'
+        items.forEach(block => {
+          const item = document.createElement('div')
+          item.className = 'markdown-masonry-item'
+          item.appendChild(block) // 把整个块移进来
+          masonry.appendChild(item)
+        })
+        parent.insertBefore(masonry, anchor)
+      })
+    },
+    // 找出“只含图片/视频”的块级元素
+    findMediaBlocks (root) {
+      const inlineTags = ['A', 'SPAN', 'EM', 'STRONG', 'B', 'I', 'U', 'CODE', 'PICTURE']
+      const blocks = []
+      const seen = new Set()
+      root.querySelectorAll('img, video').forEach(el => {
+        let block = el.parentElement
+        // 跳过内联包装层（<a>、<span>…），定位到段落/容器
+        while (block && block !== root && inlineTags.includes(block.tagName)) {
+          block = block.parentElement
+        }
+        if (!block || block === root || seen.has(block)) return
+        seen.add(block)
+        if (this.isMediaOnly(block)) blocks.push(block)
+      })
+      return blocks
+    },
+    // 块内除媒体外没有文字内容
+    isMediaOnly (block) {
+      const allow = ['IMG', 'VIDEO', 'A', 'SPAN', 'EM', 'STRONG', 'B', 'I', 'U', 'BR', 'FIGURE', 'PICTURE', 'SOURCE']
+      return Array.from(block.childNodes).every(node => {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() === ''
+        if (node.nodeType === Node.ELEMENT_NODE) return allow.includes(node.tagName)
+        return true
+      })
+    },
+    // 两个块是否相邻（中间只有空白文本节点）
+    isConsecutive (a, b) {
+      let node = a.nextSibling
+      while (node) {
+        if (node === b) return true
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') {
+          node = node.nextSibling
+          continue
+        }
+        return false
+      }
+      return false
+    },
     exec (language, code) {
       this.executor.code = code
       this.executor.cost_time = null
@@ -380,6 +461,9 @@ pre:hover .copy-button {
   overflow-wrap: break-word;
   white-space: pre-wrap; /* 自动换行 */
 }
+.markdown img:hover {
+  transition: all ease-in-out 0.3s;
+}
 
 .markdown .hljs {
   background-color: transparent;
@@ -438,5 +522,43 @@ pre:hover .copy-button {
 
 .executor-button:hover {
   background-color: #46a1f1;
+}
+</style>
+
+<style lang="scss">
+.markdown-masonry {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  margin: 0;
+}
+
+.markdown-masonry-item {
+  position: relative;
+  aspect-ratio: 4 / 3; /* 统一格子比例，可改成 1 / 1 做方形 */
+  overflow: hidden;
+  margin: 0;
+}
+
+/* 去掉段落等块级元素的默认外边距 */
+.markdown-masonry-item > * {
+  margin: 0;
+}
+
+.markdown-masonry-item img,
+.markdown-masonry-item video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 窄屏降为单列 */
+@media (max-width: 768px) {
+  .markdown-masonry {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

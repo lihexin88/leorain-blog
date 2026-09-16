@@ -149,7 +149,7 @@
       <el-divider> git log </el-divider>
       <git-logs />
     </div>
-    <div class="info-div">
+    <div class="info-div" v-if="false">
       <el-divider>站内资源</el-divider>
       <site-asset />
     </div>

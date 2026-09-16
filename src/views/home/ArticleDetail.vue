@@ -83,7 +83,7 @@
         <div class="row container-text-overflow-wrap article-content-container">
           <div class="article-content">
             <div v-if="article.is_markdown">
-              <parse class="article-parser" v-if="article.content" id="article-show-content" :content="article.content"></parse>
+              <parse class="article-parser" v-if="article.content" id="article-show-content" :content="article.content" :masonry="true"></parse>
             </div>
             <div v-else id="article-show-content" v-html="article.content"></div>
             <div class="offset-lg-1">
