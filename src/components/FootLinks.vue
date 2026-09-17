@@ -59,13 +59,6 @@ export default {
           text: '十年之约'
         },
         {
-          tooltipHtml:
-            "致敬每一个坚持写博客的人。Salute to every blogger.在茫茫比特流之中，能遇见你，真是幸运！It's really lucky to meet you in the vast Bitstream!",
-          href: 'https://ourblo.gs',
-          alt: 'OurBlogs',
-          img: 'https://ourblo.gs/usr/uploads/2024/02/654341101.jpg'
-        },
-        {
           tooltip: '异次元之旅-跃迁-我们一起去萌站成员的星球旅行吧！',
           href: 'https://travel.moe/go.html',
           alt: '异次元之旅',

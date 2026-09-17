@@ -21,13 +21,13 @@
         class="mini-stat mini-stat--action"
         role="button"
         tabindex="0"
-        title="回到顶部"
-        @click.stop="scrollToTop"
-        @keydown.enter.stop.prevent="scrollToTop"
-        @keydown.space.stop.prevent="scrollToTop"
+        :title="isAtTop ? '跳转到底部' : '回到顶部'"
+        @click.stop="toggleScroll"
+        @keydown.enter.stop.prevent="toggleScroll"
+        @keydown.space.stop.prevent="toggleScroll"
       >
-        <i class="mini-stat__icon fas fa-arrow-up" aria-hidden="true"></i>
-        <span class="mini-stat__value">顶部</span>
+        <i :class="['mini-stat__icon', isAtTop ? 'fas fa-arrow-down' : 'fas fa-arrow-up']" aria-hidden="true"></i>
+        <span class="mini-stat__value">{{ isAtTop ? '底部' : '顶部' }}</span>
       </div>
       <div class="mini-stat mini-stat--stat" :title="`在线 ${formatNumber(stats.online)}`">
         <i class="mini-stat__icon fas fa-user" aria-hidden="true"></i>
@@ -118,8 +118,8 @@
           <div>在线人数: {{ formatNumber(stats.online) }}</div>
           <div>实时qps: {{ formatNumber(stats.qps) }}</div>
           <div>最大qps: {{ formatNumber(stats.max_qps) }}</div>
-          <div>启动后访客: {{ formatNumber(stats.count) }}</div>
-          <div>今日访客: {{ formatNumber(stats.today_count) }}</div>
+          <div>启动后访客: {{ formatThousands(stats.count) }}</div>
+          <div>今日访客: {{ formatThousands(stats.today_count) }}</div>
         </div>
         <div>
           <el-divider> 主题颜色 </el-divider>
@@ -167,6 +167,8 @@ export default {
       button_type: 'info',
       isStatsFlashing: false,
       statsFlashTimer: null,
+      isAtTop: true,
+      scrollHandler: null,
       connection_retried: 0,
       stats: {
         load_average: 0,
@@ -227,6 +229,12 @@ export default {
       if (Number.isInteger(n)) return n
       return n.toFixed(2)
     },
+    formatThousands (value) {
+      if (value === null || value === undefined || value === '') return value
+      const n = Number(value)
+      if (Number.isNaN(n)) return value
+      return n.toLocaleString('en-US')
+    },
     formatProgress (percent) {
       if (percent === null || percent === undefined || percent === '') return ''
       const n = Number(percent)
@@ -242,8 +250,15 @@ export default {
     switch_show_settings () {
       this.show_settings_draw = !this.show_settings_draw
     },
-    scrollToTop () {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    toggleScroll () {
+      if (this.isAtTop) {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    },
+    updateScrollPosition () {
+      this.isAtTop = window.scrollY <= 1
     },
     flashStatsButton () {
       this.isStatsFlashing = false
@@ -542,10 +557,16 @@ export default {
     if (this.show_visitor) {
       this.connectWebSocket()
     }
+    this.scrollHandler = this.updateScrollPosition
+    window.addEventListener('scroll', this.scrollHandler, { passive: true })
+    this.updateScrollPosition()
   },
   beforeUnmount () {
     if (this.statsFlashTimer) {
       clearTimeout(this.statsFlashTimer)
+    }
+    if (this.scrollHandler) {
+      window.removeEventListener('scroll', this.scrollHandler)
     }
     this.removeSystemThemeListener()
   },
