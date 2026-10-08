@@ -296,4 +296,10 @@ body.el-popup-parent--hidden {
   outline: none;
 }
 
+.clickable{
+  cursor: pointer;
+  &:hover{
+    text-decoration: underline;
+  }
+}
 

@@ -23,6 +23,7 @@ export default {
     if (this.layoutsStore.isMobile) {
       return false
     }
+    this.layoutsStore.showSiteInfo = false
 
     if (!this.userStore.isLoggedIn) {
       this.userStore.showLoginDialog = true
@@ -44,6 +45,9 @@ export default {
         token: this.userStore.token, // 已登录用户的 token
         api_host: window.location.origin
       }
+      window.addEventListener('shooting:unauthorized', (e) => {
+        this.userStore.showGuestDialog = true
+      })
       this.startGame()
     }
   },

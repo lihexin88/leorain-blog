@@ -107,7 +107,7 @@
                   <span class="activity-time">{{ comment.created_at_human }}</span>
                 </div>
                 <div class="activity-content">
-                  <markdown-parse :content="renderComment(comment)"></markdown-parse>
+                  <markdown-parse @click="openSource(comment)" class="clickable" :content="renderComment(comment)"></markdown-parse>
                 </div>
               </div>
             </div>
@@ -352,6 +352,10 @@ export default {
       } catch (e) {
         return comment.content
       }
+    },
+    openSource (comment) {
+      const url = this.getCommentableLink(comment) + '#comment_id_' + comment.id
+      window.open(url, '_blank')
     }
   },
   watch: {
@@ -709,10 +713,6 @@ export default {
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-  }
-
   :deep(.el-card__header) {
     padding: 16px 20px;
     border-bottom: 1px solid var(--article-border, rgba(0, 0, 0, 0.06));
@@ -881,9 +881,6 @@ export default {
 .user-items-wrapper {
   margin-top: 4px;
   transition: all 0.3s ease-in-out;
-  &:hover{
-    transform: translateY(-5px);
-  }
 }
 
 /* ========== Responsive ========== */

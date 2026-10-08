@@ -11,7 +11,13 @@
       </div>
       <div :class="contentWrapperClass">
         <div :class="nullClass" v-if="comments.length == 0">{{ nullText }}</div>
-        <div class="media" v-for="(comment, index) in comments" :key="comment.id" v-else>
+        <div
+          class="media"
+          v-for="(comment, index) in comments"
+          :key="comment.id"
+          v-else
+          :id="`comment_id_` + comment.id"
+        >
           <div class="media-body box-body">
             <div class="comment-heading">
               <div class="header-avatar" v-if="comment.user_id != null">
@@ -141,7 +147,19 @@ import MD5 from 'crypto-js/md5'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 
 export default {
-  components: { MarkdownParse, ChromeFilled, UserForm, VoteButton, Plus, User, Clock, Location, Delete, ChatDotRound, Loading },
+  components: {
+    MarkdownParse,
+    ChromeFilled,
+    UserForm,
+    VoteButton,
+    Plus,
+    User,
+    Clock,
+    Location,
+    Delete,
+    ChatDotRound,
+    Loading
+  },
   props: {
     contentWrapperClass: {
       type: String,
@@ -369,6 +387,22 @@ export default {
           }
         }
         this.comments = response.data
+        // 获取当前路由是否有地址跳转
+        const url = new URL(window.location.href)
+        if (url.hash) {
+          // 跳转到指定锚点
+          this.$nextTick(() => {
+            const element = document.querySelector(url.hash)
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' })
+              element.classList.add('highlight-flash')
+              setTimeout(() => {
+                element.classList.remove('highlight-flash')
+              }, 2000)
+            }
+          })
+        }
+        console.log(url, url.hash)
       })
 
     if (this.login_user_avatar === '') {
@@ -795,6 +829,23 @@ export default {
   display: flex;
   padding: 0 5px;
   align-items: center;
+}
+
+@keyframes flash {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: var(--el-color-success-light-8);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlight-flash {
+  animation: flash 1s ease-in-out 2;
+  border-radius: 20px;
 }
 
 .comment-editor-wrapper :deep(.CodeMirror) {
