@@ -23,20 +23,38 @@
       </div>
     </div>
     <template v-if="loaded && !error">
-      <ul class="countdowns" aria-label="距今时长与未来计划">
-        <li v-for="item in counters" :key="item.id">
-          <template v-if="item.type === 'elapsed'">{{ item.title }} <strong>{{ item.days }}天</strong></template>
-          <template v-else-if="item.days > 0">距离{{ item.title }}还有 <strong>{{ item.days }}天</strong></template>
-          <template v-else-if="item.days === 0">{{ item.title }} <strong>就是今天</strong></template>
-          <template v-else>{{ item.title }}已过去 <strong>{{ -item.days }}天</strong></template>
-        </li>
-      </ul>
+      <section v-if="counters.length" class="timeline-section" aria-labelledby="counter-timeline-title">
+        <h3 id="counter-timeline-title" class="timeline-title">距今时长</h3>
+        <ul class="timeline" aria-label="距今时长与未来计划">
+          <li v-for="item in counters" :key="item.id" class="timeline-item">
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div class="timeline-card">
+              <span class="timeline-kind">{{ item.type === 'elapsed' ? '距今时长' : '未来计划' }}</span>
+              <p>
+                <template v-if="item.type === 'elapsed'">{{ item.title }}已经 <strong>{{ item.days }}天</strong></template>
+                <template v-else-if="item.days > 0">距离{{ item.title }}还有 <strong>{{ item.days }}天</strong></template>
+                <template v-else-if="item.days === 0">{{ item.title }} <strong>就是今天</strong></template>
+                <template v-else>{{ item.title }}已过去 <strong>{{ -item.days }}天</strong></template>
+              </p>
+              <time :datetime="item.date">{{ item.date }}</time>
+            </div>
+          </li>
+        </ul>
+      </section>
       <p v-if="!counters.length" class="empty">暂无公开的距今时长或未来计划</p>
-      <ul class="countdowns holidays" aria-label="未来三个节假日">
-        <li v-for="holiday in holidays" :key="holiday.date + holiday.title">
-          距离{{ holiday.title }}还有 <strong>{{ holiday.days }}天</strong>
-        </li>
-      </ul>
+      <section v-if="holidays.length" class="timeline-section holidays" aria-labelledby="holiday-timeline-title">
+        <h3 id="holiday-timeline-title" class="timeline-title">未来节假日</h3>
+        <ul class="timeline" aria-label="未来三个节假日">
+          <li v-for="holiday in holidays" :key="holiday.date + holiday.title" class="timeline-item">
+            <span class="timeline-node" aria-hidden="true"></span>
+            <div class="timeline-card">
+              <span class="timeline-kind">节假日</span>
+              <p>距离{{ holiday.title }}还有 <strong>{{ holiday.days }}天</strong></p>
+              <time :datetime="holiday.date">{{ holiday.date }}</time>
+            </div>
+          </li>
+        </ul>
+      </section>
     </template>
   </el-card>
 </template>
@@ -106,8 +124,30 @@ button:focus-visible { outline: 2px solid var(--el-color-primary); outline-offse
 .calendar-day.today { box-shadow: inset 0 0 0 1px var(--el-color-primary); color: var(--el-color-primary); }
 .lunar-date { display: block; margin-top: 3px; font-size: 10px; line-height: 1.3; color: var(--el-text-color-secondary); overflow-wrap: anywhere; }
 .event { display: block; overflow-wrap: anywhere; margin-top: 3px; font-size: 10px; line-height: 1.3; color: var(--el-color-primary); }
-.countdowns { list-style: none; padding: 0; margin: 14px 0 0; font-size: 13px; line-height: 1.9; overflow-wrap: anywhere; }
-.countdowns strong { color: var(--el-color-primary); white-space: nowrap; }
-.holidays { border-top: 1px solid var(--el-border-color-lighter); padding-top: 10px; }
+.timeline-section { margin-top: 18px; }
+.timeline-section.holidays { border-top: 1px solid var(--el-border-color-lighter); padding-top: 16px; }
+.timeline-title { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.timeline { position: relative; list-style: none; padding: 2px 0 2px 22px; margin: 0; overflow-wrap: anywhere; }
+.timeline::before { position: absolute; top: 8px; bottom: 8px; left: 6px; width: 2px; border-radius: 2px; background: var(--el-color-primary-light-7); box-shadow: 0 0 5px var(--el-color-primary-light-5); content: ''; }
+.timeline::after { position: absolute; top: 8px; bottom: 8px; left: 5px; width: 4px; border-radius: 4px; background: linear-gradient(180deg, transparent 0%, var(--el-color-primary-light-5) 28%, rgb(255 255 255 / 95%) 50%, var(--el-color-primary) 72%, transparent 100%); background-repeat: no-repeat; background-position: 0 -100%; background-size: 100% 45%; filter: drop-shadow(0 0 4px var(--el-color-primary)); content: ''; pointer-events: none; animation: timeline-flow 2s linear infinite; }
+.timeline-item { position: relative; padding: 0 0 12px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-node { position: absolute; top: 14px; left: -20px; z-index: 1; width: 10px; height: 10px; border: 2px solid var(--el-bg-color); border-radius: 50%; background: var(--el-color-primary); box-shadow: 0 0 0 3px var(--el-color-primary-light-8); animation: timeline-pulse 2s ease-in-out infinite; }
+.timeline-card { padding: 10px 12px; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-fill-color-light); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.timeline-card:hover { border-color: var(--el-color-primary-light-5); box-shadow: 0 5px 14px rgb(0 0 0 / 6%); transform: translateX(3px); }
+.timeline-card p { margin: 4px 0; font-size: 13px; line-height: 1.6; }
+.timeline-card strong { color: var(--el-color-primary); white-space: nowrap; }
+.timeline-card time { color: var(--el-text-color-secondary); font-size: 11px; }
+.timeline-kind { color: var(--el-color-primary); font-size: 11px; }
 .empty { color: var(--el-text-color-secondary); font-size: 12px; }
+@keyframes timeline-flow {
+  from { background-position: 0 -100%; }
+  to { background-position: 0 200%; }
+}
+@keyframes timeline-pulse { 50% { box-shadow: 0 0 0 6px transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  .timeline::after, .timeline-node { animation: none; }
+  .timeline::after { background-position: 0 50%; }
+  .timeline-card { transition: none; }
+}
 </style>
