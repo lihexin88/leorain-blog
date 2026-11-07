@@ -224,12 +224,12 @@ export default {
           href: '/tools/shot',
           image: 'https://images.leorain.cn/icons/tools/tool_cpp.png'
         },
-        // {
-        //   text: '在线同步绘画',
-        //   description: '在线协作作图工具',
-        //   href: '/tools/draw',
-        //   image: 'https://images.leorain.cn/icons/tools/tool_draw.png'
-        // },
+        {
+          text: '在线同步绘画',
+          description: '在线协作作图工具',
+          href: '/tools/draw',
+          image: 'https://images.leorain.cn/icons/tools/tool_draw.png'
+        },
         {
           text: '在线剪切板',
           description: '在线同步剪切板',

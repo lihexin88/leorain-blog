@@ -20,7 +20,7 @@
             </div>
           </template>
           <div class="drawer-list-content" ref="drawerList" v-infinite-scroll="handleScroll">
-            <div v-for="(i,index) in draw_list" :key="i.asset_id" class="drawer-list-item">
+            <div v-for="i in draw_list" :key="i.asset_id" class="drawer-list-item">
               <div class="drawer-list-title">
                 <div>
                   {{ i.name }}
@@ -65,8 +65,8 @@
           </div>
         </el-drawer>
       </div>
-      <div id="drawer" class="drawer" :class="{'drawer-disabled': drawing}">
-        <canvas id="drawCanvas"></canvas>
+      <div id="drawer" class="drawer" :class="{'drawer-disabled': canvasBusy}">
+        <canvas ref="drawCanvas" class="draw-canvas"></canvas>
       </div>
       <div class="draw-setting-container">
         <el-drawer v-model="show_draw_setting" direction="rtl">
@@ -122,7 +122,7 @@
         <el-input v-model="new_asset_name" placeholder="请输入画布名称">名称</el-input>
       </div>
       <template v-slot:footer>
-        <el-button >取消</el-button>
+        <el-button @click="show_new_modal = false">取消</el-button>
         <el-button @click="create_new_draw" >确定</el-button>
       </template>
     </el-dialog>
@@ -223,7 +223,12 @@ export default {
       show_draw_setting: false,
       canvasTx: null,
       canvas: null,
+      canvasBusy: false,
       drawing: false,
+      pointerDown: false,
+      activePointerId: null,
+      strokeRequestId: 0,
+      loadRequestId: 0,
       lineWidth: 3,
       printerColor: '#ce1e1e',
       currentLine: [], // 当前线段的坐标
@@ -239,13 +244,13 @@ export default {
   methods: {
     ...mapActions(useUserStore, ['setShowLoginDialog']),
     delete_asset (assetId) {
-      deleteDraw(assetId).then((response) => {
+      deleteDraw(assetId).then(() => {
         this.draw_list = this.draw_list.filter(item => item.asset_id !== assetId)
         this.$message.warning('已删除')
       })
     },
     check_current (assetId) {
-      return assetId === this.asset_id ?? false
+      return assetId === this.asset_id
     },
     reload_draw_list () {
       this.draw_list = []
@@ -253,7 +258,7 @@ export default {
       this.get_draw_list()
     },
     handleScroll: debounce(function () {
-      if (this?.asset_list_meta?.pagination?.links?.next) {
+      if (!this.loading_draw_list && this?.asset_list_meta?.pagination?.links?.next) {
         this.page++
         this.get_draw_list()
       }
@@ -280,7 +285,7 @@ export default {
      * 保存
      */
     save () {
-      saveDraw(this.asset_id).then((response) => {
+      saveDraw(this.asset_id).then(() => {
         this.$message.success('保存成功')
       })
     },
@@ -293,11 +298,8 @@ export default {
       }
       this.show_draw_list = false
       this.show_draw_setting = false
+      this.abortDrawing()
       this.asset_id = assetId
-      // 加载当前数据
-      getDraw(this.asset_id).then((response) => {
-        this.asset_name = response.data.name
-      })
       this.load()
     },
     /**
@@ -395,7 +397,6 @@ export default {
           this.show_new_modal = true
         }
         this.asset_list_meta = response.meta ?? {}
-        this.loading_draw_list = false
       }).catch((response) => {
         console.log(response)
         if (response.status === 401) {
@@ -409,6 +410,8 @@ export default {
             this.setShowLoginDialog(true)
           })
         }
+      }).finally(() => {
+        this.loading_draw_list = false
       })
     },
     export_image () {
@@ -459,12 +462,10 @@ export default {
         return false
       }
       this.tool_access_token = userStore.token
-      // 1. 创建 SockJS 连接
-      const socket = new SockJS(import.meta.env.VITE_TOOL_HOST + '/draw?access_token=' + this.tool_access_token) // WebSocket 端点
-
-      // 2. 创建 STOMP 客户端
+      // 每次重连都必须创建新的 SockJS 实例
+      const socketUrl = import.meta.env.VITE_TOOL_HOST + '/draw?access_token=' + this.tool_access_token
       this.stompClient = new Client({
-        webSocketFactory: () => socket, // 连接 SockJS
+        webSocketFactory: () => new SockJS(socketUrl),
         reconnectDelay: 1000, // 断线重连间隔时间
         heartbeatIncoming: 1000,
         heartbeatOutgoing: 1000
@@ -476,13 +477,12 @@ export default {
         // 订阅服务端的频道 "/topic/timestamp"
         this.stompClient.subscribe('/draw/message', (message) => {
           const paintBean = JSON.parse(message.body)
-          this.drawing = true
           if (paintBean.type === 2) {
             // 清除画布
             this.canvasTx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-            this.drawing = false
             return
           }
+          if (!paintBean.positionList?.length) return
           // 设置样式
           this.canvasTx.lineWidth = paintBean.lineWidth
           this.canvasTx.strokeStyle = paintBean.color
@@ -494,7 +494,6 @@ export default {
           }
           this.canvasTx.stroke()
           this.canvasTx.closePath()
-          this.drawing = false
         })
       }
 
@@ -502,11 +501,10 @@ export default {
       this.stompClient.onStompError = (frame) => {
         console.error('WebSocket 错误: ', frame)
       }
-      this.stompClient.onWebSocketClose = (frame) => {
-        setTimeout(() => {
+      this.stompClient.onWebSocketClose = () => {
+        if (this.stompClient?.active) {
           this.$message.warning('断线重连中')
-          this.connectWebSocket()
-        }, 2000)
+        }
       }
 
       this.stompClient.activate() // 激活连接
@@ -521,37 +519,116 @@ export default {
         console.log(this.stompClient)
       }
     },
-    getMousePos (event) {
+    getPointerPos (event) {
       const rect = this.canvas.getBoundingClientRect()
       return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+        x: (event.clientX - rect.left) * (this.canvas.width / rect.width),
+        y: (event.clientY - rect.top) * (this.canvas.height / rect.height)
       }
     },
-    paintOver (event) {
-      this.drawing = true
-      // 保存完成的线段到 lines
-      this.lines.push(this.currentLine)
-      // 推送到服务端
-      const destination = '/draw/paint' // 替换为你的目标
-      this.sendMessage(destination, JSON.stringify({
-        draw_id: this.asset_id,
-        paint_bean: {
-          positionList: this.currentLine,
-          color: this.printerColor,
-          lineWidth: this.lineWidth
+    drawPath (points, color = this.printerColor, width = this.lineWidth) {
+      if (!points.length) return
+      this.canvasTx.strokeStyle = color
+      this.canvasTx.lineWidth = width
+      this.canvasTx.beginPath()
+      this.canvasTx.moveTo(points[0].x, points[0].y)
+      for (let i = 1; i < points.length; i++) {
+        this.canvasTx.lineTo(points[i].x, points[i].y)
+      }
+      this.canvasTx.stroke()
+      this.canvasTx.closePath()
+    },
+    startDrawing (event) {
+      if (event.button !== 0 || this.canvasBusy || !this.asset_id) return
+
+      event.preventDefault()
+      this.pointerDown = true
+      this.drawing = false
+      this.activePointerId = event.pointerId
+      this.currentLine = [this.getPointerPos(event)]
+      const requestId = ++this.strokeRequestId
+      this.canvas.setPointerCapture?.(event.pointerId)
+
+      getDrawLock(this.asset_id).then((response) => {
+        // 鼠标已松开或已开始了另一次绘制，过期的锁结果不能改写当前状态
+        if (requestId !== this.strokeRequestId || !this.pointerDown) return
+        if (response.data !== true) {
+          this.currentLine = []
+          this.$message.warning('画布正在被使用，请稍后再试')
+          return
         }
+
+        this.drawing = true
+        this.drawPath(this.currentLine)
+      }).catch(() => {
+        if (requestId === this.strokeRequestId) {
+          this.currentLine = []
+          this.drawing = false
+          this.$message.error('获取画布锁失败')
+        }
+      })
+    },
+    continueDrawing (event) {
+      if (!this.pointerDown || event.pointerId !== this.activePointerId) return
+
+      const pos = this.getPointerPos(event)
+      const previous = this.currentLine[this.currentLine.length - 1]
+      this.currentLine.push(pos)
+      if (this.drawing && previous) {
+        this.drawPath([previous, pos])
+      }
+    },
+    abortDrawing () {
+      this.pointerDown = false
+      this.drawing = false
+      this.activePointerId = null
+      this.currentLine = []
+      this.strokeRequestId++
+    },
+    stopDrawing (event) {
+      if (!this.pointerDown || event.pointerId !== this.activePointerId) return
+
+      this.pointerDown = false
+      this.activePointerId = null
+      if (this.canvas.hasPointerCapture?.(event.pointerId)) {
+        this.canvas.releasePointerCapture(event.pointerId)
+      }
+
+      if (this.drawing && this.currentLine.length > 1) {
+        this.paintOver()
+      } else {
+        this.currentLine = []
+      }
+      this.drawing = false
+      // 使尚未返回的锁请求失效
+      this.strokeRequestId++
+    },
+    paintOver () {
+      const completedLine = this.currentLine.slice()
+      const path = {
+        positionList: completedLine,
+        color: this.printerColor,
+        lineWidth: this.lineWidth
+      }
+      // 保持与服务端初始数据相同的结构
+      this.lines.push(path)
+      // 推送到服务端
+      this.sendMessage('/draw/paint', JSON.stringify({
+        draw_id: this.asset_id,
+        paint_bean: path
       }))
       this.currentLine = [] // 清空当前线段
-      this.drawing = false
     },
     load () {
+      const assetId = this.asset_id
+      const requestId = ++this.loadRequestId
       this.canvasTx.clearRect(0, 0, this.canvas.width, this.canvas.height) // 清空画布
-      this.drawing = true
+      this.canvasBusy = true
       Promise.all([
-        getDraw(this.asset_id),
-        getDrawInitData(this.asset_id)
+        getDraw(assetId),
+        getDrawInitData(assetId)
       ]).then(([drawResponse, initDataResponse]) => {
+        if (requestId !== this.loadRequestId || assetId !== this.asset_id) return
         this.asset_name = drawResponse.data.name
         this.lines = initDataResponse ?? []
 
@@ -577,6 +654,7 @@ export default {
           this.canvasTx.closePath()
         })
       }).then(() => {
+        if (requestId !== this.loadRequestId || assetId !== this.asset_id) return
         if (this.lines.length > 0) {
           const lastPath = this.lines[this.lines.length - 1]
           if (lastPath?.color) {
@@ -587,13 +665,15 @@ export default {
           }
         }
       }).finally(() => {
-        this.drawing = false
+        if (requestId === this.loadRequestId) {
+          this.canvasBusy = false
+        }
       })
     }
   },
   watch: {
     printerColor (newValue) {
-      this.canvasTx.strokeStyle = newValue
+      if (this.canvasTx) this.canvasTx.strokeStyle = newValue
     }
   },
   beforeUnmount () {
@@ -601,10 +681,10 @@ export default {
       this.stompClient.deactivate()
     }
     if (this.canvas) {
-      this.canvas.removeEventListener('mousedown', this.handleMouseDown)
-      this.canvas.removeEventListener('mousemove', this.handleMouseMove)
-      this.canvas.removeEventListener('mouseup', this.handleMouseUp)
-      this.canvas.removeEventListener('mouseleave', this.handleMouseLeave)
+      this.canvas.removeEventListener('pointerdown', this.startDrawing)
+      this.canvas.removeEventListener('pointermove', this.continueDrawing)
+      this.canvas.removeEventListener('pointerup', this.stopDrawing)
+      this.canvas.removeEventListener('pointercancel', this.stopDrawing)
     }
   },
   mounted () {
@@ -612,60 +692,19 @@ export default {
     // 初始化画布
     this.asset_id = urlParams.get('asset_id')
 
-    this.canvas = document.getElementById('drawCanvas')
+    this.canvas = this.$refs.drawCanvas
     this.canvas.width = document.getElementById('drawer').offsetWidth
     this.canvas.height = document.getElementById('drawer').offsetHeight
     this.canvasTx = this.canvas.getContext('2d')
     this.canvasTx.lineWidth = this.lineWidth
     this.canvasTx.strokeStyle = this.printerColor
     this.canvasTx.lineJoin = 'round'
+    this.canvasTx.lineCap = 'round'
 
-    // 绑定鼠标按下事件
-    this.handleMouseDown = (event) => {
-      // 关闭已存在的画布
-      getDrawLock(this.asset_id).then((response) => {
-        if (response.data === true) {
-          this.drawing = true
-          this.currentLine = [] // 清空当前线段
-        } else {
-          this.drawing = true
-        }
-      })
-    }
-    this.canvas.addEventListener('mousedown', this.handleMouseDown)
-
-    // 绑定鼠标移动事件
-    this.handleMouseMove = (event) => {
-      if (this.drawing) {
-        const pos = this.getMousePos(event)
-        // 第一个点时初始化路径，避免异步锁请求延迟导致 moveTo 位置偏差产生直线
-        if (this.currentLine.length === 0) {
-          this.canvasTx.beginPath()
-          this.canvasTx.lineWidth = this.lineWidth
-          this.canvasTx.moveTo(pos.x, pos.y)
-        }
-        this.canvasTx.lineTo(pos.x, pos.y)
-        this.canvasTx.stroke()
-        this.currentLine.push({ x: pos.x, y: pos.y }) // 保存当前线段的坐标
-      }
-    }
-    this.canvas.addEventListener('mousemove', this.handleMouseMove)
-
-    // 绑定鼠标抬起事件
-    this.handleMouseUp = (event) => {
-      if (this.currentLine.length > 0) {
-        this.paintOver(event)
-      }
-    }
-    this.canvas.addEventListener('mouseup', this.handleMouseUp)
-
-    // 绑定鼠标离开事件
-    this.handleMouseLeave = (event) => {
-      if (this.currentLine.length > 0) {
-        this.paintOver(event)
-      }
-    }
-    this.canvas.addEventListener('mouseleave', this.handleMouseLeave)
+    this.canvas.addEventListener('pointerdown', this.startDrawing)
+    this.canvas.addEventListener('pointermove', this.continueDrawing)
+    this.canvas.addEventListener('pointerup', this.stopDrawing)
+    this.canvas.addEventListener('pointercancel', this.stopDrawing)
     // 开启链接
     this.connectWebSocket()
     // 判断是否有初始化数据
@@ -785,8 +824,15 @@ export default {
   height: 100%;
 }
 
-.draw-disabled {
+.drawer-disabled {
   cursor: not-allowed;
+}
+
+.draw-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
 }
 
 .draw-container {
