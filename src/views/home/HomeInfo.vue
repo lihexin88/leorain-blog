@@ -158,6 +158,10 @@
       <visitor-map />
     </div>
     <div class="info-div">
+      <el-divider>纪念日</el-divider>
+      <anniversary />
+    </div>
+    <div class="info-div">
       <el-card class="travel-div">
         <div style="font-size: 0.85em">
           <i class="fa fa-satellite"></i>旅行者1号已旅行 {{ distance }} 千米,约 {{ light_year_count }} 光年
@@ -169,6 +173,7 @@
 
 <script>
 import moment from 'moment'
+import Anniversary from '@/components/Anniversary.vue'
 import GitLogs from '@/components/GitLogs.vue'
 import MarkdownParse from '@/components/MarkdownParse.vue'
 import VisitorMap from '@/components/VisitorMap.vue'
@@ -183,6 +188,7 @@ import { useConfigStore } from '@/store/config'
 
 export default {
   components: {
+    Anniversary,
     VisitorMap,
     GitLogs,
     TagCloud,
