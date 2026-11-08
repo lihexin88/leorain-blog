@@ -30,6 +30,11 @@ export default {
     })
   },
 
+  getDownloadUrl (sourceType, id) {
+    const basePath = resolveBasePath(sourceType)
+    return api.get(`${basePath}/download-url`, { params: { id } })
+  },
+
   // 更新
   update (sourceType, id, data) {
     const basePath = resolveBasePath(sourceType)

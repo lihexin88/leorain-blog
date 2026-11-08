@@ -19,9 +19,12 @@ export default {
       layout: '',
       showContentDialog: false,
       currentContent: '',
+      showMediaDialog: false,
+      currentMedia: null,
       currentClipboard: {
         id: null,
         content: null,
+        name: 'text',
         star: null,
         type: 1,
         file: null
@@ -41,6 +44,7 @@ export default {
     moment,
     removeClipboard () {
       this.currentClipboard.content = null
+      this.currentClipboard.name = 'text'
       this.currentClipboard.type = 1
       this.currentClipboard.star = null
       this.currentClipboard.id = null
@@ -63,25 +67,44 @@ export default {
       })
     },
     async handleCopy (row) {
-      const content = row.content
-      if (row.type === 2) {
-        await this.copyImageToClipboard(content)
-      } else {
-        navigator.clipboard
-          .writeText(content)
-          .then(() => {
-            this.$message({
-              message: '已复制',
-              type: 'success'
-            })
-          })
-          .catch(() => {
-            this.$message({
-              message: '复制失败',
-              type: 'error'
-            })
-          })
+      try {
+        const content = row.type !== 1
+          ? (await clipboardApi.getDownloadUrl(this.data_source_type, row.id))?.url
+          : row.content
+        if (!content) throw new Error('没有可复制的链接')
+        await navigator.clipboard.writeText(content)
+        this.$message({ message: '已复制', type: 'success' })
+      } catch (err) {
+        this.$message({ message: err?.message || '复制失败', type: 'error' })
       }
+    },
+    fileType (file) {
+      if (file.type.startsWith('image/')) return 2
+      if (file.type.startsWith('video/')) return 3
+      if (file.type.startsWith('audio/')) return 4
+      return 5
+    },
+    fallbackName (type) {
+      return ({ 2: '图片', 3: '视频', 4: '音频', 5: '文件' })[type] || '文件'
+    },
+    selectFile (event) {
+      const file = event.target.files?.[0]
+      if (file) this.setFile(file)
+      event.target.value = ''
+    },
+    setFile (file, fromPaste = false) {
+      const type = this.fileType(file)
+      this.currentClipboard.type = type
+      this.currentClipboard.file = file
+      this.currentClipboard.name = fromPaste && /^image\.(png|jpeg|webp)$/.test(file.name)
+        ? this.fallbackName(type)
+        : (file.name || this.fallbackName(type))
+      this.currentClipboard.content = type === 2 ? null : file.name
+      if (type === 2) this.fileToBase64(file)
+    },
+    showMedia (row) {
+      this.currentMedia = row
+      this.showMediaDialog = true
     },
     getList () {
       this.loading = true
@@ -112,23 +135,6 @@ export default {
           this.loading = false
         })
     },
-    async copyImageToClipboard (base64Data) {
-      try {
-        // 将 Base64 转为 Blob
-        const blob = await fetch(base64Data).then(res => res.blob())
-
-        // 创建 ClipboardItem 对象
-        const clipboardItem = new ClipboardItem({
-          [blob.type]: blob
-        })
-
-        // 写入剪切板
-        await navigator.clipboard.write([clipboardItem])
-        console.log('图片已复制到剪切板！')
-      } catch (err) {
-        console.error('复制失败:', err)
-      }
-    },
     async submit () {
       if (this.submitting) return
       this.submitting = true
@@ -139,6 +145,9 @@ export default {
         // 创建时需要传 type
         postData.type = this.currentClipboard.type
       }
+      postData.name = this.currentClipboard.type === 1
+        ? 'text'
+        : (this.currentClipboard.name || this.fallbackName(this.currentClipboard.type))
       if (this.currentClipboard.star !== null) {
         postData.star = this.currentClipboard.star
       }
@@ -159,7 +168,7 @@ export default {
           await this.uploadToOss(file, uploadUrl)
           postData.content = uploadObject
         } else if (this.currentClipboard.content !== null) {
-          if (this.currentClipboard.content.length > 10485760) {
+          if (this.currentClipboard.type === 1 && this.currentClipboard.content.length > 10485760) {
             this.$message({
               message: '图片太大',
               type: 'error'
@@ -193,26 +202,15 @@ export default {
       event.preventDefault()
       const clipboardData = event.clipboardData || window.clipboardData
       if (!clipboardData) return
-      const firstItem = clipboardData.items[0]
-      if (firstItem.type.startsWith('image/')) {
-        this.currentClipboard.type = 2
-        const imageContent = firstItem.getAsFile()
-        this.currentClipboard.file = imageContent
-        this.fileToBase64(imageContent)
-      } else if (firstItem.type.startsWith('text/')) {
+      const fileItem = Array.from(clipboardData.items || []).find(item => item.kind === 'file')
+      if (fileItem) {
+        const file = fileItem.getAsFile()
+        if (file) this.setFile(file, true)
+      } else {
         this.currentClipboard.type = 1
+        this.currentClipboard.name = 'text'
         this.currentClipboard.file = null
         this.currentClipboard.content = clipboardData.getData('text/plain')
-      } else {
-        // 其他非文本文件：保存原始文件，预览暂用文件名
-        this.currentClipboard.type = 2
-        const file = firstItem.getAsFile()
-        this.currentClipboard.file = file
-        if (file && file.type.startsWith('image/')) {
-          this.fileToBase64(file)
-        } else {
-          this.currentClipboard.content = file ? file.name : ''
-        }
       }
     },
     // 将File对象转为Base64
@@ -258,19 +256,23 @@ export default {
       this.show_popup = true
       this.currentClipboard.id = row.id
       this.currentClipboard.content = row.content
+      this.currentClipboard.name = row.name || 'text'
+      this.currentClipboard.type = row.type
+      this.currentClipboard.file = null
     },
     star (row) {
-      this.currentClipboard.id = row.id
-      this.currentClipboard.star = !row.star
-      console.log(this.currentClipboard)
-      this.submit()
+      clipboardApi.update(this.data_source_type, row.id, { star: !row.star })
+        .then(() => this.getList())
+        .catch(err => this.$message({ type: 'error', message: err?.message || '操作失败' }))
     },
     showCreate () {
       this.show_popup = true
       this.currentClipboard.id = null
       this.currentClipboard.content = null
+      this.currentClipboard.name = 'text'
       this.currentClipboard.file = null
       this.currentClipboard.type = 1
+      this.currentClipboard.star = null
     },
     showContent (content) {
       this.currentContent = content || ''
@@ -316,7 +318,7 @@ export default {
       this.getList()
     },
     'currentClipboard.content': function (newValue) {
-      if (newValue == null && this.currentClipboard.type !== 1) {
+      if (newValue == null && this.currentClipboard.type !== 1 && !this.currentClipboard.file) {
         this.currentClipboard.type = 1
         this.currentClipboard.content = newValue
       }
@@ -347,19 +349,23 @@ export default {
           <el-input
             type="textarea"
             :autosize="{ minRows: 2 }"
-            placeholder="请输入内容，或者直接粘贴。支持文字图片"
+            placeholder="请输入内容，或者直接粘贴文字、图片或文件"
             clearable
             @paste="handlePaste"
             v-model="currentClipboard.content"
           ></el-input>
         </div>
-        <div v-if="currentClipboard.type === 2" style="display: flex; justify-content: start; flex-wrap: nowrap">
+        <div v-if="currentClipboard.type !== 1" style="display: flex; justify-content: start; flex-wrap: nowrap">
           <div style="display: flex">
-            <el-image :src="currentClipboard.content" v-if="currentClipboard.content"></el-image>
+            <el-image :src="currentClipboard.content" v-if="currentClipboard.type === 2 && currentClipboard.content" style="max-width: 200px"></el-image>
+            <span v-else>{{ currentClipboard.name }}</span>
           </div>
           <div style="display: flex; align-items: start; justify-content: center; padding-left: 10px">
             <i @click="removeClipboard" class="el-icon-circle-close" style="cursor: pointer"></i>
           </div>
+        </div>
+        <div class="clipboard-table-file-picker">
+          <input type="file" @change="selectFile" aria-label="选择图片、视频、音频或文件" />
         </div>
       </div>
       <template v-slot:footer>
@@ -375,6 +381,16 @@ export default {
         <div>
           <el-button type="primary" @click="showContentDialog = false">关闭</el-button>
         </div>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="showMediaDialog" :title="currentMedia?.name || fallbackName(currentMedia?.type)" width="720px" :close-on-click-modal="false">
+      <img v-if="currentMedia?.type === 2" :src="currentMedia.content" class="clipboard-table-media" :alt="currentMedia.name || '图片'" />
+      <video v-else-if="currentMedia?.type === 3" :src="currentMedia.content" class="clipboard-table-media" controls autoplay />
+      <audio v-else-if="currentMedia?.type === 4" :src="currentMedia.content" class="clipboard-table-media" controls autoplay />
+      <div class="clipboard-table-media-url">{{ currentMedia?.content }}</div>
+      <template v-slot:footer>
+        <el-button @click="handleCopy(currentMedia)">复制 URL</el-button>
+        <el-button @click="showMediaDialog = false">关闭</el-button>
       </template>
     </el-dialog>
     <!--      表格-->
@@ -394,18 +410,25 @@ export default {
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="id" label="id" width="50px"> </el-table-column>
         <el-table-column label="内容">
           <template v-slot="scope">
             <div v-if="scope.row?.type === 2">
               <el-image
-                :preview-src-list="[scope.row?.content]"
                 style="max-width: 200px"
-                preview-teleported
-                :z-index="3000"
                 crossorigin="anonymous"
-                :src="scope.row.content + '?x-oss-process=style/gallery_thumbnail'"
+                :src="scope.row.content"
               ></el-image>
+              <div>{{ scope.row.name || '图片' }}</div>
+            </div>
+            <div v-else-if="scope.row?.type === 3">
+              <video :src="scope.row.content" style="max-width: 200px; max-height: 120px" preload="metadata" muted />
+              <div>{{ scope.row.name || '视频' }}</div>
+            </div>
+            <div v-else-if="scope.row?.type === 4">
+              <span>{{ scope.row.name || '音频' }}</span>
+            </div>
+            <div v-else-if="scope.row?.type === 5">
+              <a :href="scope.row.content" target="_blank" rel="noopener noreferrer">{{ scope.row.name || '文件' }}</a>
             </div>
             <div v-else-if="scope.row?.type === 1">
               <div style="cursor: pointer; display: inline-block" @click="showContent(scope.row?.content)">
@@ -426,6 +449,9 @@ export default {
             <div class="clipboard-table-options">
               <div class="clipboard-table-options-button">
                 <el-button @click="handleCopy(scope.row)">复制</el-button>
+              </div>
+              <div v-if="scope.row.type >= 2 && scope.row.type <= 4" class="clipboard-table-options-button">
+                <el-button @click="showMedia(scope.row)">播放</el-button>
               </div>
               <div v-if="scope.row.type === 1" class="clipboard-table-options-button">
                 <el-button @click="showUpdate(scope.row)">编辑</el-button>
@@ -484,6 +510,21 @@ export default {
 
 .clipboard-table-options-button {
   padding-bottom: 5px;
+}
+
+.clipboard-table-file-picker {
+  margin-top: 12px;
+}
+
+.clipboard-table-media {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+}
+
+.clipboard-table-media-url {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
 }
 
 .clipboard-table-column-star {
